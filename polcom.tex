@@ -1,0 +1,63 @@
+% !TeX spellcheck = en_UK
+% \let\accentvec\vec              
+\documentclass[runningheads,11pt]{llncs}
+ % \documentclass[runningheads]{amsart}
+\let\spvec\vec \let\vec\accentvec
+
+\usepackage{amssymb,amsmath} \let\vec\spvec \usepackage{lmodern}
+
+\usepackage[T1]{fontenc}
+
+\def\vec#1{\mathchoice{\mbox{\boldmath$\displaystyle#1$}}
+{\mbox{\boldmath$\textstyle#1$}} {\mbox{\boldmath$\scriptstyle#1$}}
+{\mbox{\boldmath$\scriptscriptstyle#1$}}}
+
+\DeclareFontFamily{U}{mathx}{\hyphenchar\font45}
+\DeclareFontShape{U}{mathx}{m}{n}{<-> mathx10}{}
+\DeclareSymbolFont{mathx}{U}{mathx}{m}{n}
+\DeclareMathAccent{\widebar}{0}{mathx}{"73}
+
+\usepackage{soulutf8} \soulregister\cite7 \soulregister\ref7
+\soulregister\pageref7 \usepackage{hyperref}
+\usepackage[color=yellow]{todonotes} \hypersetup{final} \usepackage{mathrsfs}
+\usepackage[advantage,asymptotics,adversary,sets,keys,ff,lambda,primitives,events,operators,probability,logic,mm,complexity]{cryptocode}
+%\pcbodylinesep=0.15\baselineskip % MK: got an undefined control sequence error
+
+
+\usepackage{cite} 
+\usepackage{booktabs}
+\usepackage{paralist}
+\usepackage[innerleftmargin=5pt,innerrightmargin=5pt]{mdframed}
+%\usepackage{setspace}
+\usepackage{caption}
+\captionsetup{belowskip=0pt}
+%\captionsetup[figure]{font={stretch=2}}
+% \usepackage{subcaption}
+\usepackage{bm}
+\usepackage{url}
+\usepackage{dirtytalk}
+\usepackage[margin=0.7in,a4paper]{geometry}
+%\usepackage{fullpage}
+\usepackage[normalem]{ulem}
+\usepackage{dashbox}
+\newcommand\dboxed[1]{\dbox{\ensuremath{#1}}}
+
+\include{macros}
+
+\title{On Simulation-Extractability of Polynomial Commitments}
+
+\author{Michał Zając\inst{1}} 
+%\iflncs{
+\institute{Clearmatics, London, UK \\
+\email{m.p.zajac@gmail.com}} 
+
+\allowdisplaybreaks
+
+\begin{document} \sloppy \maketitle
+
+\begin{abstract} 
+\end{abstract}
+
+\section{Introduction}
+
+\end{document}
