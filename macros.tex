@@ -1,404 +1,270 @@
-\mathchardef\mhyphen="2D
+\newcommand{\newdefs}[1] {\setlength{\fboxsep}{1pt}\colorbox{gray!20}{\(#1\)}}
 
-\newcommand{\newm}[1]{{\textcolor{red}{#1}}}
-%%%%% General commands %%%%%
-\newcommand{\variable}[1]{\mathsf{#1}}
-\newcommand{\constant}[1]{\mathtt{#1}}
-%\newcommand{\comment}[1]{}
-%%%%% Complexity classes %%%%%
-\renewcommand{\pccomplexitystyle}[1]{\ensuremath{\mathsf{#1}}}
-\newcommand{\IP}{\pccomplexitystyle{IP}}
-\newcommand{\PSPACE}{\pccomplexitystyle{PSPACE}}
+\newcommand{\COMMENT}[1]  {}
 
-%%%%% Projects %%%%%
-\newcommand{\project}[1]{\ensuremath{\mathtt{#1}}}
-\newcommand{\zeth}{\project{ZETH}}
-\newcommand{\zecale}{\project{Zecale}}
-\newcommand{\zexe}{\project{ZEXE}}
-\newcommand{\ethereum}{\project{Ethereum}}
-\newcommand{\coda}{\project{Coda}}
-\newcommand{\nym}{\project{Nym}}
-\newcommand{\tor}{\project{TOR}}
-\newcommand{\loopix}{\project{Loopix}}
-\newcommand{\dizk}{\project{DIZK}}
-\newcommand{\libsnark}{\project{libsnark}}
-\newcommand{\libff}{\project{libff}}
+%general formatting
+\newcommand{\pcvarstyle}[1]{\mathsf{#1}}
+\newcommand{\comment}[1]{{\color{lightgray}#1}}
+\newcommand{\continue}{{\Huge{\hl{$\cdots$}}}}
+% \renewcommand{\case}[1]{\medskip\noindent{\fbox{Case #1:}}}
+% \newcommand{\ncase}[1]{\medskip\noindent{\fbox{#1:}}}
+% \newcommand{\ngame}[1]{\medskip\noindent{\fbox{Game $\game{#1}$:}}}
+\newcommand{\mhyph}{\text{-}}
+\renewcommand{\case}[1]{\medskip\noindent{\textbf{Case #1:}}}
+\newcommand{\ncase}[1]{\medskip\noindent{\textbf{#1:}}}
+\newcommand{\ngame}[1]{\medskip\noindent{\textbf{Game $\game{#1}$:}}}
+\newcommand{\conclude}{\medskip\noindent{}}
+\newcommand{\myskip}{-0.16\baselineskip}
 
-%%%% Predicates
-\newcommand{\zecaleP}{\algostyle{ZecaleP}} % Zecale Predicate
-\newcommand{\appP}{\algostyle{BaseAppP}} % BaseApp Predicate
-\newcommand{\predicate}{\algostyle{P}} % general predicate
-
-%%%%% Assets %%%%%
-\newcommand{\asset}[1]{\mathtt{#1}}
-\newcommand{\ether}{\asset{Ether}}
-
-% %%%%% Party %%%%%
-% \newcommand{\party}[1]{\mathit{#1}}
-% %\newcommand{\prover}{\ensuremath{\party{P}}\xspace}
-% %\newcommand{\verifier}{\ensuremath{\party{V}}\xspace}
-% \newcommand{\miner}{\ensuremath{\party{Miner}}\xspace}
-% \newcommand{\challenger}{\party{C}}
-
-%%%%% General crypto commands %%%%%
-%\let\vec\bm%
+% General mathematics
+\newcommand{\range}[2] {[#1 \, .. \, #2]}
+\newcommand{\SD}{\Delta}
 \newcommand{\smallset}[1] {\{#1\}}
-\newcommand{\fset}[1] {\left\{ #1 \right\}}
-\newcommand{\params}{\variable{pp}} % public parameters
-\newcommand{\keyspace}{\funspace{K}}
-
-\newcommand{\family}[1]{\mathcal{#1}}
-
-\newcommand{\ENC}{\pcalgostyle{E}} %encryption scheme
-
-\newcommand{\nuppt}{\pcmachinemodelstyle{NUPPT}} % Non-Uniform PPT
-
-%%%%% Ethereum accounts %%%%%
-\newcommand{\accountstyle}[1]{\mathbf{#1}}
-%% Smart-contracts accounts
-\newcommand{\contractstyle}[1]{\widetilde{\accountstyle{#1}}}
-\newcommand{\baseAppContract}{\ensuremath{\contractstyle{baseAppC}}}
-\newcommand{\modifiedBaseAppContract}{\ensuremath{\contractstyle{ZbaseAppC}}}
-\newcommand{\ZecaleContract}{\ensuremath{\contractstyle{ZecaleC}}}
-
-%%%% Variables %%%%
-%\newcommand{\ledger}{\mathscr{L}}
-
-%%%% Zecale commands %%%%%
-\newcommand{\zktx}{\variable{zktx}} % transaction containing a SNARK
-\newcommand{\aggrtx}{\variable{aggrtx}} % Aggregation tx containing the wrapping SNARK
-\newcommand{\inputs}{\variable{inputs}} % Application inputs (e.g. Zeth inputs)
-
-\newcommand{\execAppLogic}{\algostyle{ExecAppLogic}} % Application logic (eg. Zeth state transition logic) executed if the SNARK verifies correctly
-%
-\newcommand{\zkAppCRS}{\variable{\crs_{app}}} % CRS of the base application (e.g. Zeth)
-\newcommand{\zkOtherAppCRS}{\variable{\crs_{\widetilde{app}}}}
-\newcommand{\zethCRS}{\variable{\crs_{zeth}}} % CRS of Zeth
-\newcommand{\zecaleCRS}{\variable{\crs_{zec}}}
-\newcommand{\zecaleRelation}{\algostyle{ZecaleRelation}}
-%
-\newcommand{\zkpZecale}{\variable{\pi_{zec}}}
-\newcommand{\zkpBaseApp}{\variable{\pi_{app}}}
-\newcommand{\zkpBaseOtherApp}{\variable{\pi_{\widetilde{app}}}}
-%
-\newcommand{\inpZecale}{\variable{\inp_{zec}}}
-\newcommand{\inpBaseApp}{\variable{\inp_{app}}}
-\newcommand{\inpBaseOtherApp}{\variable{\inp_{\widetilde{app}}}}
-%
-\newcommand{\ledgerZecale}{\ledger_{zec}}
-\newcommand{\ledgerApp}{\ledger_{app}}
-%
-\newcommand{\snarkZecale}{\algostyle{\snark_{zec}}}
-\newcommand{\snarkApp}{\algostyle{\snark_{app}}}
-\newcommand{\snarkOtherApp}{\algostyle{\snark_{\widetilde{app}}}}
-%
-\newcommand{\appContractAddress}{\variable{baseAppAddr}}
-\newcommand{\ZappContractAddress}{\variable{ZbaseAppAddr}}
-\newcommand{\zecaleContractAddress}{\variable{zecaleAddr}}
-\newcommand{\dispatchData}{\variable{dispatchData}}
-\newcommand{\dispatch}{\algostyle{dispatch}}
-\newcommand{\createContractInstance}{\algostyle{createContractInstance}}
-%
-\newcommand{\gasSaved}{\variable{gSaved}}
-%
-\newcommand{\snarkBatch}{\algostyle{VBATCH}} % Verify batch - equation
-% SNARK verifier equation
-\newcommand{\verifierEq}{\algostyle{\verifier_{eq}}}
-
-%% Commands used in protocols and procedures
-\newcommand{\inpH}{\variable{h}}
-\newcommand{\inpPacked}{\variable{xH}}
-\newcommand{\inpValidity}{\variable{xValid}}
-\newcommand{\processAggregatedTx}{\algostyle{processAggrTx}}
-\newcommand{\processTx}{\algostyle{processTx}}
-\newcommand{\constructor}{\algostyle{constructor}}
-% Map representing the storage memory of the contract
-\newcommand{\storage}{\variable{storage}}
-%
-\newcommand{\vkHash}{\variable{vkHash}}
-%
-\newcommand{\broadcastMsg}{\algostyle{broadcastMsg}}
-\newcommand{\encodeToBytes}{\algostyle{encodeToBytes}}
-\newcommand{\byteData}{\variable{byteData}}
-% Message sender solidity util
-\newcommand{\msgSender}{\variable{msgSender}}
-%
-\newcommand{\decodeBytes}{\algostyle{decodeBytes}}
-\newcommand{\decodedData}{\variable{decodedData}}
-%
-\newcommand{\fieldAppCRS}{\variable{``app\_crs"}}
-\newcommand{\fieldZecaleAddr}{\variable{``zecale\_addr"}}
-%
-\newcommand{\toDigest}{\algostyle{toDigest}}
-\newcommand{\toField}{\algostyle{toField}}
-%
-\newcommand{\rNested}{\variable{r_n}}
-\newcommand{\rWrapping}{\variable{r_w}}
-
-
-%%%%% Constants %%%%%
-\newcommand{\batchSize}{\constant{BATCH\_SIZE}} % Size of the aggregation batch
-\newcommand{\gasPrice}{\constant{gPrice}} % Gas price on Ethereum
-\newcommand{\blockReward}{\constant{BLOCK\_REWARD}} % Block reward
-\newcommand{\aggrReward}{\constant{AGGREGATION\_REWARD}} % Aggregation reward
-\newcommand{\blockGasLimit}{\constant{BLOCK\_GAS\_LIMIT}} % Block gas limit
-\newcommand{\aggrTxGas}{\constant{AggrTxGas}} % Gas required to pay to settle an aggregation transaction on-chain
-\newcommand{\aggrTxCost}{\constant{AggrTxCost}} % Cost of settling an aggregation tx on-chain = gas * gasPrice
-\newcommand{\appTxGas}{\constant{AppTxGas}} % Gas required to pay to settle an app transaction on-chain
-\newcommand{\appTxCost}{\constant{AppTxCost}} % Cost of settling an app tx on-chain = gas * gasPrice
-\newcommand{\verifProofGas}{\constant{VProofGas}} % Gas required to verify a SNARK on-chain
-\newcommand{\verifNProofGas}{\constant{VNProofGas}} % Gas to verify Nested proof
-\newcommand{\verifWProofGas}{\constant{VWProofGas}} % Gas to verify Wrapping proof
-\newcommand{\verifProofCost}{\constant{VProofCost}} % Cost required to verify a SNARK on-chain
-\newcommand{\txDefaultGas}{\constant{DGAS}}
-
-%%%%% Cryptographic experiments %%%%%
-\newcommand{\game}[1]{\pcalgostyle{#1}}
-\newcommand{\ngame}[2]{\pcalgostyle{Game_{#1}^{#2}}}
-\newcommand{\parcase}[1]{\noindent\textit{{#1}.}}
-\newcommand{\aggrInd}{\game{AGGR\mhyphen IND}} % Aggregation IND game
-\newcommand{\zclSND}{\game{ZCL\mhyphen SND}} % Soundness game
-\newcommand{\collRes}{\game{coll\mhyphen res}} % Collision res
-\newcommand{\snarkSND}{\game{SNARK\mhyphen SND}} % SNARK SDN game
-
-%%%%% Curves %%%%%
-\newcommand{\curve}[1]{\mathsf{#1}}
-\newcommand{\BNCurve}{\curve{BN\mhyphen{}254}}
-\newcommand{\BLSZcash}{\curve{BLS12\mhyphen{}381}}
-\newcommand{\BLSZexe}{\curve{BLS12\mhyphen{}377}}
-\newcommand{\BWSix}{\curve{BW6\mhyphen{}761}}
-\newcommand{\CPcurve}{\curve{CP}}
-% May need to distinguish between MNT{4,6}-298 and MNT{4,6}-763, see how it goes, and if I use both
-\newcommand{\MNTFour}{\curve{MNT4}}
-\newcommand{\MNTSix}{\curve{MNT6}}
-
-%%%%% Algorithms/Schemes %%%%%
-\newcommand{\algostyle}[1]{\pcalgostyle{#1}}
-\newcommand{\oracle}[1]{\algostyle{O}^{#1}} % Oracle
-\newcommand{\produceBlock}{\algostyle{ProdBlock}}
-\newcommand{\setup}{\algostyle{Setup}}
-\newcommand{\includeTxInBlock}{\algostyle{IncludeTxInBlock}}
-% Zeth commands
-\newcommand{\mix}{\algostyle{Mix}}
-\DeclareMathOperator\shr{shr}% shift right
-\DeclareMathOperator\IM{Im}
-
-%%%%% SNARKs notations %%%%%
-\newcommand{\snark}{\algostyle{\Psi}}
-\newcommand{\LAN}{\mathbf{L}}
-\newcommand{\LANZECALE}{\LAN^{\project{zec}}}
-\newcommand{\pcrelstyle}[1]{\mathbf{#1}}
-\newcommand{\REL}{\pcrelstyle{R}}
-\newcommand{\LANG}{\pcrelstyle{L}}
-\newcommand{\RELZECALE}{\REL^{\project{zec}}}
-\newcommand{\RELGEN}{\mathcal{R}}
-\newcommand{\RELCIRC}{\REL^{\project{z}}}
-\newcommand{\transcript}{\mathsf{Transcript}}
-%
-\newcommand{\groth}{\algostyle{Groth16}}
-\newcommand{\zkproof}{\variable{\pi}} % a zk proof
-\newcommand{\zkproofsim}{{\zkproof_{\simulator}}}
-\newcommand{\piA}{\variable{A}} % A element of the proof
-\newcommand{\piB}{\variable{B}} % B element of the proof
-\newcommand{\piC}{\variable{C}} % C element of the proof
-\newcommand{\polU}{\variable{u}} % Polynomial U
-\newcommand{\polV}{\variable{v}} % Polynomial V
-\newcommand{\polW}{\variable{w}} % Polynomial W
-\newcommand{\vkABC}{\variable{vkABC}} % Set of ABC ratio elements in the VK
-\newcommand{\crs}{\variable{crs}} % common reference string
-\newcommand{\master}{\variable{mstr}}
-\newcommand{\specialized}{\variable{spec}}
-\newcommand{\crsmaster}{\crs^{\master}}
-\newcommand{\crsspec}{\crs^{\specialized}}
-\newcommand{\srs}{\variable{srs}} % structured reference string
-\newcommand{\td}{\variable{td}} % trapdoor for srs
-\newcommand{\inp}{\variable{x}} % input
-\newcommand{\wit}{\variable{w}} % witness
-\newcommand{\proofsystem}{\pcalgostyle{\Psi}}
-
-
-%%%%% Math/Algebra notations %%%%%%
-\newcommand{\paramGen}{\mathcal{G}}
-\newcommand{\suchthat}{\text{s.t.}} % Helper for "such that"
-\newcommand{\GRP}{\mathbb{G}} % Groupb
-\newcommand{\GRPord}{r} % Group order
-\newcommand{\Id}{\mathcal{O}} % Point at infinity. Notation for the identity element of our groups
-\newcommand{\pair}{e} % Pairing
-%\newcommand{\pair}[2]{e(#1, #2)} % Pairing
-\newcommand{\ggen}{\mathfrak{g}} % Generator g
-\newcommand{\hgen}{\mathfrak{h}} % Generator h
-\newcommand{\isEq}{\stackrel{?}{=}}
-\newcommand*{\QED}{\hfill\ensuremath{\square}} % QED symbol
-\newcommand{\cardinality}[1]{|#1|}
-%
-\newcommand{\vectorspace}[1]{\mathcal{#1}} % Notation for vector space
-\newcommand{\lintransform}[1]{\mathcal{#1}} % Notation for linear transformation
-% Operator for the Kernel of the linear transformation
-\DeclareMathOperator{\Ker}{Ker}
-
+\newcommand{\bigset}[1] {\left\{#1\right\}}
+\newcommand{\GRP} {\mathbb{G}}
+\newcommand{\HRP} {\mathbb{H}}
+\newcommand{\pair} {\hat{e}}
+\newcommand{\brak}[1] {\left(#1\right)}
+\newcommand{\sbrak}[1] {(#1)}
+\newcommand{\alg}[1] {\pcalgostyle{#1}}
+\newcommand{\image} {\operatorname{im}}
+\newcommand{\myland} {\,\land\,}
+\newcommand{\mylor} {\,\lor\,}
+\newcommand{\vect}[1] {\operatorname{vect}(#1)}
+\newcommand{\w}{\omega}
+\newcommand{\const}{\pcpolynomialstyle{const}}
+\newcommand{\p}[1]{\pcpolynomialstyle{#1}}
+\newcommand{\ptx}{\p{t_{X^0}}}
+\newcommand{\ptxsim}{\p{\tilde{t}_{X^0}}}
+\newcommand{\ev}[1]{\widetilde{\pcpolynomialstyle{#1}}}
+\newcommand{\maxconst}{\pcvarstyle{max}}
+\newcommand{\numberofconstrains}{\pcvarstyle{n}}
+\newcommand{\noofc}{\numberofconstrains}
+\newcommand{\noofw}{\pcvarstyle{m}}
+\newcommand{\dconst}{\pcvarstyle{d}}
+\newcommand{\multconstr}{\pcvarstyle{n}}
+\newcommand{\linconstr}{\pcvarstyle{Q}}
+\newcommand{\expected}[1]{\mathbb{E}\left[#1\right]}
+\newcommand{\infrac}[2]{#1 / #2}
 \newcommand{\eps}{\varepsilon}
+\DeclareMathOperator{\SPAN}{Span}
+\newcommand{\maxdeg}{\pcvarstyle{max}}
+%polynomials
+\newcommand{\pf}{\p{f}}
+\newcommand{\pF}{\p{F}}
+\newcommand{\pa}{\p{a}}
+\newcommand{\pb}{\p{b}}
+\newcommand{\pc}{\p{c}}
+\newcommand{\pz}{\p{z}}
+\newcommand{\pt}{\p{t}}
+\newcommand{\pR}{\p{R}}
+\newcommand{\pr}{\p{r}}
+\newcommand{\ptlo}{\p{t_{lo}}}
+\newcommand{\ptmid}{\p{t_{mid}}}
+\newcommand{\pthi}{\p{t_{hi}}}
+\newcommand{\pS}{\p{S}}
+\newcommand{\pT}{\p{T}}
+\newcommand{\pta}{\tilde{\p{a}}}
+\newcommand{\ptb}{\tilde{\p{b}}}
+\newcommand{\ptc}{\tilde{\p{c}}}
+\newcommand{\ptz}{\tilde{\p{z}}}
+\newcommand{\ptZH}{\tilde{\p{Z_H}}}
+\newcommand{\vX}{\vec{X}}
+\newcommand{\vB}{\vec{B}}
+\newcommand{\va}{\vec{a}}
+\newcommand{\vb}{\vec{b}}
+\newcommand{\vc}{\vec{c}}
 
-%%general cryptography
-\newcommand{\fail}{\event{fail}}
+%reduction
+\newcommand{\tb}{\tilde{b}} 
+\newcommand{\tw}{\tilde{w}} 
 
-%DGKOS-specific notation
-\newcommand{\AL}{\variable{AL}}
-\newcommand{\flag}[1]{\variable{#1}}
-\newcommand{\ready}{\flag{ready}}
+% bilinear maps
 
+\newcommand{\bmap}[2] {\left[#1\right]_{#2}}
+\newcommand{\gone}[1] {\bmap{#1}{1}}
+\newcommand{\gtwo}[1] {\bmap{#1}{2}}
+\newcommand{\gi} {\iota}
+\newcommand{\gtar}[1] {\bmap{#1}{T}}
+\newcommand{\grpgi}[1] {\bmap{#1}{\gi}}
+\newcommand{\gnone}[1]{\left[#1\right]}
 
-%%%% Missing general crypto %%%%%%
-\newcommand{\range}[2]{[#1 .. #2]}
-\newcommand{\ro}{\mathcal{H}} %random oracle
-\newcommand{\hashf}{\mathsf{H}} % hash function 
-\newcommand{\rand}[1]{\mathsf{Rnd}(#1)}
-\newcommand{\func}[1]{\mathbf{F}_{#1}}
-\newcommand{\prot}[1]{\mathbf{P}_{#1}}
-\renewcommand{\st}[1]{\uppercase{\texttt{#1}}}
-\newcommand{\listvar}[1]{{\variable{list}_{#1}}}
-
-%% FOR UC
-\newcommand{\sgen}{\pcalgostyle{SGen}}
 \newcommand{\msg}[1]{\mathtt{#1}}
 
-%%%%% Roles %%%%%
-%\renewcommand{\pcadvstyle}[1]{\pcalgostyle{#1}}
-\newcommand{\role}[1]{\pcadvstyle{#1}}
-\newcommand{\user}{\role{U}}
-\newcommand{\noofu}{{\noofparties}}
-\newcommand{\reg}{\role{R}}
-\newcommand{\owner}{\role{O}}
-\newcommand{\account}{\role{T}}
-\newcommand{\identity}{\role{I}}
-\newcommand{\party}{\role{P}}
-\newcommand{\pid}{\variable{pid}}
-\newcommand{\sid}{\variable{sid}}
-\newcommand{\polas}{\role{R}}
-\newcommand{\noofpolas}{\variable{r}}
-\newcommand{\idprov}{\role{I}}
-\newcommand{\noofidprov}{\variable{l}}
+% zero knowledge
+\newcommand{\oracleo}{\pcalgostyle{O}}
+\newcommand{\crs}{\pcvarstyle{crs}}
+\newcommand{\srs}{\pcvarstyle{srs}}
+\newcommand{\td}{\pcvarstyle{td}}
+\newcommand{\ip}[2]{\left\langle #1, #2\right\rangle}
+\newcommand{\zkproof}{\pi}
+\newcommand{\proofsystem}{\pcschemestyle{\Psi}}
+\newcommand{\PS}{\proofsystem}
+\newcommand{\psfs}{\proofsystem_\fs}
+% \newcommand{\ps}{\proofsystem}
+\newcommand{\nuppt}{\pcmachinemodelstyle{NUPPT}}
+\newcommand{\ro}{\mathcal{H}}
+\newcommand{\rof}[2]{\mathbf{\Omega}_{#1, #2}}
+\newcommand{\trans}{\pcvarstyle{trans}}
+\newcommand{\tr}{\pcvarstyle{tr}}
+\newcommand{\instsize}{\pcvarstyle{n}}
+\newcommand{\KG} {\mathsf{K}}
+\newcommand{\kcrs} {\KG_{\crs}}
+\renewcommand{\dist}{\ddv}
+\newcommand{\fs}{\pcalgostyle{FS}}
+\newcommand{\sigmaprot}{\pcalgostyle{\Sigma}}
+\newcommand{\se}{\pcvarstyle{se}}
+\newcommand{\snd}{\pcvarstyle{snd}}
+\newcommand{\zk}{\pcvarstyle{zk}}
 
-\newcommand{\pccom}[1]{{\footnotesize{/\hspace*{-2pt}/ #1}}\newline}
-
-%%%%% For compliance %%%%%%
-\newcommand{\prfkey}{\pcvarstyle{k}}
-\newcommand{\policydig}{\pcvarstyle{pd}}
-
-\newcommand{\tx}{\variable{tx}} %transaction
-\newcommand{\comp}{\variable{comp}} %index for compliance variables
-
-%%%% For compliance relation graph
-\newcommand{\pcvarstyle}[1]{\mathsf{#1}} %for variables
-\newcommand{\proc}[1]{\mathsf{#1}} % for procedures
-
-\newcommand{\cred}{\variable{cred}}
-\newcommand{\pcred}{\variable{pcred}}
-\newcommand{\scred}{\variable{scred}}
-
-%%% threshold encryption and anonymity revokers
-\newcommand{\ar}{\role{Z}}%{\role{A\hspace*{-0.1em}R}} %anonymity revokers
-\newcommand{\thresholdar}{\pcvarstyle{t}}
-\newcommand{\noofar}{\pcvarstyle{m}}
-\newcommand{\ciphertext}{\pcvarstyle{c}}
-\newcommand{\ckey}{\ciphertext_{key}}
-\newcommand{\cuser}{\ciphertext_{pcred}}
-\newcommand{\cid}{\ciphertext_{id}}
-\newcommand{\cpol}{\ciphertext_{pol}}
-
-\newcommand{\combine}{\pcalgostyle{Comb}}
-\newcommand{\TENC}{\pcalgostyle{TE}}
-\newcommand{\BSIG}{\pcalgostyle{BS}}
-\newcommand{\unblind}{\pcalgostyle{Unblind}}
-\newcommand{\threshold}{\pcvarstyle{t}}
-\newcommand{\noofparties}{\pcvarstyle{n}}
-\newcommand{\varshare}{\pcvarstyle{s}}
-\newcommand{\simpart}{\pcalgostyle{SimPart}}
-
-\renewcommand{\SS}{\pcalgostyle{SS}}
-\newcommand{\share}{\pcalgostyle{Share}}
-\newcommand{\reconstruct}{\pcalgostyle{Reconstruct}}
-
-\newcommand{\app}{\mathbf{A}}
-\newcommand{\maxacc}{\variable{maxAccounts}}
-\newcommand{\maxtime}{\variable{time}}
-\newcommand{\cnt}{\variable{Count}}
-\newcommand{\generateAccount}{\pcalgostyle{generateAccount}}
-
-\newcommand{\RELpol}{\REL_{pol}}
-\newcommand{\RELacc}{\REL_{acc}}
-\newcommand{\RELval}{\REL_{val}}
-\newcommand{\RELcomp}{\REL_{comp}}
-
-\newcommand{\funcidis}{\func{id\mhyphen is}}
-\newcommand{\funccompis}{\func{comp\mhyphen is}}
-
-\newcommand{\proofsystemc}{{\proofsystem_\texttt{comp}}} % proof system for compliance
-\newcommand{\proofc}{{\zkproof_{\texttt{comp}}}} %proof of compliance
-\newcommand{\proofacc}{\zkproof_{\texttt{acc}}}
-\newcommand{\zkproofsk}{\zkproof_{\sk}}
-
-% modules
-\newcommand{\module}[1]{\mathscr{#1}}
-\newcommand{\transmodule}{\module{T}}
-\newcommand{\identitymodule}{\module{I}}
-\newcommand{\compliancemodule}{\module{C}}
-\newcommand{\ledgermodule}{\module{L}}
-\newcommand{\ledger}{\ledgermodule}
-\newcommand{\regulator}{\module{R}}
-
-\newcommand{\aux}{\pcvarstyle{aux}}
-\newcommand{\saux}{\pcvarstyle{saux}}
-\newcommand{\paux}{\pcvarstyle{paux}}
-\newcommand{\auxid}{\aux_{id}}
-\newcommand{\auxpol}{\aux_{pol}}
-\newcommand{\auxacc}{\aux_{acc}}
-\newcommand{\pkacc}{\pk_{acc}}
-\newcommand{\skacc}{\sk_{acc}}
-\newcommand{\auxtx}{\aux_{tx}}
-\newcommand{\sauxtx}{\saux_{tx}}
-\newcommand{\pauxtx}{\paux_{tx}}
-
-\newcommand{\idis}{id\mhyphen is}
-
-\newcommand{\policy}[1]{\mathbf{#1}}
-\newcommand{\comppolicy}{\policy{P}} % compliance policy
-\newcommand{\valpolicy}{\policy{V}} % transaction validity policy
-\newcommand{\revpolicy}{\policy{R}} % policy that determines which user's actions lead to its identity revelation
-\newcommand{\rec}[1]{\pckeystyle{#1}}
-\newcommand{\recpolicy}{\rec{policy}}
-\newcommand{\recpolicydig}{\rec{policyDigest}}
-
-\newcommand{\prooff}{\psi_\texttt{fraud}} % proof of fraud
-
-\newcommand{\prep}{\pcvarstyle{p}}
-\newcommand{\prepcomp}{{{\proofsystemc.\prep}}}
-
-\newcommand{\desc}[1]{\noindent\underbar{#1:}}
-
-%%% signature
-\newcommand{\signaturescheme}{\pcalgostyle{S}}
-\newcommand{\SIG}{\signaturescheme}
-\newcommand{\signature}{\sigma}
-%\newcommand{\pcoraclestyle}[1]{\mathsf{#1}}
-\newcommand{\oracleo}{\pcoraclestyle{O}}
-
-\newcommand{\accept}{\pcvarstyle{accept}}
-
-\renewcommand{\prover}{\pcalgostyle{Pro}}
-\renewcommand{\verifier}{\pcalgostyle{Ver}}
+\newcommand{\extpcom}{\ext^{\PCOM}}
+\newcommand{\extps}{\ext^{\PS}}
 
 
-%%%%% Comments %%%%%
-\definecolor{bananamania}{rgb}{0.98,0.91,0.71}
+%rewinding---tree of transcripts
+\newcommand{\pcboolstyle}[1]{\mathtt{#1}}
+\newcommand{\treebuild}{\pcalgostyle{TreeBuild}}
+\newcommand{\tree}{\pcvarstyle{T}}
+\newcommand{\counter}{\pcvarstyle{counter}}
+
+
+%PLONK related
+\newcommand{\pcschemestyle}[1]{\bm{\mathsf{#1}}}
+\newcommand{\plonkprot}{\pcschemestyle{P}}
+\newcommand{\plonkprotfs}{\pcschemestyle{P}_\fs}
+\newcommand{\sonicprot}{\pcschemestyle{S}}
+\newcommand{\sonicprotfs}{\pcschemestyle{S}_\fs}
+\newcommand{\selector}[1]{\pcvarstyle{q_{#1}}}
+\newcommand{\selmulti}{\selector{M}}
+\newcommand{\selleft}{\selector{L}}
+\newcommand{\selright}{\selector{R}}
+\newcommand{\seloutput}{\selector{O}}
+\newcommand{\selconst}{\selector{C}}
+\newcommand{\chz}{\mathfrak{z}}
+\newcommand{\ochz}{{\omega \mathfrak{z}}}
+\newcommand{\reduction}{\rdv}
+\newcommand{\ch}{\pcvarstyle{ch}}
+
+\newcommand{\game}[1]{\pcalgostyle{G}_{#1}}
+
+\newcommand{\lag}{\p{L}}
+\newcommand{\pubinppoly}{\p{PI}}
+
+% general complexity theory
+% \newcommand{\RND}[1]{\pcalgostyle{RND}(#1)}
+\newcommand{\RND}[1]{\pcvarstyle{R}(#1)}
+\newcommand{\RELGEN}{\mathcal{R}}
+\newcommand{\REL}{\mathbf{R}}
+\newcommand{\LANG}{\mathcal{L}}
+\newcommand{\inp}{\pcvarstyle{x}}
+\newcommand{\wit}{\pcvarstyle{w}}
+\newcommand{\class}[1]{\mathfrak{#1}}
+\newcommand{\ig}{\pcalgostyle{IG}}
+\newcommand{\accProb}{\event{acc}}
+\newcommand{\waccProb}{\event{\widetilde{acc}}}
+\newcommand{\frkProb}{\event{frk}}
+\newcommand{\extProb}{\event{ext}}
+\newcommand{\FS}{\pcalgostyle{FS}} % Fiat-Shamir transform
+\newcommand{\aux}{\pcvarstyle{aux}} %auxiliary input
+% \newcommand{\dlog}{\pcvarstyle{dlog}}
+\newcommand{\vereq}{\p{ve}}
+
+\newcommand{\sgen}{\pcalgostyle{SGen}}
+
+%Commitment schemes
+\newcommand{\COM}{\pcschemestyle{C}}
+\newcommand{\PCOM}{\pcschemestyle{PC}}
+\newcommand{\PCOMp}{\pcschemestyle{PC}_{\plonkprot}}
+\newcommand{\PCOMs}{\pcschemestyle{PC}_{\sonicprot}}
+\newcommand{\com}{\pcalgostyle{Com}}
+\newcommand{\op}{\pcalgostyle{Op}}
+\newcommand{\open}{\op}
+\newcommand{\oracles}{\oracleo_{\simulator}}
+
+\newcommand{\committer}{\pcalgostyle{C}}
+\newcommand{\receiver}{\pcalgostyle{R}}
+
+%Plonk and Sonic
+\newcommand{\ur}[1]{{#1\text{-}\mathsf{ur}}}
+
+\newcommand{\plonk}{\ensuremath{\textnormal{\textsf{Plonk}}}}
+\newcommand{\sonic}{{\ensuremath{\textnormal{\textsf{Sonic}}}}}
+\newcommand{\groth}{\ensuremath{\textsc{Groth16}}}
+\newcommand{\plonkmod}{\ensuremath{\plonk^\star}}
+\newcommand{\plonkint}{\ensuremath{\plonk^\star}}
+\newcommand{\polyprot}{\pcalgostyle{poly}}
+\newcommand{\plonkintpoly}{\plonkint_\polyprot}
+% \newcommand{\sonic}{\textsc{Sonic}}
+\newcommand{\maxdegree}{\pcvarstyle{N}}
+
+\newcommand{\dlog}{\pcvarstyle{dlog}}
+\newcommand{\ldlog}{\pcvarstyle{ldlog}}
+
+
+%reductions
+\newcommand{\extss}{\ext_\ss}
+\newcommand{\extse}{\ext_\se}
+\newcommand{\extt}{\ext_{\pcvarstyle{tree}}}
+\newcommand{\compass}{\mathtt{C}}
+\newcommand{\ks}{\pcvarstyle{ks}}
+\renewcommand{\ss}{\pcvarstyle{ss}}
+\newcommand{\rdvks}{{\rdv_\ks}}
+\newcommand{\rdvs}{{\rdv_\pcvarstyle{s}}}
+\newcommand{\rdvdlog}{{\rdv_\dlog}}
+\newcommand{\rdvldlog}{{\rdv_\ldlog}}
+\newcommand{\rdvse}{{\rdv_\se}}
+\newcommand{\rdvss}{{\rdv_\ss}}
+\newcommand{\rdvur}{\rdv_\pcvarstyle{ur}}
+
+\newcommand{\env}{\pcadvstyle{E}}
+\newcommand{\zdv}{\pcadvstyle{Z}}
+
+\newcommand{\advse}{\adv}
+\newcommand{\advss}{{\adv_\ss}}
+
+\newcommand{\epsss}{\eps_\ss}
+\newcommand{\epsur}{\eps_\pcvarstyle{ur}}
+\newcommand{\epsk}{\eps_{\pcvarstyle{k}}}
+\newcommand{\epsbind}{\eps_\pcvarstyle{bind}}
+\newcommand{\epsop}{\eps_\pcvarstyle{op}}
+\newcommand{\epss}{\eps_\pcvarstyle{s}}
+\newcommand{\epsbatch}{\eps_\pcvarstyle{btch}}
+\newcommand{\epsdlog}{\eps_\dlog}
+\newcommand{\epsldlog}{\eps_\ldlog}
+\newcommand{\epsuber}{\eps_{\pcvarstyle{uber}}}
+\newcommand{\epszk}{\eps_{\pcvarstyle{zk}}} 
+
+%errors
+\newcommand{\err}{Err}
+\newcommand{\errur}{\err_{ur}}
+\newcommand{\errss}{\err_\ss}
+\newcommand{\errfrk}{\err_\frkProb}
+
+
+%forking
+\newcommand{\forking}{\pcalgostyle{F}}
+\newcommand{\genforking}{\pcalgostyle{GF}}
+
+%colors
+\definecolor{darkmagenta}{rgb}{0.5,0,0.5}
+\definecolor{lightmagenta}{rgb}{1,0.85,1}
+\definecolor{lightmagenta}{rgb}{0.9,0.9,0.9}
 \definecolor{darkred}{rgb}{0.7,0,0}
 \definecolor{blueish}{rgb}{0.1,0.1,0.5}
 \definecolor{pinkish}{rgb}{0.9,0.8,0.8}
+\definecolor{darkgreen}{rgb}{0,0.6,0}
+\definecolor{lightgreen}{rgb}{0.85,1,0.85}
+\definecolor{skyblue}{rgb}{0.3,0.9,0.99}
 
-\definecolor{redone}{HTML}{ffe5e0}
-\definecolor{yellowone}{HTML}{fffcf2}
-\definecolor{pinkone}{HTML}{fff2f2}
-\definecolor{blueone}{HTML}{f2f9fd}
 
-\DeclareRobustCommand{\antoines}[2]{{\color{darkred}\sethlcolor{bananamania}\hl{\textbf{Antoine #1:} #2}}}
+%comments
+\DeclareRobustCommand{\markulf}[2]  {{\color{darkmagenta}\hl{\scriptsize\textsf{Markulf #1:} #2}}}
+\DeclareRobustCommand{\michals}[2]  {{\color{blueish}\sethlcolor{pinkish}\hl{\scriptsize\textsf{Michal #1:} #2}}}
+\newcommand{\task}[2]{\todo[author=\textbf{Task},inline]{({\textit{#1}}) #2}}
+% \newcommand{\task}[2] {\xcommenti{Task}{#1}{#2}}
+% \DeclareRobustCommand{\task}[2]  {{\color{black}\sethlcolor{yellow}\hl{\textsf{TASK #1:} #2}}}
 
-\DeclareRobustCommand{\michals}[2]{{\color{blueish}\sethlcolor{pinkish}\hl{\textbf{Michal #1:} #2}}}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "plonkext"
+%%% End:
