@@ -1,16 +1,16 @@
 % !TeX spellcheck = en_UK
 % \let\accentvec\vec              
 \documentclass[runningheads,11pt]{llncs}
- % \documentclass[runningheads]{amsart}
-\let\spvec\vec \let\vec\accentvec
+%\let\spvec\vec \let\vec\accentvec
 
-\usepackage{amssymb,amsmath} \let\vec\spvec \usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+%\let\vec\spvec
+%\usepackage{lmodern}
 
 \usepackage[T1]{fontenc}
-
-\def\vec#1{\mathchoice{\mbox{\boldmath$\displaystyle#1$}}
-{\mbox{\boldmath$\textstyle#1$}} {\mbox{\boldmath$\scriptstyle#1$}}
-{\mbox{\boldmath$\scriptscriptstyle#1$}}}
+% \def\vec#1{\mathchoice{\mbox{\mathbf$\displaystyle#1$}}
+% {\mbox{\mathbf$\textstyle#1$}} {\mbox{\mathbf$\scriptstyle#1$}}
+% {\mbox{\mathbf$\scriptscriptstyle#1$}}}
 
 \DeclareFontFamily{U}{mathx}{\hyphenchar\font45}
 \DeclareFontShape{U}{mathx}{m}{n}{<-> mathx10}{}
@@ -31,13 +31,10 @@
 %\usepackage{setspace}
 \usepackage{caption}
 \captionsetup{belowskip=0pt}
-%\captionsetup[figure]{font={stretch=2}}
-% \usepackage{subcaption}
 \usepackage{bm}
 \usepackage{url}
 \usepackage{dirtytalk}
 \usepackage[margin=0.7in,a4paper]{geometry}
-%\usepackage{fullpage}
 \usepackage[normalem]{ulem}
 \usepackage{dashbox}
 \newcommand\dboxed[1]{\dbox{\ensuremath{#1}}}
@@ -415,9 +412,7 @@ adversary $\adv$
  there exists a $\ppt$ simulator $\simulator$ such that
 	\begin{multline*}
 	  \left\{\ip{\prover(\REL, \srs, \inp, \wit)}{\adv(\REL, \srs, \inp, \wit)}
-      \,\left|\, \srs \gets \kgen(\REL)\COMMENT{, (\inp, \wit) \gets \adv(\REL,
-          \srs)}\vphantom{\simulator^\adv}\right.\right\} \approx_\secpar
-		%\\
+      \,\left|\, \srs \gets \kgen(\REL)\vphantom{\simulator^\adv}\right.\right\} \approx_\secpar
 		\left\{\simulator^{\adv}(\REL, \srs, \inp)\,\left|\, \srs \gets
         \kgen(\REL)\COMMENT{, (\inp, \wit) \gets \adv(\REL,
           \srs)}\vphantom{\simulator^\adv}\right.\right\}\,.
@@ -463,10 +458,89 @@ $\simulator_\td$.
 \end{definition}
 
 \section{SE PoK from SE PC}
-\begin{theorem}
+\begin{lemma}
+  Let $\PCOM$ be a simulation extractable polynomial commitment scheme. Let
+  $\PS$ be a zero-knowledge polynomial proof system such that no adversary (even
+  unbounded) can tell a real proof from a simulated one with advantage greater
+  than $\epszk$. Then for every $\ppt$ adversary $\adv$ there exists extractor
+  $\ext$ which extracts every polynomial sent in the proof. More precisely,
+  probability
+  \[
+    \Pr\left[
+      \begin{aligned}
+        & \vec{f} \gets \ext_\adv(\REL, \srs, \vec{c}, \zkproof) \land \\
+        & (\vec{c} \not\in \image(\vec{f}) \lor \exists i: \deg(f_i) > \maxdeg)
+        \end{aligned}
+      \, \left| \,
+        \begin{aligned}
+          & \srs \sample \kgen(\REL), \\
+          & \zkproof = ((c_1, \vec{x_1}, \vec{y_{1}}), \ldots, (c_\plen,
+          \vec{x}_\plen, \vec{y}_{\plen})) \gets \adv^{\simulator}(\REL, \srs)
+        \end{aligned}
+        \right.
+    \right] \leq \negl
+  \]
+\end{lemma}
+\begin{proof}
+  Assume the contrary. That is, assume that there is a $\ppt$ adversary $\adv$
+  producing the proof
+  $\zkproof = (c_1, \vec{x_1}, \vec{y_1}, \ldots, c_n, \vec{x_\plen}, \vec{y_\plen})$
+  \michals{23.04}{Note that $x$ and $y$ are vectors as in the proof polynomials
+    hidden in $c_i$-s may be evaluated at multiple points.} such that any
+  extractor $\ext$ probability that $\ext$ fails to return polynomials
+  $f_1, \ldots f_\plen$, which commitments are $c_1, \ldots c_\plen$, is at least $\nu$,
+  for some non-negligible $\nu$. We use $\adv$ to build an adversary $\bdv$ that
+  breaks simulation-extractability of the polynomial commitment scheme.
+
+  Let $\cdv$ be an (inefficient) challenger for $\bdv$ that prepares an instance
+  of a problem, i.e.~it picks public parameters $\pp$, generates the polynomial
+  commitment scheme SRS, provides adversary $\bdv$ with it and answers
+  adversary's queries to the simulator query $\oracles$. $\cdv$ also picks an
+  extractor $\ext_\bdv$ for $\bdv$. Eventually, $\bdv$ outputs a commitment $c$
+  to some polynomial and $\cdv$ checks whether $\ext_\bdv$ is able to find a
+  polynomial $f$ of degree less than $\maxdeg$ in the image of $\com$. If
+  $\ext_\bdv$ succeeds then $\cdv$ outputs $0$ ($\bdv$ looses), otherwise it
+  outputs $1$ ($\bdv$ wins). We show a strategy for $\bdv$ which guarantees
+  probability of winning at least $(1 - \epszk) \cdot \infrac{\nu}{n}$.
+
+  Adversary $\bdv$ begins with generating an SRS $\srs_{\PS}$ of $\PS$ using
+  $\srs_{\PCOM}$ \michals{26.04}{describe how both SRS-s are related. That should
+    be a property of the proof system.} and providing $\adv$ with it. Then it
+  picks at random index $i$, which is $\bdv$'s guess for which of the
+  polynomials is not going be extracted by the extractor $\ext$. Note that
+  probability that $\bdv$ picks the right $i$ is at least $\infrac{1}{n}$.  Then
+  $\bdv$ starts $\adv(\REL, \srs_{\PS})$ and answers $\adv$'s queries to the
+  simulation oracle $\oracles$. Since $\bdv$ may not know the SRS's trapdoor, it
+  provides $\adv$ with \emph{real} proofs, not simulated ones. However, this
+  does not change the probability of $\adv$ returning a
+  simulation-extractability breaking proof more than $\epszk$ as otherwise such
+  $\adv$ could be used to break the zero-knowledge property.
+
+  Eventually $\adv$ returns a proof $\zkproof = ((c_1, \vec{x_1}, \vec{y_1}),
+  \ldots, (c_\plen, \vec{x_\plen}, \vec{y_\plen}))$, $\bdv$ gets commitment
+  $c_i$ and outputs it. \michals{26.04}{Maybe the property of extractability
+    could be a bit weaker --- say the adversary cannot output a valid commitment
+  which he can open (at which point?) without knowing the underlying
+  polynomial. We should also consider this case. The stronger extractability
+  property may be difficult to meet.} Note that the extractor $\ext_\bdv$ is not able to
+reveal the polynomial behind $c_i$ with an overwhelming probability. Assume
+otherwise, then $\bdv$ could be used to reduce the probability of $\adv$'s
+success. More precisely, \hl{continue}
+
+\end{proof}
+
+\begin{lemma}
+  \hl{If we can extract all polynomials committed in the proof, then we can
+    extract the witness}
+\end{lemma}
+\begin{proof}
+  
+\end{proof}
+
+\begin{corollary}
   Let $\PCOM$ be a simulation extractable polynomial commitment scheme. Let
   $\PS$ be a zero-knowledge polynomial proof system, then $\PS$ is simulation extractable.
-\end{theorem}
+\end{corollary}
 \begin{proof}
   Let $\adv$ be a simulation-extractability adversary. Let $\extpcom_\adv$ be a
   polynomial commitment scheme extractor for $\adv$. We build a $\PS$ extractor
