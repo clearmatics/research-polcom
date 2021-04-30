@@ -454,10 +454,78 @@ $\simulator_\td$.
 % $\vereq_i(X)$ evaluates to $0$ at $\chi$, just checks that $\vereq_i(X)$ is a
 % zero polynomial.
 
-\begin{definition}[Polynomial proof system]
+\begin{definition}[Polynomial IOP,~\cite{EPRINT:Szepieniec20}]
+  Let $\REL$ be an indexed relation with a corresponding language $\LANG$, $\FF$
+  some finite field, and $\maxdeg$ a degree bound and $\noofp$ a parameter. A
+  \emph{polynomial IOP for $\REL$ with degree bound $\maxdeg$} is a pair of
+  interactive machines $\prover, \verifier$ such that
+\begin{itemize}
+\item $(\prover, \verifier)$ is an interactive proof for $\LANG$ with $r$ rounds
+  and soundness error $\epss$;
+\item $\prover$ sends to $\verifier$ polynomials $f_i \in \FF[X]$,
+  $i \in \range{1}{\noofp}$, of degree at most $\maxdeg$;
+\item $\verifier$ is an oracle machine with access to a list of oracles, which
+  contains one oracle for each polynomial it has received from the prover;
+\item When an oracle associated with a polynomial $f_i(X)$ is queried on a point
+  $z_j \in \FF$, the oracle responds with the value $f_i(z_j)$; 
+\item $\verifier$ sends challenges $\alpha_k \in \FF$ to $\prover$;
+\item $\verifier$ is public coin.
+\end{itemize}
 \end{definition}
 
+\michals{28.04}{Add preprocessing and zero knowledge}
+
+\begin{definition}[Witness encoding PIOP (WEPIOP)]
+  We say that a PIOP $\PS$ is \emph{witness encoding} if there is a pair of
+  function $\decode$ such that for any $(\inp, \wit) \in \REL$ and polynomials
+  $f_1, \ldots, f_\noofp$ sent by an honest prover,
+  $\decode(f_1, \ldots, f_\noofp) = \wit$.
+\end{definition}
+In other words, PIOP is witness encoding if for any valid proof for a statement
+$\inp$ in the language, the corresponding witness can be read from the
+polynomial coefficients. We note that this is the case for virtually all
+PIOPs. \michals{28.04}{Check!}]
+
+\begin{definition}[Ordered WEPIOP]
+  We say that a WEPIOP $\PS$ is \emph{ordered} if a proof for a statement
+  $\inp$, and witness $\wit$ can be divided into the following stages
+  \begin{description}
+  \item[Witness encoding phase] where the prover sends polynomials $f_1, \ldots,
+    f_{\noofp'}$ which encode the witness. 
+  \item[Challenge phase]  where the verifier either
+    \begin{itemize}
+    \item sends its challenges which are answered by the prover by uploading
+      polynomials $f_{\noofp'}, \ldots, f_{\noofp}$ such that $f_1, \ldots
+      f_{\noofp}$ are determined using previously uploaded polynomials and
+      verifier's challenges and queries; and / or
+    \item the verifier submits its queries to the polynomial oracles
+      $\oracleo(f_1), \ldots, \oracleo(f_\noofp)$.
+    \end{itemize}
+  \end{description}
+  Furthermore, the verifier queries all witness-encoding polynomials.
+\end{definition}
+
+\begin{lemma}
+  Ordered WEPIOP has unique-response property after witness-encoding phase.
+\end{lemma}
+\begin{proof}
+  
+\end{proof}
+
 \section{SE PoK from SE PC}
+\subsection{Result for polynomial IOPs}
+\michals{28.04}{One thing is to show that using FS gives simulation
+  extractability of a polynomial IOP, another is to show that a compiler (using
+  commitments instead of polynomial oracles) preserves this property.}
+\begin{lemma}
+  Let $\PS$ be a zero-knowledge WEPIOP proof system and $\PS_\fs$ be the same system after
+  applying Fiat--Shamir transform. Then $\PS_{\fs}$ is simulation-extractable.
+\end{lemma}
+\begin{proof}
+  
+\end{proof}
+
+\subsection{Result for polynomial protocols}
 \begin{lemma}
   Let $\PCOM$ be a simulation extractable polynomial commitment scheme. Let
   $\PS$ be a zero-knowledge polynomial proof system such that no adversary (even
@@ -546,4 +614,8 @@ success. More precisely, \hl{continue}
   polynomial commitment scheme extractor for $\adv$. We build a $\PS$ extractor
   $\extps_\adv$ using $\extpcom_\adv$ as a building block.
 \end{proof}
+
+\bibliographystyle{alpha}
+\bibliography{cryptobib/abbrev1,cryptobib/crypto}
+
 \end{document}
