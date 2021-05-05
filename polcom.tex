@@ -520,14 +520,56 @@ PIOPs. \michals{28.04}{Check!}]
   $f_i$. Let $\encset$ be an encoding set. We say that $\PS$ is \emph{somehow
     deterministic} (SD) if for any $(\inp, \wit) \in \REL$, polynomials
   $\smallset{f_i}_{i \in [\noofp]}$ send by the prover, and encoding set
-  $\encset \neq [\noofp]$ each polynomial``
+  $\encset \neq [\noofp]$ each polynomial
   $f_j \in \smallset{f_i}_{i \in [\noofp] \setminus \encset}$ is determined by
   \begin{itemize}
     \item polynomials $F_j$, and
-    \item the verifier's challenges $A_i$%, and
-    %\item the witness $\wit$.
+    \item the verifier's challenges $A_i$, and
+    \item the witness $\wit$.
   \end{itemize}
 \end{definition}
+Intuitively, we say that WEPIOP is somehow deterministic if the only
+non-deterministic messages send by the prover are polynomials encoding the
+witness, and all other messages are determined by the previous one, witness, and
+verifier's challenges.
+
+\begin{lemma}
+  Let $\PS = (\PS.\prover, \PS.\verifier)$ be a PIOP with soundness error
+  $\epss$ where the prover sends up to $\noofp$ polynomials. Let $\PCOM$ be a
+  knowledge polynomial commitment scheme with extraction error $\epsk$. Let
+  $\PSc = (\PSc.\prover, \PSc.\verifier)$ be a proof system such that
+  \begin{description}
+  \item[$\PSc.\prover$] acts as $\PS.\prover$, except
+    \begin{itemize}
+    \item when $\PS.\prover$ sends a polynomial $f$ to the polynomial oracle,
+      $\PSc.\prover$ sends commitment $c = \com(f)$;
+    \item when $\PSc.\verifier$ asks $\PSc.\prover$ to open a commitment
+      $c = \com(f)$ at $z$ it returns $f(z)$.
+  \end{itemize}
+  \item[$\PSc.\verifier$] acts as $\PS.\verifier$, except when $\PS.\verifier$
+    asks oracle $\oracleo(f)$ for an evaluation of $f$ at $z$, $\PSc.\verifier$
+    sends $z$ to $\PSc.\prover$ and gets $f(z)$ in return.
+  \end{description}
+  Then $\PSc$ is sound with soundness error at most $\epss + \noofp \cdot \epsk$.
+\end{lemma}
+\begin{proof}
+  Let $\adv$ be an adversary that breaks soundness of $\PSc$ with probability
+  greater than $\epss + \noofp \cdot \epsk$. We build $\bdv$ that breaks
+  soundness of $\PS$ with probability greater than $\epss$.
+
+  $\bdv$ starts by picking an SRS $\srs$ for the polynomial commitment scheme
+  $\kgen$ and provides $\srs$ to $\adv$. Each time $\adv$ sends a commitment
+  $c$, then $\bdv$ uses the extractor $\ext$ to extract polynomial $f$ from $c$
+  and sends $f$ to the newly set oracle $\oracleo(f)$.  \michals{5.5}{how much
+    we can generalize here? I.e.~could we have a single proof that would cover
+    algebraic adversaries that returns with $c$ also a vector of group elements'
+    logarithms; or commitment schemes where there is an extraction key $k$
+    allowing to extract $f$ from $c$?}  Each time $\PS.\verifier$ sends a
+  challenge $\alpha$, $\bdv$ passes $\alpha$ to $\adv$ as $\PSc.\verifier$'s
+  challenge and sends $\adv$'s response back to $\PS.\verifier$. Eventually,
+  $\adv$ finalizes its proof. \michals{5.5}{why the $\adv$'s proof breaks
+    soundness of $\PS$?}
+\end{proof}
 
 \section{SE PoK from SE PC}
 \subsection{Result for polynomial IOPs}
