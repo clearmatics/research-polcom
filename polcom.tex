@@ -476,41 +476,58 @@ $\simulator_\td$.
 \michals{28.04}{Add preprocessing and zero knowledge}
 
 \begin{definition}[Witness encoding PIOP (WEPIOP)]
-  We say that a PIOP $\PS$ is \emph{witness encoding} if there is a pair of
-  function $\decode$ such that for any $(\inp, \wit) \in \REL$ and polynomials
-  $f_1, \ldots, f_\noofp$ sent by an honest prover,
-  $\decode(f_1, \ldots, f_\noofp) = \wit$.
+  Let $\PS$ be a PIOP.  We say that $\PS$ is \emph{witness encoding} if there is
+  a function $\decode$ and set $\encset \in [\noofp]$ such that for any
+  $(\inp, \wit) \in \REL$ and polynomials $\smallset{f_i}_{i \in [\noofp]}$ sent by an
+  honest prover, $\decode(\smallset{f_i}_{i \in \encset}) = \wit$. We call $\encset$ the
+  \emph{encoding set}.
 \end{definition}
 In other words, PIOP is witness encoding if for any valid proof for a statement
 $\inp$ in the language, the corresponding witness can be read from the
 polynomial coefficients. We note that this is the case for virtually all
 PIOPs. \michals{28.04}{Check!}]
 
-\begin{definition}[Ordered WEPIOP]
-  We say that a WEPIOP $\PS$ is \emph{ordered} if a proof for a statement
-  $\inp$, and witness $\wit$ can be divided into the following stages
-  \begin{description}
-  \item[Witness encoding phase] where the prover sends polynomials $f_1, \ldots,
-    f_{\noofp'}$ which encode the witness. 
-  \item[Challenge phase]  where the verifier either
-    \begin{itemize}
-    \item sends its challenges which are answered by the prover by uploading
-      polynomials $f_{\noofp'}, \ldots, f_{\noofp}$ such that $f_1, \ldots
-      f_{\noofp}$ are determined using previously uploaded polynomials and
-      verifier's challenges and queries; and / or
-    \item the verifier submits its queries to the polynomial oracles
-      $\oracleo(f_1), \ldots, \oracleo(f_\noofp)$.
-    \end{itemize}
-  \end{description}
-  Furthermore, the verifier queries all witness-encoding polynomials.
-\end{definition}
+% \begin{definition}[Ordered WEPIOP]
+%   We say that a WEPIOP $\PS$ is \emph{ordered} if a proof for a statement
+%   $\inp$, and witness $\wit$ can be divided into the following stages
+%   \begin{description}
+%   \item[Witness encoding phase] where the prover sends polynomials $f_1, \ldots,
+%     f_{\noofp'}$ which encode the witness. 
+%   \item[Challenge phase]  where the verifier either
+%     \begin{itemize}
+%     \item sends its challenges which are answered by the prover by uploading
+%       polynomials $f_{\noofp'}, \ldots, f_{\noofp}$ such that $f_1, \ldots
+%       f_{\noofp}$ are determined using previously uploaded polynomials and
+%       verifier's challenges and queries; and / or
+%     \item the verifier submits its queries to the polynomial oracles
+%       $\oracleo(f_1), \ldots, \oracleo(f_\noofp)$.
+%     \end{itemize}
+%   \end{description}
+%   Furthermore, the verifier queries all witness-encoding polynomials.
+% \end{definition}
 
-\begin{lemma}
-  Ordered WEPIOP has unique-response property after witness-encoding phase.
-\end{lemma}
-\begin{proof}
+% \begin{lemma}
+%   Ordered WEPIOP has unique-response property after witness-encoding phase.
+% \end{lemma}
+% \begin{proof}
   
-\end{proof}
+% \end{proof}
+
+\begin{definition}[Somehow deterministic WEPIOP]
+  Let $\PS$ be a WEPIOP for $\REL$. For each polynomial $f_i$ sent by the prover
+  denote by $A_i$ the set of challenges sent by the verifier and by $F_i$ the
+  set of polynomials sent by the prover \emph{before} the prover sends
+  $f_i$. Let $\encset$ be an encoding set. We say that $\PS$ is \emph{somehow
+    deterministic} (SD) if for any $(\inp, \wit) \in \REL$, polynomials
+  $\smallset{f_i}_{i \in [\noofp]}$ send by the prover, and encoding set
+  $\encset \neq [\noofp]$ each polynomial``
+  $f_j \in \smallset{f_i}_{i \in [\noofp] \setminus \encset}$ is determined by
+  \begin{itemize}
+    \item polynomials $F_j$, and
+    \item the verifier's challenges $A_i$%, and
+    %\item the witness $\wit$.
+  \end{itemize}
+\end{definition}
 
 \section{SE PoK from SE PC}
 \subsection{Result for polynomial IOPs}
