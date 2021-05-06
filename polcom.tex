@@ -71,7 +71,7 @@ determines the maximal degree of the committed polynomial. We assume that
 $\maxdeg$ can be read from the output SRS.
 %
 % We require $\PCOM$ to have the following properties:
-\begin{figure}[t!]
+\begin{figure}
 	\begin{pcvstack}[center,boxed]
 		\begin{pchstack}
 			\procedure{$\kgen(\secparam, \maxdeg)$}
@@ -138,8 +138,6 @@ $\maxdeg$ can be read from the output SRS.
             0}^{\multconstr}},\\
         \pcind \gtwo{\smallset{\chi^i, \alpha \chi^i}_{i =
             -\multconstr}^{\multconstr}}, \gtar{\alpha}\\
-				%\markulf{03.11.2020}{} \\
-			%	\hphantom{\pcind \p{o}_i(X) \gets \sum_{j = 1}^{t_i} \gamma_i^{j - 1} \frac{\p{f}_{i,j}(X) - \p{f}_{i, j}(z_i)}{X - z_i}}
 				\hphantom{\hspace*{5.5cm}}	
 		}
 			
@@ -500,7 +498,7 @@ PIOPs. \michals{28.04}{Check!}]
 %       f_{\noofp}$ are determined using previously uploaded polynomials and
 %       verifier's challenges and queries; and / or
 %     \item the verifier submits its queries to the polynomial oracles
-%       $\oracleo(f_1), \ldots, \oracleo(f_\noofp)$.
+%       $\oracleo_{f_1}, \ldots, \oracleo_{f_\noofp}$.
 %     \end{itemize}
 %   \end{description}
 %   Furthermore, the verifier queries all witness-encoding polynomials.
@@ -534,41 +532,60 @@ witness, and all other messages are determined by the previous one, witness, and
 verifier's challenges.
 
 \begin{lemma}
-  Let $\PS = (\PS.\prover, \PS.\verifier)$ be a PIOP with soundness error
-  $\epss$ where the prover sends up to $\noofp$ polynomials. Let $\PCOM$ be a
-  knowledge polynomial commitment scheme with extraction error $\epsk$. Let
+  Let $\PS = (\PS.\prover, \PS.\verifier)$ be a PIOP with knowledge soundness error
+  $\epsks$ where the prover sends up to $\noofp$ polynomials. Let $\PCOM$ be a
+  knowledge polynomial commitment scheme with extraction error $\epsext$. Let
   $\PSc = (\PSc.\prover, \PSc.\verifier)$ be a proof system such that
   \begin{description}
   \item[$\PSc.\prover$] acts as $\PS.\prover$, except
     \begin{itemize}
-    \item when $\PS.\prover$ sends a polynomial $f$ to the polynomial oracle,
+    \item when $\PS.\prover$ sets up a polynomial oracle $\oracleo_f$,
       $\PSc.\prover$ sends commitment $c = \com(f)$;
     \item when $\PSc.\verifier$ asks $\PSc.\prover$ to open a commitment
       $c = \com(f)$ at $z$ it returns $f(z)$.
   \end{itemize}
   \item[$\PSc.\verifier$] acts as $\PS.\verifier$, except when $\PS.\verifier$
-    asks oracle $\oracleo(f)$ for an evaluation of $f$ at $z$, $\PSc.\verifier$
+    asks oracle $\oracleo_f$ for an evaluation of $f$ at $z$, $\PSc.\verifier$
     sends $z$ to $\PSc.\prover$ and gets $f(z)$ in return.
   \end{description}
-  Then $\PSc$ is sound with soundness error at most $\epss + \noofp \cdot \epsk$.
+  Then $\PSc$ is sound with soundness error at most $\epsks + \noofp \cdot \epsext$.
 \end{lemma}
 \begin{proof}
-  Let $\adv$ be an adversary that breaks soundness of $\PSc$ with probability
-  greater than $\epss + \noofp \cdot \epsk$. We build $\bdv$ that breaks
-  soundness of $\PS$ with probability greater than $\epss$.
+  Let $\adv$ be an adversary that breaks knowledge soundness of $\PSc$ with
+  probability $\eps$ greater than $\epsks + \noofp \cdot \epsext$. We build
+  $\bdv$ that breaks knowledge soundness of $\PS$ with probability greater than
+  $\epsks$.
 
   $\bdv$ starts by picking an SRS $\srs$ for the polynomial commitment scheme
-  $\kgen$ and provides $\srs$ to $\adv$. Each time $\adv$ sends a commitment
-  $c$, then $\bdv$ uses the extractor $\ext$ to extract polynomial $f$ from $c$
-  and sends $f$ to the newly set oracle $\oracleo(f)$.  \michals{5.5}{how much
-    we can generalize here? I.e.~could we have a single proof that would cover
+  $\PCOM$ and provides $\srs$ to $\adv$. Let $\inp$ be the instance $\adv$
+  creates a fraudulent proof for. Each time $\adv$ sends a commitment $c$, then
+  $\bdv$ uses the extractor $\ext$ to extract polynomial $f$ from $c$ and sends
+  $f$ to the newly set oracle $\oracleo_f$.  \michals{5.5}{how much we can
+    generalize here?  I.e.~could we have a single proof that would cover
     algebraic adversaries that returns with $c$ also a vector of group elements'
     logarithms; or commitment schemes where there is an extraction key $k$
     allowing to extract $f$ from $c$?}  Each time $\PS.\verifier$ sends a
   challenge $\alpha$, $\bdv$ passes $\alpha$ to $\adv$ as $\PSc.\verifier$'s
   challenge and sends $\adv$'s response back to $\PS.\verifier$. Eventually,
-  $\adv$ finalizes its proof. \michals{5.5}{why the $\adv$'s proof breaks
-    soundness of $\PS$?}
+  $\adv$ finalizes its proof for $\inp$. Note that if $\PSc.\verifier$ accepts
+  the proof provided by $\adv$, then $\PS.\verifier$ accepts the proof provided
+  by $\bdv$. Probability that $\bdv$ \emph{fails} is upper-bounded by two
+  events. One is that $\adv$ fails to provide a convincing proof such that no
+  extractor can output a corresponding witness. Probability of this event is
+  upper-bounded by $(1 - \eps)$. Furthermore, $\bdv$ may fail to extract some
+  of the polynomials which $\adv$ made commitments for. Since $\adv$ commits to
+  $\noofp$ polynomials and $\bdv$ fails to extract each of them with probability
+  at most $\epsext$, by the union bound $\bdv$ fails to extract \emph{some} of
+  the polynomials with probability upper-bounded by $\noofp \cdot
+  \epsext$. Hence the probability of $\bdv$'s failure is upper-bounded by
+  \[
+    (1 - \eps) + \noofp \cdot \epsext.
+  \]
+  Hence, for $\eps > \epsks + \noofp \cdot \epsext$ adversary $\bdv$ wins with probability at least
+  \[
+    \epsks + \noofp \cdot \epsext - \noofp \cdot \epsext  = \epsks.
+  \]
+  \qed
 \end{proof}
 
 \section{SE PoK from SE PC}
