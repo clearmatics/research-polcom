@@ -281,41 +281,41 @@ verifier's challenges.
   Then $\PSc$ is sound with soundness error at most $\epsks + \noofp \cdot \epsext$.
 \end{lemma}
 \begin{proof}
-  Let $\adv$ be an adversary that breaks knowledge soundness of $\PSc$ with
-  probability $\eps$ greater than $\epsks + \noofp \cdot \epsext$. We build
-  $\bdv$ that breaks knowledge soundness of $\PS$ with probability greater than
-  $\epsks$.
+  % Let $\adv$ be an adversary that breaks knowledge soundness of $\PSc$ with
+  % probability $\eps$ greater than $\epsks + \noofp \cdot \epsext$. We build
+  % $\bdv$ that breaks knowledge soundness of $\PS$ with probability greater than
+  % $\epsks$.
 
-  $\bdv$ starts by picking an SRS $\srs$ for the polynomial commitment scheme
-  $\PCOM$ and provides $\srs$ to $\adv$. Let $\inp$ be the instance $\adv$
-  creates a fraudulent proof for. Each time $\adv$ sends a commitment $c$, then
-  $\bdv$ uses the extractor $\ext$ to extract polynomial $f$ from $c$ and sends
-  $f$ to the newly set oracle $\oracleo_f$.  \michals{5.5}{how much we can
-    generalize here?  I.e.~could we have a single proof that would cover
-    algebraic adversaries that returns with $c$ also a vector of group elements'
-    logarithms; or commitment schemes where there is an extraction key $k$
-    allowing to extract $f$ from $c$?}  Each time $\PS.\verifier$ sends a
-  challenge $\alpha$, $\bdv$ passes $\alpha$ to $\adv$ as $\PSc.\verifier$'s
-  challenge and sends $\adv$'s response back to $\PS.\verifier$. Eventually,
-  $\adv$ finalizes its proof for $\inp$. Note that if $\PSc.\verifier$ accepts
-  the proof provided by $\adv$, then $\PS.\verifier$ accepts the proof provided
-  by $\bdv$. Probability that $\bdv$ \emph{fails} is upper-bounded by two
-  events. One is that $\adv$ fails to provide a convincing proof such that no
-  extractor can output a corresponding witness. Probability of this event is
-  upper-bounded by $(1 - \eps)$. Furthermore, $\bdv$ may fail to extract some
-  of the polynomials which $\adv$ made commitments for. Since $\adv$ commits to
-  $\noofp$ polynomials and $\bdv$ fails to extract each of them with probability
-  at most $\epsext$, by the union bound $\bdv$ fails to extract \emph{some} of
-  the polynomials with probability upper-bounded by $\noofp \cdot
-  \epsext$. Hence the probability of $\bdv$'s failure is upper-bounded by
-  \[
-    (1 - \eps) + \noofp \cdot \epsext.
-  \]
-  Hence, for $\eps > \epsks + \noofp \cdot \epsext$ adversary $\bdv$ wins with probability at least
-  \[
-    \epsks + \noofp \cdot \epsext - \noofp \cdot \epsext  = \epsks.
-  \]
-  \qed
+  % $\bdv$ starts by picking an SRS $\srs$ for the polynomial commitment scheme
+  % $\PCOM$ and provides $\srs$ to $\adv$. Let $\inp$ be the instance $\adv$
+  % creates a fraudulent proof for. Each time $\adv$ sends a commitment $c$, then
+  % $\bdv$ uses the extractor $\ext$ to extract polynomial $f$ from $c$ and sends
+  % $f$ to the newly set oracle $\oracleo_f$.  \michals{5.5}{how much we can
+  %   generalize here?  I.e.~could we have a single proof that would cover
+  %   algebraic adversaries that returns with $c$ also a vector of group elements'
+  %   logarithms; or commitment schemes where there is an extraction key $k$
+  %   allowing to extract $f$ from $c$?}  Each time $\PS.\verifier$ sends a
+  % challenge $\alpha$, $\bdv$ passes $\alpha$ to $\adv$ as $\PSc.\verifier$'s
+  % challenge and sends $\adv$'s response back to $\PS.\verifier$. Eventually,
+  % $\adv$ finalizes its proof for $\inp$. Note that if $\PSc.\verifier$ accepts
+  % the proof provided by $\adv$, then $\PS.\verifier$ accepts the proof provided
+  % by $\bdv$. Probability that $\bdv$ \emph{fails} is upper-bounded by two
+  % events. One is that $\adv$ fails to provide a convincing proof such that no
+  % extractor can output a corresponding witness. Probability of this event is
+  % upper-bounded by $(1 - \eps)$. Furthermore, $\bdv$ may fail to extract some
+  % of the polynomials which $\adv$ made commitments for. Since $\adv$ commits to
+  % $\noofp$ polynomials and $\bdv$ fails to extract each of them with probability
+  % at most $\epsext$, by the union bound $\bdv$ fails to extract \emph{some} of
+  % the polynomials with probability upper-bounded by $\noofp \cdot
+  % \epsext$. Hence the probability of $\bdv$'s failure is upper-bounded by
+  % \[
+  %   (1 - \eps) + \noofp \cdot \epsext.
+  % \]
+  % Hence, for $\eps > \epsks + \noofp \cdot \epsext$ adversary $\bdv$ wins with probability at least
+  % \[
+  %   \epsks + \noofp \cdot \epsext - \noofp \cdot \epsext  = \epsks.
+  % \]
+  % \qed
 \end{proof}
 
 
