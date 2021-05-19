@@ -76,6 +76,8 @@
     simulation extractability, nor subversion zero knowledge have been defined
     for a polynomial commitment scheme. Another contribution of the paper is
     defining these properties. 
+  \item Similarly, there is no definition for SRS-updatable simulation
+    extractable NIZKs.
   \item The polynomial IOP is defined very generally, cf.~\cref{def:piop}, what
     makes showing generic properties difficult. The paper would propose tighter
     definitions which would emphasize more the structure of PIOP,
@@ -171,9 +173,9 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
     $(f, c)$ to list $Q$; Optionally the oracle may be queried on a pair
     $(\msg{rand}, d)$ instead of $f$. In that case the oracle picks a random
     polynomial of degree $d$ and outputs its commitment.
-  \item[ $(\msg{evaluate}, c, x)$:] returns $f(x)$ where $f$ is a polynomial
+  \item[$(\msg{evaluate}, c, x)$:] returns $f(x)$ where $f$ is a polynomial
     which commitment is $c$ and $(f, c) \in Q$
-  \item $(\msg{open}, c, x, y)$ returns an opening assuring that for a
+  \item[$(\msg{open}, c, x, y)$:] returns an opening assuring that for a
     polynomial $f$, such that $c = \com(f)$, $f(x) = y$. If $c$ is not a
     commitment output by the oracle or $f(x) \neq y$, then ignore.
   \end{description}
