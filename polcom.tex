@@ -2,11 +2,13 @@
 % \let\accentvec\vec              
 \documentclass[runningheads,11pt]{llncs}
 %\let\spvec\vec \let\vec\accentvec
+\newcommand\hmmax{0}
+\newcommand\bmmax{0}
 
 \usepackage{amssymb,amsmath}
 %\let\vec\spvec
 %\usepackage{lmodern}
-
+\usepackage{newtxmath,newtxtext}
 \usepackage[T1]{fontenc}
 % \def\vec#1{\mathchoice{\mbox{\mathbf$\displaystyle#1$}}
 % {\mbox{\mathbf$\textstyle#1$}} {\mbox{\mathbf$\scriptstyle#1$}}
@@ -39,7 +41,7 @@
 \usepackage{dashbox}
 \newcommand\dboxed[1]{\dbox{\ensuremath{#1}}}
 
-\usepackage{mathptmx}
+%\usepackage{mathptmx}
 
 \include{macros}
 
