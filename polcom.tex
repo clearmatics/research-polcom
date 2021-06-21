@@ -282,7 +282,8 @@ verifier's challenges.
     \item when $\PS.\prover$ sets up a polynomial oracle $\oracleo_f$,
       $\PSc.\prover$ sends commitment $c = \com(f)$;
     \item when $\PSc.\verifier$ asks $\PSc.\prover$ to open a commitment
-      $c = \com(f)$ at $z$ it returns $f(z)$.
+      $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
+      the opening.
   \end{itemize}
   \item[$\PSc.\verifier$] acts as $\PS.\verifier$, except when $\PS.\verifier$
     asks oracle $\oracleo_f$ for an evaluation of $f$ at $z$, $\PSc.\verifier$
@@ -292,32 +293,50 @@ verifier's challenges.
 \end{lemma}
 \begin{proof}
   Let $\adv$ be an adversary that breaks knowledge soundness of $\PSc$ with
-  probability $\eps$ greater than $\epsks + \noofp \cdot \epsext$. We build
+  probability $\eps$ greater than $\epsks + \noofp \cdot \epsext$.  We build
   $\bdv$ that breaks knowledge soundness of $\PS$ with probability greater than
-  $\epsks$.
+  $\epsks$. More precisely, let $\ext_\adv$ be an extractor for $\adv$ and
+  $\ext_\bdv$ be an extractor for $\bdv$. We show that if $\adv$ produces an
+  instance and proof such that $\ext_\adv$ fails to extract the corresponding
+  witness, then $\bdv$ produces an instance and proof that $\ext_\bdv$ fails as well.
 
   $\bdv$ starts by picking an SRS $\srs$ for the polynomial commitment scheme
-  $\PCOM$ and provides $\srs$ to $\adv$. Let $\inp$ be the instance $\adv$
-  creates a fraudulent proof for. Each time $\adv$ sends a commitment $c$, then
-  $\bdv$ uses the extractor $\ext$ to extract polynomial $f$ from $c$ and sends
-  $f$ to the newly set oracle $\oracleo_f$.  \michals{5.5}{how much we can
-    generalize here?  I.e.~could we have a single proof that would cover
-    algebraic adversaries that returns with $c$ also a vector of group elements'
-    logarithms; or commitment schemes where there is an extraction key $k$
-    allowing to extract $f$ from $c$?}  Each time $\PS.\verifier$ sends a
-  challenge $\alpha$, $\bdv$ passes $\alpha$ to $\adv$ as $\PSc.\verifier$'s
-  challenge and sends $\adv$'s response back to $\PS.\verifier$. Eventually,
-  $\adv$ finalizes its proof for $\inp$. Note that if $\PSc.\verifier$ accepts
-  the proof provided by $\adv$, then $\PS.\verifier$ accepts the proof provided
-  by $\bdv$. Probability that $\bdv$ \emph{fails} is upper-bounded by two
-  events. One is that $\adv$ fails to provide a convincing proof such that no
-  extractor can output a corresponding witness. Probability of this event is
-  upper-bounded by $(1 - \eps)$. Furthermore, $\bdv$ may fail to extract some
-  of the polynomials which $\adv$ made commitments for. Since $\adv$ commits to
-  $\noofp$ polynomials and $\bdv$ fails to extract each of them with probability
-  at most $\epsext$, by the union bound $\bdv$ fails to extract \emph{some} of
-  the polynomials with probability upper-bounded by $\noofp \cdot
-  \epsext$.
+  $\PCOM$ and provides $\srs$ to $\adv$. Let $\ext^{\PCOM}_\adv$ be a polynomial
+  commitment extractor for $\adv$ that for any commitment $c$ produced by $\adv$
+  outputs polynomial $f$ such that $c \in \image(\com(f))$, except with
+  probability $\epsext$.  Let $\inp$ be the instance $\adv$ creates a proof
+  for. Each time $\adv$ sends a commitment $c$, $\bdv$ uses $\ext^{\PCOM}_\adv$
+  to extract polynomial $f$ from $c$ and sends $f$ to a newly set oracle
+  $\oracleo_f$.  \michals{5.5}{how much we can generalize here?  I.e.~could we
+    have a single proof that would cover algebraic adversaries that returns with
+    $c$ also a vector of group elements' logarithms; or commitment schemes where
+    there is an extraction key $k$ allowing to extract $f$ from $c$?}  Each time
+  $\PS.\verifier$ sends a challenge $\alpha$, $\bdv$ passes $\alpha$ to $\adv$
+  as $\PSc.\verifier$'s challenge. Note that $\PS.\verifier$ expects an oracle
+  for some (challenge-dependent) polynomial $f$ as an answer, thus $\adv$
+  replies with a commitment to some polynomial $f'$. $\bdv$ extracts $f'$ and
+  sets a new oracle for it.  When $\PS.\verifier$ queries some oracle
+  $\oracle_f$ at $z$ to learn $f(z)$, $\bdv$ replies with $f(z)$, sends $z$
+  to $\adv$ and gets $y$. If $\adv$ provides $y \neq f(z)$, then $\bdv$ aborts
+  the proof. Importantly, that may happen with probability $\epsev$ only as an
+  acceptable proof from $\adv$ would require breaking evaluation binding
+  property of $\PCOM$. 
+  
+  Eventually, $\adv$ finalizes its proof for $\inp$. Note that
+  if $\PSc.\verifier$ accepts the proof provided by $\adv$, then $\PS.\verifier$
+  accepts the proof provided by $\bdv$.
+
+  Probability that $\bdv$ \emph{fails} is upper-bounded by three events. One is
+  that $\adv$ fails to provide a convincing proof such that $\ext_\adv$ does not
+  output a corresponding witness. Probability of this event is upper-bounded by
+  $(1 - \eps)$. Another is that $\adv$ breaks evaluation binding property of the
+  commitment scheme, since $\verifier$ makes up to $\noefev$ evaluations, that
+  happens with probability at most $\noofev \cdot \epsev$ Furthermore, $\bdv$
+  may fail to extract some of the polynomials which $\adv$ made commitments
+  for. Since $\adv$ commits to $\noofp$ polynomials and $\bdv$ fails to extract
+  each of them with probability at most $\epsext$, by the union bound $\bdv$
+  fails to extract \emph{some} of the polynomials with probability upper-bounded
+  by $\noofp \cdot \epsext$.
 
   Note that if $\adv$ manages to output an instance $\inp$ and proof $\zkproof$
   that extractor $\ext_\adv$ fails to produce a corresponding witness $\wit$,
