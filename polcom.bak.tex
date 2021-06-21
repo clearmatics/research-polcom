@@ -1,0 +1,699 @@
+% !TeX spellcheck = en_UK
+% \let\accentvec\vec              
+\documentclass[runningheads,11pt]{llncs}
+%\let\spvec\vec \let\vec\accentvec
+\newcommand\hmmax{0}
+\newcommand\bmmax{0}
+
+\usepackage{amssymb,amsmath}
+%\let\vec\spvec
+%\usepackage{lmodern}
+\usepackage{newtxmath,newtxtext}
+\usepackage[T1]{fontenc}
+% \def\vec#1{\mathchoice{\mbox{\mathbf$\displaystyle#1$}}
+% {\mbox{\mathbf$\textstyle#1$}} {\mbox{\mathbf$\scriptstyle#1$}}
+% {\mbox{\mathbf$\scriptscriptstyle#1$}}}
+
+\DeclareFontFamily{U}{mathx}{\hyphenchar\font45}
+\DeclareFontShape{U}{mathx}{m}{n}{<-> mathx10}{}
+\DeclareSymbolFont{mathx}{U}{mathx}{m}{n}
+\DeclareMathAccent{\widebar}{0}{mathx}{"73}
+
+\usepackage{soulutf8} \soulregister\cite7 \soulregister\ref7
+\soulregister\pageref7 \usepackage{hyperref}
+\usepackage[color=yellow]{todonotes} \hypersetup{final} \usepackage{mathrsfs}
+\usepackage[advantage,asymptotics,adversary,sets,keys,ff,lambda,primitives,events,operators,probability,logic,mm,complexity]{cryptocode}
+%\pcbodylinesep=0.15\baselineskip % MK: got an undefined control sequence error
+
+
+\usepackage{cite} 
+\usepackage{booktabs}
+\usepackage{paralist}
+\usepackage[innerleftmargin=5pt,innerrightmargin=5pt]{mdframed}
+%\usepackage{setspace}
+\usepackage{caption}
+\captionsetup{belowskip=0pt}
+\usepackage{bm}
+\usepackage{url}
+\usepackage{dirtytalk}
+\usepackage[margin=0.7in,a4paper]{geometry}
+\usepackage[normalem]{ulem}
+\usepackage{dashbox}
+\newcommand\dboxed[1]{\dbox{\ensuremath{#1}}}
+
+%\usepackage{mathptmx}
+
+\include{macros}
+
+\title{On Simulation-Extractability of Polynomial Commitments}
+
+\author{Michał Zając\inst{1}} 
+%\iflncs{
+\institute{Clearmatics, London, UK \\
+\email{m.p.zajac@gmail.com}} 
+
+\allowdisplaybreaks
+
+\begin{document} \sloppy \maketitle
+
+\begin{abstract} 
+\end{abstract}
+
+\section{Introduction}
+\section{Preliminaries}
+\subsection{Polynomial commitment scheme}
+\subsection{Polynomial commitment.}
+\label{sec:poly_com}
+In the polynomial commitment scheme $\PCOM = (\kgen, \com, \open, \verify)$ the
+committer $\committer$ can convince the receiver $\receiver$ that some
+polynomial $\p{f}$ which $\committer$ committed to evaluates to $s$ at some
+point $z$ chosen by $\receiver$.  The key generation algorithm $\kgen$ takes as
+input a security parameter $\secparam$ and a parameter $\maxdeg$ which
+determines the maximal degree of the committed polynomial. We assume that
+$\maxdeg$ can be read from the output SRS.
+%
+% We require $\PCOM$ to have the following properties:
+\begin{figure}
+	\begin{pcvstack}[center,boxed]
+		\begin{pchstack}
+			\procedure{$\kgen(\secparam, \maxdeg)$}
+			{
+			\chi \sample \FF^2_p \\ [\myskip]
+			\pcreturn \gone{1, \ldots, \chi^{\numberofconstrains + 2}}, \gtwo{\chi}\\ [\myskip]
+				\hphantom{\hspace*{5.5cm}}	
+        %\hphantom{\pcind \p{o}_i(X) \gets \sum_{j = 1}^{t_i} \gamma_i^{j - 1}
+        %\frac{\p{f}_{i,j}(X) - \p{f}_{i, j}(z_i)}{X - z_i}}
+      }
+			
+			\pchspace
+			
+			\procedure{$\com(\srs, \vec{\p{f}}(X))$}
+			{ 
+				\pcreturn \gone{\vec{c}} = \gone{\vec{\p{f}}(\chi)}\\ [\myskip]
+				\hphantom{\pcind \pcif 
+					\sum_{i = 1}^{\abs{\vec{z}}} r_i \cdot \gone{\sum_{j = 1}^{t_j}
+					\gamma_i^{j - 1} c_{i, j} - \sum{j = 1}^{t_j} s_{i, j}} \bullet
+				\gtwo{1} + }
+			}
+		\end{pchstack}
+		% \pcvspace
+    
+		\begin{pchstack}
+			\procedure{$\open(\srs, \vec{\gamma}, \vec{z}, \vec{s}, \vec{\p{f}}(X))$}
+			{
+			\pcfor i \in \range{1}{\abs{\vec{z}}} \pcdo\\ [\myskip]
+      \pcind \p{o}_i(X) \gets \sum_{j = 1}^{t_i} \gamma_i^{j - 1}
+      \frac{\p{f}_{i,j}(X) - \p{f}_{i, j}(z_i)}{X - z_i}\\ [\myskip] \pcreturn
+      \vec{o} = \gone{\vec{\p{o}}(\chi)}\\ [\myskip]
+				\hphantom{\hspace*{5.5cm}}	
+			}
+			
+			\pchspace
+			
+			\procedure{$\verify(\srs, \gone{c}, \vec{z}, \vec{s}, \gone{\p{o}(\chi)})$}
+			{
+				\vec{r} \gets \FF_p^{\abs{\vec{z}}}\\ [\myskip]
+				\pcfor i \in \range{1}{\abs{\vec{z}}} \pcdo \\ [\myskip]
+				\pcind \pcif 
+          \sum_{i = 1}^{\abs{\vec{z}}} r_i \cdot \gone{\sum_{j = 1}^{t_j}
+          \gamma_i^{j - 1} c_{i, j} - \sum{j = 1}^{t_j} s_{i, j}} \bullet
+          \gtwo{1} + \\ [\myskip] \pcind \sum_{i = 1}^{\abs{\vec{z}}} r_i z_i
+          o_i
+          \bullet \gtwo{1} \neq \gone{- \sum_{i = 1}^{\abs{\vec{z}}} r_i o_i }
+          \bullet \gtwo{\chi} \pcthen  \\
+					\pcind \pcreturn 0\\ [\myskip]
+					\pcreturn 1.
+			}
+		\end{pchstack}
+	\end{pcvstack}
+	\caption{$\PCOMp$ polynomial commitment scheme.}
+	\label{fig:pcomp}
+  \end{figure}
+
+\begin{figure}[t!]
+	\begin{pcvstack}[center,boxed]
+		\begin{pchstack}
+			\procedure{$\kgen(\secparam, \maxdeg)$} {
+				\alpha, \chi \sample \FF^2_p \\ [\myskip]
+				\pcreturn \gone{\smallset{\chi^i}_{i = -\multconstr}^{\multconstr},
+          \smallset{\alpha \chi^i}_{i = -\multconstr, i \neq
+            0}^{\multconstr}},\\
+        \pcind \gtwo{\smallset{\chi^i, \alpha \chi^i}_{i =
+            -\multconstr}^{\multconstr}}, \gtar{\alpha}\\
+				\hphantom{\hspace*{5.5cm}}	
+		}
+			
+			\pchspace
+			
+			\procedure{$\com(\srs, \maxconst, \p{f}(X))$} {
+				\p{c}(X) \gets \alpha \cdot X^{\dconst - \maxconst} \p{f}(X) \\ [\myskip]
+				\pcreturn \gone{c} = \gone{\p{c}(\chi)}\\ [\myskip]
+				\hphantom{\pcind \pcif \sum_{i = 1}^{\abs{\vec{z}}} r_i \cdot
+          \gone{\sum_{j = 1}^{t_j} \gamma_i^{j - 1} c_{i, j} - \sum{j = 1}^{t_j}
+            s_{i, j}} \bullet \gtwo{1} + } }
+		\end{pchstack}
+		% \pcvspace
+    
+		\begin{pchstack}
+			\procedure{$\open(\srs, z, s, f(X))$}
+			{
+				\p{o}(X) \gets \frac{\p{f}(X) - \p{f}(z)}{X - z}\\ [\myskip]
+				\pcreturn \gone{\p{o}(\chi)}\\ [\myskip]
+				\hphantom{\hspace*{5.5cm}}	
+			}
+			
+			\pchspace
+			
+			\procedure{$\verify(\srs, \maxconst, \gone{c}, z, s, \gone{\p{o}(\chi)})$}
+      {
+        \pcif \gone{\p{o}(\chi)} \bullet \gtwo{\alpha \chi} + \gone{s - z
+        \p{o}(\chi)} \bullet \gtwo{\alpha} = \\ [\myskip] \pcind \gone{c}
+        \bullet \gtwo{\chi^{- \dconst + \maxconst}} \pcthen  \pcreturn 1\\
+        [\myskip]
+        \rlap{\pcelse \pcreturn 0.} \hphantom{\pcind \pcif \sum_{i =
+            1}^{\abs{\vec{z}}} r_i \cdot \gone{\sum_{j = 1}^{t_j} \gamma_i^{j -
+              1} c_{i, j} - \sum{j = 1}^{t_j} s_{i, j}} \bullet \gtwo{1} + } }
+		\end{pchstack}
+	\end{pcvstack}
+	
+	\caption{$\PCOMs$ polynomial commitment scheme.}
+	\label{fig:pcoms}
+\end{figure}
+  
+We emphasize the following properties of a secure polynomial commitment
+$\PCOM$:
+\begin{description}
+\item[Evaluation binding:] A $\ppt$ adversary $\adv$ which outputs a commitment
+  $\vec{c}$ and evaluation points $\vec{z}$ has at most negligible chances to open
+  the commitment to two different evaluations $\vec{s}, \vec{s'}$. That is, let
+  $k \in \NN$ be the number of committed polynomials, $l \in \NN$ number of
+  evaluation points, $\vec{c} \in \GRP^k$ be the commitments, $\vec{z} \in
+  \FF_p^l$ be the arguments the polynomials are evaluated at, $\vec{s},\vec{s}'
+  \in \FF_p^k$ the evaluations, and $\vec{o},\vec{o}' \in \FF_p^l$ be the
+  commitment openings. Then for every $\ppt$ adversary $\adv$
+	\[
+		\Pr
+			\left[
+			\begin{aligned}
+				& \verify(\srs, \vec{c}, \vec{z}, \vec{s}, \vec{o}) = 1,  \\ 
+				& \verify(\srs, \vec{c}, \vec{z}, \vec{s}', \vec{o}') = 1, \\
+				& \vec{s} \neq \vec{s}'
+			\end{aligned}
+			\,\left|\,\vphantom{\begin{aligned}
+                  & \\
+                  & \\
+                  &
+                \end{aligned}}
+			\begin{aligned}
+				& \srs \gets \kgen(\secparam, \maxdeg),\\
+				& (\vec{c}, \vec{z}, \vec{s}, \vec{s}', \vec{o}, \vec{o}') \gets \adv(\srs)
+			\end{aligned}
+			\right.\right] \leq \negl\,.
+	\]
+
+\end{description}
+	
+% We say that $\PCOM$ has the unique opening property if the following holds:
+% \begin{description}
+% \item[Opening uniqueness:] Let $k \in \NN$ be the number of committed
+%   polynomials, $l \in \NN$ number of evaluation points, $\vec{c} \in \GRP^k$ be
+%   the commitments, $\vec{z} \in \FF_p^l$ be the arguments the polynomials are
+%   evaluated at, $\vec{s} \in \FF_p^k$ the evaluations, and $\vec{o} \in \FF_p^l$
+%   be the commitment openings. Then for every $\ppt$ adversary $\adv$
+% 	\[
+% 		\Pr
+% 			\left[
+% 			\begin{aligned}
+% 				& \verify(\srs, \vec{c}, \vec{z}, \vec{s}, \vec{o}) = 1,  \\ 
+% 				& \verify(\srs, \vec{c}, \vec{z}, \vec{s}, \vec{o'}) = 1, \\
+% 				& \vec{o} \neq \vec{o'}
+% 			\end{aligned}
+% 			\,\left|\, \vphantom{\begin{aligned}
+%                   & \\
+%                   & \\
+%                   &
+%                 \end{aligned}}
+% 			\begin{aligned}
+% 				& \srs \gets \kgen(\secparam, \maxdeg),\\
+% 				& (\vec{c}, \vec{z}, \vec{s}, \vec{o}, \vec{o'}) \gets \adv(\srs)
+% 			\end{aligned}
+% 			\right.\right] \leq \negl\,.
+% 	\]
+% \end{description}
+% Intuitively, opening uniqueness assures that there is only one valid opening
+% for the committed polynomial and given evaluation point.
+
+\begin{description}
+\item[Commitment of knowledge]  For every $\ppt$ adversary $\adv$ who produces
+  commitment $c$, evaluation point $z$, evaluation $s$ and opening $o$ there
+  exists a $\ppt$ extractor $\ext$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & \p{f} = \ext_\adv(\srs, c),\\
+      & c = \com(\srs, \p{f}),\\
+      & \verify(\srs, c, z, s, o) = 1
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & \srs \gets \kgen(\secparam, \maxdeg),\\
+      & (c, z, s, o) \gets \adv(\srs)
+    \end{aligned}
+  \right.\right]
+  \geq 1 - \epsk(\secpar).
+\]
+In that case we say that $\PCOM$ is $\epsk$-knowledge.
+\end{description}
+Intuitively when a commitment scheme is a commitment of knowledge then if an
+adversary produces a (valid) commitment $c$, which it can open, then it also
+knows the underlying polynomial $\p{f}$ which commits to that value.
+
+\begin{definition}[Simulation extractable polynomial commitment]
+  Let $\PCOM$ be a polynomial commitment scheme, let $\oracles$ be a simulator oracle
+  which on input
+  \begin{itemize}
+  \item $(\msg{commit}, f)$ returns commitment $c = \com(f)$ and add $(f, c)$ to
+    list $Q$;
+  \item $(\msg{evaluate}, f, x)$ returns $f(x)$ if there is $c$ such that $(f,
+    c) \in Q$; \michals{23.04}{This is not
+      necessary}
+  \item $(\msg{open}, c, x, y)$ returns an opening assuring that for a
+    polynomial $f$, such that $c = \com(f)$, $f(x) = y$. If $c$ is not a
+    commitment output by the oracle or $f(x) \neq y$, then ignore.
+  \end{itemize}
+  We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
+  adversary $\adv$ with oracle access to $\oracles$ there exists extractor
+  $\ext$ such that
+  \[
+    \Pr\left[
+      \begin{aligned}
+        & (\deg{f} > \maxdeg) \lor\\
+        & (c \not\in \image(\com(f)))
+        \end{aligned}
+        \,\left|\,
+          \begin{aligned}
+          & \pp \sample \sgen(\secparam),
+           \srs \sample \kgen(\pp, \maxdeg),\\
+           & c \gets \adv^{\oracles}(\pp, \srs; r),
+           (\cdot, c) \not\in Q, 
+           f \gets \ext_{\adv}(\secparam, \pp, c, r)
+        \end{aligned}
+      \right.  \right] \leq \negl.
+  \]
+  \michals{23.04}{Can $\ext$ ask $\adv$ to give evaluations of the committed
+    polynomial? That is how $\ext$ in a proof system works -- it evaluates
+    polynomials submitted by the adversary on multiple challenges.}
+  
+\end{definition}
+
+\subsection{Zero knowledge}
+In a zero-knowledge proof system, a prover convinces the verifier of veracity of
+a statement without leaking any other information. The zero-knowledge property
+is proven by constructing a simulator that can simulate the view of a cheating
+verifier without knowing the secret information---witness---of the prover. A
+proof system has to be sound as well, i.e.~for a malicious prover it should be
+infeasible to convince a verifier on a false statement. Here, we focus on proof
+systems that guarantee soundness against $\ppt$ malicious provers.
+
+More precisely, let $\RELGEN(\secparam) = \smallset{\REL}$ be a family of
+$\npol$ relations. Denote by $\LANG_\REL$ the language determined by $\REL$. Let
+$\prover$ and $\verifier$ be $\ppt$ algorithms, the former called \emph{prover}
+and the latter \emph{verifier}. We allow our proof system to have a setup,
+i.e.~there is a $\kgen$ algorithm that takes as input the relation description
+$\REL$ and outputs a common reference string $\srs$. We denote by
+$\ip{\prover(\REL, \srs, \inp, \wit)}{\verifier(\REL, \srs,\inp)}$ a
+\emph{transcript} (also called \emph{proof}) $\zkproof$ of a conversation
+between $\prover$ with input $(\REL, \srs, \inp, \wit)$ and $\verifier$ with
+input $(\REL, \srs, \inp)$. We write
+$\ip{\prover (\REL, \srs, \inp, \wit)}{\verifier(\REL, \srs, \inp)} = 1$ if in
+the end of the transcript the verifier $\verifier$ returns $1$ and say that
+$\verifier$ accepts it. We sometimes abuse notation and write
+$\verifier(\REL, \srs, \inp, \zkproof) = 1$ to denote a fact that $\zkproof$ is
+accepted by the verifier. (This is especially handy when the proof system is
+non-interactive, i.e.~the whole conversation between the prover and verifier
+consists of a single message $\zkproof$ sent by $\prover$).
+
+A proof system $\proofsystem = (\kgen, \prover, \verifier, \simulator)$ for $\RELGEN$ is required to have three properties: completeness, soundness and zero knowledge, which are defined as follows:
+\begin{description}
+\item[Completeness.]
+  An interactive proof system $\proofsystem$ is
+  \emph{complete} if an honest prover always convinces an honest verifier, that
+  is for all $\REL \in \RELGEN(\secparam)$ and $(\inp, \wit) \in \REL$
+	\[
+		\condprob{\ip{\prover (\REL, \srs, \inp, \wit)}{\verifier (\REL, \srs,
+        \inp)} = 1}{\srs \gets \kgen(\REL)} = 1\,.
+	\]
+\item[Soundness.] We say that $\proofsystem$ for $\RELGEN$ is \emph{sound} if no
+  $\ppt$ prover $\adv$ can convince an honest verifier $\verifier$ to accept a
+  proof for a false statement $\inp \not\in\LANG$. More precisely, for all
+  $\REL \in \RELGEN(\secparam)$
+	\[
+      \condprob{\ip{\adv(\REL, \srs, \inp)}{\verifier(\REL, \srs, \inp)} =
+        1}{\srs \gets \kgen(\REL), \inp \gets \adv(\REL, \srs); \inp \not\in
+        \LANG_\REL} \leq \negl\,;
+	\]
+\end{description}
+Sometimes a stronger notion of soundness is required---except requiring that the
+verifier rejects proofs of statements outside the language, we request from the
+prover to know a witness corresponding to the proven statement. This property is
+formalised by the so-called \emph{knowledge soundness}.
+%\begin{description}
+\begin{description}
+\item[Knowledge soundness.]
+We call an interactive proof system $\proofsystem$
+\emph{knowledge-sound} if for any $\REL \in \RELGEN(\secparam)$ and a $\ppt$
+adversary $\adv$
+	% \begin{multline*}
+	\[
+	\Pr\left[
+		\begin{aligned}
+			& \verifier(\REL, \srs, \inp, \zkproof) = 1, \\
+			& \REL(\inp, \wit) = 0
+	 \end{aligned}
+	  \,\left|\,
+	 \begin{aligned}
+		 & \srs \gets \kgen(\REL), \inp \gets \adv(\REL, \srs), \\
+		 & (\wit, \zkproof) \gets \ext^{\ip{\adv(\REL, \srs, \inp)}{\verifier(\REL, \srs, \inp)}}(\REL, \inp)
+	 \end{aligned}
+	 \vphantom{\begin{aligned}
+		 \adv (\zkproof) = 1, \\
+		 \text{if $\zkproof{}$ is accepting} \\
+		 \pcind \text{then $\REL(\inp, \wit)$}
+	 \end{aligned}}\right.
+	 \right] \leq \negl\,,
+ % \end{multline*}
+ \]
+\end{description}
+
+ % Usually the verifier verifies messages send by the prover by checking a number
+ % of equations depend on the instance, SRS and the proof sent. These equations
+ % are often called \emph{verification equations} and denoted $\vereq_i$, for $i$
+ % being an index of the equation. It is usually required that an acceptable proof
+ % yields $\vereq_i = 0$. In the proof systems we consider---$\plonk$ and
+ % $\sonic$---verification equations can be seen as polynomials evaluated at the
+ % trapdoor $\chi$. Thus, the verifier checks that $\vereq_i(\chi) =
+ % 0$. Sometimes, we consider an \emph{idealised verifier},
+ % cf.~\cite{EPRINT:GabWilCio19}, who instead of checking that polynomial
+ % $\vereq_i(X)$ evaluates to $0$ at $\chi$ just checks that $\vereq_i(X)$ is a
+ % zero polynomial.
+
+ % \paragraph{Zero knowledge.}
+\begin{description}
+  \item[Zero knowledge.]
+ We call a proof system $\proofsystem$ \emph{zero-knowledge} if for any
+ $\REL \in \RELGEN(\secparam)$, $(\inp, \wit) \in \REL$, and adversary $\adv$
+ there exists a $\ppt$ simulator $\simulator$ such that
+	\begin{multline*}
+	  \left\{\ip{\prover(\REL, \srs, \inp, \wit)}{\adv(\REL, \srs, \inp, \wit)}
+      \,\left|\, \srs \gets \kgen(\REL)\vphantom{\simulator^\adv}\right.\right\} \approx_\secpar
+		\left\{\simulator^{\adv}(\REL, \srs, \inp)\,\left|\, \srs \gets
+        \kgen(\REL)\COMMENT{, (\inp, \wit) \gets \adv(\REL,
+          \srs)}\vphantom{\simulator^\adv}\right.\right\}\,.
+\end{multline*}
+	%
+We call zero knowledge \emph{perfect} if the distributions are equal and
+\emph{computational} if they are indistinguishable for any $\nuppt$
+distinguisher.
+
+\end{description}
+An SRS $\srs$ comes with a secret string called \emph{trapdoor} $\td$ that
+allows the simulator to produce a simulated proof. In that case algorithm
+$\kgen(\REL)$ outputs $(\srs, \td)$ and $\td$ is given to the simulator. In this
+paper we distinguish simulators that requires a trapdoor to simulate and those
+that do not. We call the former \emph{SRS-simulators} and denote them by
+$\simulator_\td$.
+
+% Occasionally, a weaker version of zero knowledge is sufficient. So called
+% \emph{honest verifier zero knowledge} (HVZK) assumes that the verifier's
+% challenges are picked at random from some predefined set. Although weaker, this
+% definition suffices in many applications. Especially, an interactive
+% zero-knowledge proof that is HVZK and \emph{public-coin} (i.e.~the verifier
+% outputs as challenges its random coins) can be made non-interactive and
+% zero-knowledge in the random oracle model by using the Fiat--Shamir
+% transformation.
+
+% \paragraph{Idealised verifier and verification equations}
+% Usually the verifier $\verifier$ verifies messages sent by the prover by
+% checking a number of equations that depend on the instance, SRS and the proof. We
+% call these equations \emph{verification equations} and denote by $\vereq_i$, for
+% $i$ being an index of the equation. We require that an acceptable
+% proof yields $\vereq_i = 0$.
+
+% In the proof systems we consider---$\plonk$ and $\sonic$---verification
+% equations can be interpreted as group representations of polynomial evaluations
+% at the trapdoor $\chi$. In other words, the verifier checks that
+% $\vereq_i(\chi) = 0$. Gabizon et al.~\cite{EPRINT:GabWilCio19} formalized a
+% notion of an \emph{idealised verifier} who, instead of checking that polynomial
+% $\vereq_i(X)$ evaluates to $0$ at $\chi$, just checks that $\vereq_i(X)$ is a
+% zero polynomial.
+
+\begin{definition}[Polynomial IOP,~\cite{EPRINT:Szepieniec20}]
+  Let $\REL$ be an indexed relation with a corresponding language $\LANG$, $\FF$
+  some finite field, and $\maxdeg$ a degree bound and $\noofp$ a parameter. A
+  \emph{polynomial IOP for $\REL$ with degree bound $\maxdeg$} is a pair of
+  interactive machines $\prover, \verifier$ such that
+\begin{itemize}
+\item $(\prover, \verifier)$ is an interactive proof for $\LANG$ with $r$ rounds
+  and soundness error $\epss$;
+\item $\prover$ sends to $\verifier$ polynomials $f_i \in \FF[X]$,
+  $i \in \range{1}{\noofp}$, of degree at most $\maxdeg$;
+\item $\verifier$ is an oracle machine with access to a list of oracles, which
+  contains one oracle for each polynomial it has received from the prover;
+\item When an oracle associated with a polynomial $f_i(X)$ is queried on a point
+  $z_j \in \FF$, the oracle responds with the value $f_i(z_j)$; 
+\item $\verifier$ sends challenges $\alpha_k \in \FF$ to $\prover$;
+\item $\verifier$ is public coin.
+\end{itemize}
+\end{definition}
+
+\michals{28.04}{Add preprocessing and zero knowledge}
+
+\begin{definition}[Witness encoding PIOP (WEPIOP)]
+  Let $\PS$ be a PIOP.  We say that $\PS$ is \emph{witness encoding} if there is
+  a function $\decode$ and set $\encset \in [\noofp]$ such that for any
+  $(\inp, \wit) \in \REL$ and polynomials $\smallset{f_i}_{i \in [\noofp]}$ sent by an
+  honest prover, $\decode(\smallset{f_i}_{i \in \encset}) = \wit$. We call $\encset$ the
+  \emph{encoding set}.
+\end{definition}
+In other words, PIOP is witness encoding if for any valid proof for a statement
+$\inp$ in the language, the corresponding witness can be read from the
+polynomial coefficients. We note that this is the case for virtually all
+PIOPs. \michals{28.04}{Check!}]
+
+% \begin{definition}[Ordered WEPIOP]
+%   We say that a WEPIOP $\PS$ is \emph{ordered} if a proof for a statement
+%   $\inp$, and witness $\wit$ can be divided into the following stages
+%   \begin{description}
+%   \item[Witness encoding phase] where the prover sends polynomials $f_1, \ldots,
+%     f_{\noofp'}$ which encode the witness. 
+%   \item[Challenge phase]  where the verifier either
+%     \begin{itemize}
+%     \item sends its challenges which are answered by the prover by uploading
+%       polynomials $f_{\noofp'}, \ldots, f_{\noofp}$ such that $f_1, \ldots
+%       f_{\noofp}$ are determined using previously uploaded polynomials and
+%       verifier's challenges and queries; and / or
+%     \item the verifier submits its queries to the polynomial oracles
+%       $\oracleo_{f_1}, \ldots, \oracleo_{f_\noofp}$.
+%     \end{itemize}
+%   \end{description}
+%   Furthermore, the verifier queries all witness-encoding polynomials.
+% \end{definition}
+
+% \begin{lemma}
+%   Ordered WEPIOP has unique-response property after witness-encoding phase.
+% \end{lemma}
+% \begin{proof}
+  
+% \end{proof}
+
+\begin{definition}[Somehow deterministic WEPIOP]
+  Let $\PS$ be a WEPIOP for $\REL$. For each polynomial $f_i$ sent by the prover
+  denote by $A_i$ the set of challenges sent by the verifier and by $F_i$ the
+  set of polynomials sent by the prover \emph{before} the prover sends
+  $f_i$. Let $\encset$ be an encoding set. We say that $\PS$ is \emph{somehow
+    deterministic} (SD) if for any $(\inp, \wit) \in \REL$, polynomials
+  $\smallset{f_i}_{i \in [\noofp]}$ send by the prover, and encoding set
+  $\encset \neq [\noofp]$ each polynomial
+  $f_j \in \smallset{f_i}_{i \in [\noofp] \setminus \encset}$ is determined by
+  \begin{itemize}
+    \item polynomials $F_j$, and
+    \item the verifier's challenges $A_i$, and
+    \item the witness $\wit$.
+  \end{itemize}
+\end{definition}
+Intuitively, we say that WEPIOP is somehow deterministic if the only
+non-deterministic messages send by the prover are polynomials encoding the
+witness, and all other messages are determined by the previous one, witness, and
+verifier's challenges.
+
+\begin{lemma}
+  Let $\PS = (\PS.\prover, \PS.\verifier)$ be a PIOP with knowledge soundness error
+  $\epsks$ where the prover sends up to $\noofp$ polynomials. Let $\PCOM$ be a
+  knowledge polynomial commitment scheme with extraction error $\epsext$. Let
+  $\PSc = (\PSc.\prover, \PSc.\verifier)$ be a proof system such that
+  \begin{description}
+  \item[$\PSc.\prover$] acts as $\PS.\prover$, except
+    \begin{itemize}
+    \item when $\PS.\prover$ sets up a polynomial oracle $\oracleo_f$,
+      $\PSc.\prover$ sends commitment $c = \com(f)$;
+    \item when $\PSc.\verifier$ asks $\PSc.\prover$ to open a commitment
+      $c = \com(f)$ at $z$ it returns $f(z)$.
+  \end{itemize}
+  \item[$\PSc.\verifier$] acts as $\PS.\verifier$, except when $\PS.\verifier$
+    asks oracle $\oracleo_f$ for an evaluation of $f$ at $z$, $\PSc.\verifier$
+    sends $z$ to $\PSc.\prover$ and gets $f(z)$ in return.
+  \end{description}
+  Then $\PSc$ is sound with soundness error at most $\epsks + \noofp \cdot \epsext$.
+\end{lemma}
+\begin{proof}
+  Let $\adv$ be an adversary that breaks knowledge soundness of $\PSc$ with
+  probability $\eps$ greater than $\epsks + \noofp \cdot \epsext$. We build
+  $\bdv$ that breaks knowledge soundness of $\PS$ with probability greater than
+  $\epsks$.
+
+  $\bdv$ starts by picking an SRS $\srs$ for the polynomial commitment scheme
+  $\PCOM$ and provides $\srs$ to $\adv$. Let $\inp$ be the instance $\adv$
+  creates a fraudulent proof for. Each time $\adv$ sends a commitment $c$, then
+  $\bdv$ uses the extractor $\ext$ to extract polynomial $f$ from $c$ and sends
+  $f$ to the newly set oracle $\oracleo_f$.  \michals{5.5}{how much we can
+    generalize here?  I.e.~could we have a single proof that would cover
+    algebraic adversaries that returns with $c$ also a vector of group elements'
+    logarithms; or commitment schemes where there is an extraction key $k$
+    allowing to extract $f$ from $c$?}  Each time $\PS.\verifier$ sends a
+  challenge $\alpha$, $\bdv$ passes $\alpha$ to $\adv$ as $\PSc.\verifier$'s
+  challenge and sends $\adv$'s response back to $\PS.\verifier$. Eventually,
+  $\adv$ finalizes its proof for $\inp$. Note that if $\PSc.\verifier$ accepts
+  the proof provided by $\adv$, then $\PS.\verifier$ accepts the proof provided
+  by $\bdv$. Probability that $\bdv$ \emph{fails} is upper-bounded by two
+  events. One is that $\adv$ fails to provide a convincing proof such that no
+  extractor can output a corresponding witness. Probability of this event is
+  upper-bounded by $(1 - \eps)$. Furthermore, $\bdv$ may fail to extract some
+  of the polynomials which $\adv$ made commitments for. Since $\adv$ commits to
+  $\noofp$ polynomials and $\bdv$ fails to extract each of them with probability
+  at most $\epsext$, by the union bound $\bdv$ fails to extract \emph{some} of
+  the polynomials with probability upper-bounded by $\noofp \cdot
+  \epsext$. Hence the probability of $\bdv$'s failure is upper-bounded by
+  \[
+    (1 - \eps) + \noofp \cdot \epsext.
+  \]
+  Hence, for $\eps > \epsks + \noofp \cdot \epsext$ adversary $\bdv$ wins with probability at least
+  \[
+    \epsks + \noofp \cdot \epsext - \noofp \cdot \epsext  = \epsks.
+  \]
+  \qed
+\end{proof}
+
+\section{SE PoK from SE PC}
+\subsection{Result for polynomial IOPs}
+\michals{28.04}{One thing is to show that using FS gives simulation
+  extractability of a polynomial IOP, another is to show that a compiler (using
+  commitments instead of polynomial oracles) preserves this property.}
+\begin{lemma}
+  Let $\PS$ be a zero-knowledge WEPIOP proof system and $\PS_\fs$ be the same system after
+  applying Fiat--Shamir transform. Then $\PS_{\fs}$ is simulation-extractable.
+\end{lemma}
+\begin{proof}
+  
+\end{proof}
+
+\subsection{Result for polynomial protocols}
+\begin{lemma}
+  Let $\PCOM$ be a simulation extractable polynomial commitment scheme. Let
+  $\PS$ be a zero-knowledge polynomial proof system such that no adversary (even
+  unbounded) can tell a real proof from a simulated one with advantage greater
+  than $\epszk$. Then for every $\ppt$ adversary $\adv$ there exists extractor
+  $\ext$ which extracts every polynomial sent in the proof. More precisely,
+  probability
+  \[
+    \Pr\left[
+      \begin{aligned}
+        & \vec{f} \gets \ext_\adv(\REL, \srs, \vec{c}, \zkproof) \land \\
+        & (\vec{c} \not\in \image(\vec{f}) \lor \exists i: \deg(f_i) > \maxdeg)
+        \end{aligned}
+      \, \left| \,
+        \begin{aligned}
+          & \srs \sample \kgen(\REL), \\
+          & \zkproof = ((c_1, \vec{x_1}, \vec{y_{1}}), \ldots, (c_\plen,
+          \vec{x}_\plen, \vec{y}_{\plen})) \gets \adv^{\simulator}(\REL, \srs)
+        \end{aligned}
+        \right.
+    \right] \leq \negl
+  \]
+\end{lemma}
+\begin{proof}
+  Assume the contrary. That is, assume that there is a $\ppt$ adversary $\adv$
+  producing the proof
+  $\zkproof = (c_1, \vec{x_1}, \vec{y_1}, \ldots, c_n, \vec{x_\plen}, \vec{y_\plen})$
+  \michals{23.04}{Note that $x$ and $y$ are vectors as in the proof polynomials
+    hidden in $c_i$-s may be evaluated at multiple points.} such that any
+  extractor $\ext$ probability that $\ext$ fails to return polynomials
+  $f_1, \ldots f_\plen$, which commitments are $c_1, \ldots c_\plen$, is at least $\nu$,
+  for some non-negligible $\nu$. We use $\adv$ to build an adversary $\bdv$ that
+  breaks simulation-extractability of the polynomial commitment scheme.
+
+  Let $\cdv$ be an (inefficient) challenger for $\bdv$ that prepares an instance
+  of a problem, i.e.~it picks public parameters $\pp$, generates the polynomial
+  commitment scheme SRS, provides adversary $\bdv$ with it and answers
+  adversary's queries to the simulator query $\oracles$. $\cdv$ also picks an
+  extractor $\ext_\bdv$ for $\bdv$. Eventually, $\bdv$ outputs a commitment $c$
+  to some polynomial and $\cdv$ checks whether $\ext_\bdv$ is able to find a
+  polynomial $f$ of degree less than $\maxdeg$ in the image of $\com$. If
+  $\ext_\bdv$ succeeds then $\cdv$ outputs $0$ ($\bdv$ looses), otherwise it
+  outputs $1$ ($\bdv$ wins). We show a strategy for $\bdv$ which guarantees
+  probability of winning at least $(1 - \epszk) \cdot \infrac{\nu}{n}$.
+
+  Adversary $\bdv$ begins with generating an SRS $\srs_{\PS}$ of $\PS$ using
+  $\srs_{\PCOM}$ \michals{26.04}{describe how both SRS-s are related. That should
+    be a property of the proof system.} and providing $\adv$ with it. Then it
+  picks at random index $i$, which is $\bdv$'s guess for which of the
+  polynomials is not going be extracted by the extractor $\ext$. Note that
+  probability that $\bdv$ picks the right $i$ is at least $\infrac{1}{n}$.  Then
+  $\bdv$ starts $\adv(\REL, \srs_{\PS})$ and answers $\adv$'s queries to the
+  simulation oracle $\oracles$. Since $\bdv$ may not know the SRS's trapdoor, it
+  provides $\adv$ with \emph{real} proofs, not simulated ones. However, this
+  does not change the probability of $\adv$ returning a
+  simulation-extractability breaking proof more than $\epszk$ as otherwise such
+  $\adv$ could be used to break the zero-knowledge property.
+
+  Eventually $\adv$ returns a proof $\zkproof = ((c_1, \vec{x_1}, \vec{y_1}),
+  \ldots, (c_\plen, \vec{x_\plen}, \vec{y_\plen}))$, $\bdv$ gets commitment
+  $c_i$ and outputs it. \michals{26.04}{Maybe the property of extractability
+    could be a bit weaker --- say the adversary cannot output a valid commitment
+  which he can open (at which point?) without knowing the underlying
+  polynomial. We should also consider this case. The stronger extractability
+  property may be difficult to meet.} Note that the extractor $\ext_\bdv$ is not able to
+reveal the polynomial behind $c_i$ with an overwhelming probability. Assume
+otherwise, then $\bdv$ could be used to reduce the probability of $\adv$'s
+success. More precisely, \hl{continue}
+
+\end{proof}
+
+\begin{lemma}
+  \hl{If we can extract all polynomials committed in the proof, then we can
+    extract the witness}
+\end{lemma}
+\begin{proof}
+  
+\end{proof}
+
+\begin{corollary}
+  Let $\PCOM$ be a simulation extractable polynomial commitment scheme. Let
+  $\PS$ be a zero-knowledge polynomial proof system, then $\PS$ is simulation extractable.
+\end{corollary}
+\begin{proof}
+  Let $\adv$ be a simulation-extractability adversary. Let $\extpcom_\adv$ be a
+  polynomial commitment scheme extractor for $\adv$. We build a $\PS$ extractor
+  $\extps_\adv$ using $\extpcom_\adv$ as a building block.
+\end{proof}
+
+\bibliographystyle{alpha}
+\bibliography{cryptobib/abbrev1,cryptobib/crypto}
+
+\end{document}
