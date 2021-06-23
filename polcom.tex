@@ -87,6 +87,7 @@
   
 \end{abstract}
 
+\section{Preliminaries}
 \paragraph{Polynomial commitment scheme.}
 \label{sec:poly_com}
 In the polynomial commitment scheme $\PCOM = (\kgen, \com, \open, \verify)$ the
@@ -164,6 +165,7 @@ Intuitively when a commitment scheme is a commitment of knowledge then if an
 adversary produces a (valid) commitment $c$, which it can open, then it also
 knows the underlying polynomial $\p{f}$ which commits to that value.
 
+\section{New definitions and primitives}
 \begin{definition}[Simulation extractable polynomial commitment]
   \label{def:sepcom}
   Let $\PCOM$ be a polynomial commitment scheme, let $\oracles$ be an 
@@ -214,9 +216,9 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
   \michals{23.04}{Can $\ext$ ask $\adv$ to give evaluations of the committed
     polynomial? That is how $\ext$ in a proof system works -- it evaluates
     polynomials submitted by the adversary on multiple challenges.}
- \end{definition}
+\end{definition}
 
- \begin{definition}[Rational SE PCOM]
+\begin{definition}[Rational SE PCOM]
    \label{def:rational_sepcom}
    We call a simulation extractable polynomial commitment $\PCOM$
    \emph{rational} if $\oracles$ on input $(\msg{commit}, f, d)$ accepts $f$
@@ -245,7 +247,7 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 
  \begin{definition}[Sufficiently simulatable PCOM]
    Let $\PCOM$ be a SE polynomial commitment scheme and
-   $\PS = (\kgen, \prover, \verfier, \simulator)$ a zero-knowledge proof system
+   $\PS = (\kgen, \prover, \verifier, \simulator)$ a zero-knowledge proof system
    for relation $\REL$. We call $\PCOM$ \emph{sufficiently simulatable for
      $\PS$} if there exist a $\ppt$ algorithm $\adv$ such that for
    $\srs \sample \kgen$, all $(\inp, \wit) \in \REL$ holds
@@ -314,7 +316,36 @@ non-deterministic messages send by the prover are polynomials encoding the
 witness, and all other messages are determined by the previous one, witness, and
 verifier's challenges.
 
-\begin{lemma}
+\section{From PIOP to proof system}
+\begin{figure}
+  \centering
+    \begin{description}
+    \item[Input]
+      \begin{itemize}
+      \item PIOP $\PS = (\prover, \verifier)$
+      \item PCOM $\PCOM = (\kgen, \com, \open, \verify)$
+      \end{itemize}
+    \item[Compiler]
+      \begin{itemize}
+        \item $\PSc.\prover$ acts as $\PS.\prover$, except
+          \begin{itemize}
+          \item when $\PS.\prover$ sets up a polynomial oracle $\oracleo_f$,
+            $\PSc.\prover$ sends commitment $c = \com(f)$;
+          \item when $\PSc.\verifier$ asks $\PSc.\prover$ to open a commitment
+            $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of
+            correctness of the opening.
+          \end{itemize}
+        \item $\PSc.\verifier$ acts as $\PS.\verifier$, except when
+          $\PS.\verifier$ asks oracle $\oracleo_f$ for an evaluation of $f$ at
+          $z$, $\PSc.\verifier$ sends $z$ to $\PSc.\prover$ and expects $f(z)$
+          in return.
+        \end{itemize}
+    \end{description}  
+  \label{fig:piop_to_ps}
+  \caption{From PIOP to PS}
+\end{figure}
+
+\begin{theorem}
   Let $\PS = (\PS.\prover, \PS.\verifier)$ be a PIOP with knowledge soundness error
   $\epsks$ where the prover sends up to $\noofp$ polynomials. Let $\PCOM$ be a
   knowledge polynomial commitment scheme with extraction error $\epsext$. Let
@@ -333,7 +364,7 @@ verifier's challenges.
     sends $z$ to $\PSc.\prover$ and expects $f(z)$ in return.
   \end{description}
   Then $\PSc$ is knowledge sound with knowledge error at most $\epsks + \noofp \cdot \epsext$.
-\end{lemma}
+\end{theorem}
 \begin{proof}
   Let $\adv$ be an adversary that breaks knowledge soundness of $\PSc$ with
   probability $\eps$ greater than $\epsks + \noofp \cdot \epsext$.  We build
@@ -399,6 +430,31 @@ verifier's challenges.
     \epsks + \noofp \cdot \epsext - \noofp \cdot \epsext  = \epsks.
   \]
   \qed
+\end{proof}
+
+\begin{theorem}
+  Let $\PS = (\PS.\prover, \PS.\verifier)$ be a PIOP with knowledge soundness
+  error $\epsks$ where the prover sends up to $\noofp$ polynomials. Let $\PCOM$
+  be a sufficiently simulatable polynomial commitment scheme for $\PS$ with
+  extraction error $\epsext$. Let $\PSc = (\PSc.\prover, \PSc.\verifier)$ be a
+  proof system such that
+  \begin{description}
+  \item[$\PSc.\prover$] acts as $\PS.\prover$, except
+    \begin{itemize}
+    \item when $\PS.\prover$ sets up a polynomial oracle $\oracleo_f$,
+      $\PSc.\prover$ sends commitment $c = \com(f)$;
+    \item when $\PSc.\verifier$ asks $\PSc.\prover$ to open a commitment
+      $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
+      the opening.
+  \end{itemize}
+  \item[$\PSc.\verifier$] acts as $\PS.\verifier$, except when $\PS.\verifier$
+    asks oracle $\oracleo_f$ for an evaluation of $f$ at $z$, $\PSc.\verifier$
+    sends $z$ to $\PSc.\prover$ and expects $f(z)$ in return.
+  \end{description}
+  Then $\PSc$ is simulation extractable with extraction error at most \hl{...}.
+\end{theorem}
+\begin{proof}
+  
 \end{proof}
 
 \bibliographystyle{alpha}
