@@ -174,11 +174,12 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 \item[$(\msg{commit}, f, d)$:] for $\deg(f) = d'$, $d' \leq d \leq \maxdeg$,
   picks $d - d'$ random elements $r_1, \ldots, r_{d - d'}$, sets 
   polynomial $g(X) = f(X) + r_1 X^{d' + 1} + \ldots + r_{d - d'} X^{d}$, returns
-  commitment $c = \com(g)$ and adds $(g, c)$ to list $Q$.
-  \item[$(\msg{evaluate}, c, x)$:] returns $f(x)$ where $f$ is a polynomial
-    which commitment is $c$ and $(f, c) \in Q$
-  \item[$(\msg{open}, c, x, y)$:] returns an opening $o$ for commitment
-    $c$ assuring that for some polynomial $f$, such that $c \in \image(\com(f))$, holds $f(x) = y$.
+  commitment $c = \com(g)$ and adds $(g, c)$ to list $\Qcom$.
+  \item[$(\msg{evaluate}, c, z)$:] returns $f(z)$ where $f$ is a polynomial
+    which commitment is $c$ and $(f, c) \in \Qcom$; add $z$ to $\Qev$.
+  \item[$(\msg{open}, c, x, y)$:] returns an opening $o$ for commitment $c$
+    assuring that for some polynomial $f$, such that $c \in \image(\com(f))$,
+    holds $f(x) = y$.
   \end{description}
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
   adversary $\adv$ with oracle access to $\oracles$ there exists extractor
@@ -188,11 +189,13 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
     \begin{aligned}
       & \p{f} = \ext_\adv(\srs, c; r),\\
       & c = \com(\srs, \p{f}),\\
-      & \verify(\srs, c, z, s, o) = 1
+      & \verify(\srs, c, z, s, o) = 1,\\
+      & z \not\in \Qev
     \end{aligned}
     \,\left|\,
       \vphantom{
         \begin{aligned}
+          & \\
           & \\
           & \\
           &
@@ -200,22 +203,62 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
         }
     \begin{aligned}
       & \srs \gets \kgen(\secparam, \maxdeg),\\
-      & c \gets \adv^{\oracles}(\srs; r), \\
-      & z \sample \FF,\\
-      & (s, o) \gets \adv^{\oracles}(\srs, z; r)
+      & (c, z, s, o) \gets \adv^{\oracles}(\srs; r), \\
+      % & z \sample \FF,\\
+      % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
     \end{aligned}
   \right.\right]
   \geq 1 - \epsk(\secpar).
 \]
-\michals{21.06}{Write it as a game.}
+%\michals{21.06}{Write it as a game.}
   \michals{23.04}{Can $\ext$ ask $\adv$ to give evaluations of the committed
     polynomial? That is how $\ext$ in a proof system works -- it evaluates
     polynomials submitted by the adversary on multiple challenges.}
-  
-\end{definition}
+ \end{definition}
 
+ \begin{definition}[Rational SE PCOM]
+   \label{def:rational_sepcom}
+   We call a simulation extractable polynomial commitment $\PCOM$
+   \emph{rational} if $\oracles$ on input $(\msg{commit}, f, d)$ accepts $f$
+   being a rational function (not only a polynomial).
+ \end{definition}
 
-\begin{definition}[Polynomial IOP,~\cite{EPRINT:Szepieniec20}]
+ \begin{definition}[$f$-SE PCOM]
+   \label{def:f_sepcom}
+   We call a simulation extractable polynomial commitment $\PCOM$ $f$-simulation
+   extractable if $\oracles$ accepts input
+   $(\msg{operate}, f, c_1, \ldots, c_k)$. On that input, $\oracles$ retrieves
+   polynomials $f_1, \ldots, f_k$ which are committed in $c_1, \ldots, c_k$, 
+   returns $c = \com(f(f_1, \ldots, f_k))$, and adds $(f(f_1, \ldots, f_k), c)$
+   to $\Qcom$.
+ \end{definition}
+
+ \begin{definition}[\hl{Good name needed}]
+   We call a commitment scheme $\PCOM$ \hl{good name needed} if any $\adv$ who
+   outputs commitments $c_1, \ldots, c_k$, evaluation point $z$, evaluations
+   $s_1, \ldots, s_k$ and batch opening $o$, which certifies that polynomials
+   $f_i$ evaluates at $z$ to $s_i$ and $c_i \in \image(\com(f_i))$, can also
+   produce valid openings $o_i$ for each triple $(c_i, z, s_i)$.
+ \end{definition}
+ \michals{23.06}{That's easy for KZG batched as in Plonk (with minor difference)
+ -- just get a number of batch openings and do Gaussian elimination.}
+
+ \begin{definition}[Sufficiently simulatable PCOM]
+   Let $\PCOM$ be a SE polynomial commitment scheme and
+   $\PS = (\kgen, \prover, \verfier, \simulator)$ a zero-knowledge proof system
+   for relation $\REL$. We call $\PCOM$ \emph{sufficiently simulatable for
+     $\PS$} if there exist a $\ppt$ algorithm $\adv$ such that for
+   $\srs \sample \kgen$, all $(\inp, \wit) \in \REL$ holds
+   \[
+     \SD_{\srs \sample \kgen(\secparam)}(\prover(\srs, \inp, \wit),
+     \adv^{\oracles}(\srs, \inp)).
+   \]
+ \end{definition}
+ Intuitively, we call $\PCOM$ sufficiently simulatable for $\PS$ if a $\ppt$
+ $\adv$ given access to $\PCOM$'s simulator oracle $\oracles$ can produce a
+ simulated proof for $\PS$.
+
+ \begin{definition}[Polynomial IOP,~\cite{EPRINT:Szepieniec20}]
   \label{def:piop}
   Let $\REL$ be an indexed relation with a corresponding language $\LANG$, $\FF$
   some finite field, and $\maxdeg$ a degree bound and $\noofp$ a parameter. A
@@ -316,7 +359,7 @@ verifier's challenges.
   for some (challenge-dependent) polynomial $f$ as an answer, thus $\adv$
   replies with a commitment to some polynomial $f'$. $\bdv$ extracts $f'$ and
   sets a new oracle for it.  When $\PS.\verifier$ queries some oracle
-  $\oracle_f$ at $z$ to learn $f(z)$, $\bdv$ replies with $f(z)$, sends $z$
+  $\oracleo_f$ at $z$ to learn $f(z)$, $\bdv$ replies with $f(z)$, sends $z$
   to $\adv$ and gets $y$. If $\adv$ provides $y \neq f(z)$, then $\bdv$ aborts
   the proof. Importantly, that may happen with probability $\epsev$ only as an
   acceptable proof from $\adv$ would require breaking evaluation binding
@@ -330,7 +373,7 @@ verifier's challenges.
   that $\adv$ fails to provide a convincing proof such that $\ext_\adv$ does not
   output a corresponding witness. Probability of this event is upper-bounded by
   $(1 - \eps)$. Another is that $\adv$ breaks evaluation binding property of the
-  commitment scheme, since $\verifier$ makes up to $\noefev$ evaluations, that
+  commitment scheme, since $\verifier$ makes up to $\noofev$ evaluations, that
   happens with probability at most $\noofev \cdot \epsev$ Furthermore, $\bdv$
   may fail to extract some of the polynomials which $\adv$ made commitments
   for. Since $\adv$ commits to $\noofp$ polynomials and $\bdv$ fails to extract
