@@ -166,6 +166,7 @@ adversary produces a (valid) commitment $c$, which it can open, then it also
 knows the underlying polynomial $\p{f}$ which commits to that value.
 
 \section{New definitions and primitives}
+\subsection{Polynomial commitment schemes}
 \begin{definition}[Simulation extractable polynomial commitment]
   \label{def:sepcom}
   Let $\PCOM$ be a polynomial commitment scheme, let $\oracles$ be an 
@@ -245,19 +246,20 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
  \michals{23.06}{That's easy for KZG batched as in Plonk (with minor difference)
  -- just get a number of batch openings and do Gaussian elimination.}
 
- \begin{definition}[Sufficiently simulatable PCOM]
+\subsection{Polynomial IOP}
+ \begin{definition}[$\eps$-sufficiently simulatable PCOM]
    Let $\PCOM$ be a SE polynomial commitment scheme and
    $\PS = (\kgen, \prover, \verifier, \simulator)$ a zero-knowledge proof system
-   for relation $\REL$. We call $\PCOM$ \emph{sufficiently simulatable for
+   for relation $\REL$. We call $\PCOM$ \emph{$\eps$-sufficiently simulatable for
      $\PS$} if there exist a $\ppt$ algorithm $\adv$ such that for
    $\srs \sample \kgen$, all $(\inp, \wit) \in \REL$ holds
    \[
      \SD_{\srs \sample \kgen(\secparam)}(\prover(\srs, \inp, \wit),
-     \adv^{\oracles}(\srs, \inp)).
+     \adv^{\oracles}(\srs, \inp)) \leq \eps(\secpar).
    \]
  \end{definition}
  Intuitively, we call $\PCOM$ sufficiently simulatable for $\PS$ if a $\ppt$
- $\adv$ given access to $\PCOM$'s simulator oracle $\oracles$ can produce a
+ $\adv$ given access to $\PCOM$'s simulator oracle $\oraclespcom$ can produce a
  simulated proof for $\PS$.
 
  \begin{definition}[Polynomial IOP,~\cite{EPRINT:Szepieniec20}]
@@ -316,29 +318,37 @@ non-deterministic messages send by the prover are polynomials encoding the
 witness, and all other messages are determined by the previous one, witness, and
 verifier's challenges.
 
-\section{From PIOP to proof system}
+\section{From polynomial IOP to a usable proof system}
 \begin{figure}
   \centering
     \begin{description}
     \item[Input]
       \begin{itemize}
-      \item PIOP $\PS = (\prover, \verifier)$
+      \item ZK PIOP $\PIOP = (\prover, \verifier, \simulator)$
       \item PCOM $\PCOM = (\kgen, \com, \open, \verify)$
       \end{itemize}
     \item[Compiler]
       \begin{itemize}
-        \item $\PSc.\prover$ acts as $\PS.\prover$, except
+        \item $\PS.\prover$ acts as $\PIOP.\prover$, except
           \begin{itemize}
-          \item when $\PS.\prover$ sets up a polynomial oracle $\oracleo_f$,
-            $\PSc.\prover$ sends commitment $c = \com(f)$;
-          \item when $\PSc.\verifier$ asks $\PSc.\prover$ to open a commitment
+          \item when $\PIOP.\prover$ sets up a polynomial oracle $\oracleo_f$,
+            $\PS.\prover$ sends commitment $c = \com(f)$;
+          \item when $\PS.\verifier$ asks $\PS.\prover$ to open a commitment
             $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of
             correctness of the opening.
           \end{itemize}
-        \item $\PSc.\verifier$ acts as $\PS.\verifier$, except when
-          $\PS.\verifier$ asks oracle $\oracleo_f$ for an evaluation of $f$ at
-          $z$, $\PSc.\verifier$ sends $z$ to $\PSc.\prover$ and expects $f(z)$
+        \item $\PS.\verifier$ acts as $\PIOP.\verifier$, except when
+          $\PIOP.\verifier$ asks oracle $\oracleo_f$ for an evaluation of $f$ at
+          $z$, $\PS.\verifier$ sends $z$ to $\PS.\prover$ and expects $f(z)$
           in return.
+        \item $\PS.\simulator$  acts as $\PIOP.\simulator$, except
+          \begin{itemize}
+          \item when $\PIOP.\simulator$ sets up a polynomial oracle $\oracleo_f$,
+            $\PS.\simulator$ sends commitment $c = \com(f)$;
+          \item when $\PS.\verifier$ asks $\PS.\simulator$ to open a commitment
+            $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of
+            correctness of the opening.
+          \end{itemize}
         \end{itemize}
     \end{description}  
   \label{fig:piop_to_ps}
@@ -346,22 +356,30 @@ verifier's challenges.
 \end{figure}
 
 \begin{theorem}
-  Let $\PS = (\PS.\prover, \PS.\verifier)$ be a PIOP with knowledge soundness error
+  Let $\PS = (\PS.\prover, \PS.\verifier, \PS.\simulator)$ be a ZK PIOP with knowledge soundness error
   $\epsks$ where the prover sends up to $\noofp$ polynomials. Let $\PCOM$ be a
   knowledge polynomial commitment scheme with extraction error $\epsext$. Let
-  $\PSc = (\PSc.\prover, \PSc.\verifier)$ be a proof system such that
+  $\PSc = (\PS.\prover, \PS.\verifier, \PS.\simulator)$ be a proof system such that
   \begin{description}
-  \item[$\PSc.\prover$] acts as $\PS.\prover$, except
+  \item[$\PS.\prover$] acts as $\PIOP.\prover$, except
     \begin{itemize}
-    \item when $\PS.\prover$ sets up a polynomial oracle $\oracleo_f$,
-      $\PSc.\prover$ sends commitment $c = \com(f)$;
-    \item when $\PSc.\verifier$ asks $\PSc.\prover$ to open a commitment
+    \item when $\PIOP.\prover$ sets up a polynomial oracle $\oracleo_f$,
+      $\PS.\prover$ sends commitment $c = \com(f)$;
+    \item when $\PS.\verifier$ asks $\PS.\prover$ to open a commitment
       $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
       the opening.
   \end{itemize}
-  \item[$\PSc.\verifier$] acts as $\PS.\verifier$, except when $\PS.\verifier$
-    asks oracle $\oracleo_f$ for an evaluation of $f$ at $z$, $\PSc.\verifier$
-    sends $z$ to $\PSc.\prover$ and expects $f(z)$ in return.
+  \item[$\PS.\verifier$] acts as $\PIOP.\verifier$, except when $\PIOP.\verifier$
+    asks oracle $\oracleo_f$ for an evaluation of $f$ at $z$, $\PS.\verifier$
+    sends $z$ to $\PS.\prover$ and expects $f(z)$ in return.
+  \item[$\PS.\simulator$]  acts as $\PIOP.\simulator$, except
+    \begin{itemize}
+    \item when $\PIOP.\simulator$ sets up a polynomial oracle $\oracleo_f$,
+      $\PS.\simulator$ sends commitment $c = \com(f)$;
+    \item when $\PS.\verifier$ asks $\PS.\simulator$ to open a commitment
+      $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
+      the opening.
+  \end{itemize}
   \end{description}
   Then $\PSc$ is knowledge sound with knowledge error at most $\epsks + \noofp \cdot \epsext$.
 \end{theorem}
@@ -432,31 +450,94 @@ verifier's challenges.
   \qed
 \end{proof}
 
+\michals{24.06}{Need to show how to get a ZK PIOP from PIOP}
+
+\begin{theorem}[From WEPIOP to ZK WEPIOP]
+  Let $\PIOP = (\prover, \verifier)$ be a WEPIOP and $E$ its encoding set and
+  let $\PIOP' = (\prover', \verifier')$ be a WEPIOP such that
+  \begin{itemize}
+    \item[$\prover'$] acts as $\prover$ except for $f_i(X) \in E$. Let $k_i$ be a
+      number of queries $\verifier$ makes to the oracle $\oracleo_{f_i}$ and
+      $d_i = \deg(f_i)$, then $\prover'$ 
+      computes
+      \[
+        g_i(X) = f_i(X) + X^{d_i + 1} b_1 + \ldots
+        X^{d_i + k_i + 1} b_{k_i + 1}
+      \]
+      for random $b_1, \ldots, b_{k + 1}$ and sets oracle $\oracleo_{g_i}$.
+    \item[$\verifier'$] \michals{24.06}{Do we need to change the verifier?}
+  \end{itemize}
+\end{theorem}
+\begin{proof}
+  
+\end{proof}
+
 \begin{theorem}
-  Let $\PS = (\PS.\prover, \PS.\verifier)$ be a PIOP with knowledge soundness
-  error $\epsks$ where the prover sends up to $\noofp$ polynomials. Let $\PCOM$
-  be a sufficiently simulatable polynomial commitment scheme for $\PS$ with
-  extraction error $\epsext$. Let $\PSc = (\PSc.\prover, \PSc.\verifier)$ be a
-  proof system such that
+  Let $\PIOP = (\PIOP.\prover, \PIOP.\verifier, \PIOP.\simulator)$ be a ZK PIOP
+  for $\REL$ with knowledge soundness error $\epsks$ where the prover sends up
+  to $\noofp$ polynomials. Let $\PCOM$ be $\eps(\secpar)$-sufficiently
+  simulatable polynomial commitment scheme for $\PS$ with extraction error
+  $\epsext$. Let $\PS = (\PS.\prover, \PS.\verifier, \PS.\simulator)$ be a proof system such
+  that
   \begin{description}
-  \item[$\PSc.\prover$] acts as $\PS.\prover$, except
+  \item[$\PS.\prover$] acts as $\PIOP.\prover$, except
     \begin{itemize}
-    \item when $\PS.\prover$ sets up a polynomial oracle $\oracleo_f$,
-      $\PSc.\prover$ sends commitment $c = \com(f)$;
-    \item when $\PSc.\verifier$ asks $\PSc.\prover$ to open a commitment
+    \item when $\PIOP.\prover$ sets up a polynomial oracle $\oracleo_f$,
+      $\PS.\prover$ sends commitment $c = \com(f)$;
+    \item when $\PS.\verifier$ asks $\PS.\prover$ to open a commitment
       $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
       the opening.
   \end{itemize}
-  \item[$\PSc.\verifier$] acts as $\PS.\verifier$, except when $\PS.\verifier$
-    asks oracle $\oracleo_f$ for an evaluation of $f$ at $z$, $\PSc.\verifier$
-    sends $z$ to $\PSc.\prover$ and expects $f(z)$ in return.
+  \item[$\PS.\verifier$] acts as $\PIOP.\verifier$, except when $\PIOP.\verifier$
+    asks oracle $\oracleo_f$ for an evaluation of $f$ at $z$, $\PS.\verifier$
+    sends $z$ to $\PS.\prover$ and expects $f(z)$ in return.
+  \item[$\PS.\simulator$] acts as $\PIOP.\simulator$, except
+     \begin{itemize}
+    \item when $\PIOP.\simulator$ sets up a polynomial oracle $\oracleo_f$,
+      $\PS.\simulator$ sends commitment $c = \com(f)$;
+    \item when $\PS.\verifier$ asks $\PS.\simulator$ to open a commitment
+      $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
+      the opening.
+  \end{itemize}
   \end{description}
-  Then $\PSc$ is simulation extractable with extraction error at most \hl{...}.
+  Then $\PS$ is simulation extractable with extraction error at most \hl{...}.
 \end{theorem}
 \begin{proof}
   From the simulation extractability of $\PCOM$ we will derive simulation
   extractability of $\PS$ by constructing a $\PS$ extractor $\ext^{\PS}$ using
-  $\PCOM$ extractor(s) $\ext^{\PCOM}$.
+  $\PCOM$ extractor $\ext^{\PCOM}$.
+
+  Let $\adv(\srs)$ be a $\PS$ adversary with oracle access to a $\PS$ simulator
+  $\simulator$. We show construction of an extractor $\ext^{\PS}$ which from
+  acceptable proof $\zkproof$ for instance $\inp$ output by $\adv$ produces
+  witness $\wit$ such that $\REL(\inp, \wit) = 1$. We proceed by game hoping.
+  
+  \ngame{1} Let $\ext^{\PS}_\adv$ be an extractor for adversary $\adv$. In this
+  game the adversary is given oracle $\oraclesps$ and produces an instance
+  $\inp$ and proof $\zkproof$. $\adv$ wins if $\ext_\adv$ does not output the
+  corresponding witness $\wit$.
+
+  \ngame{2} In this game $\adv$'s access to $\oraclesps$ is substituted by
+  access to $\bdv^\oraclespcom$ which simulates $\oraclesps$.
+  % The simulation
+  % goes as follows:
+  % \begin{itemize}
+  % \item On $\adv$ 
+  % \end{itemize}
+  Since $\PCOM$ is sufficiently simulatable for $\PS$, probability that $\adv$
+  wins in Game $\game{1}$ but not in $\game{2}$ (or vice-versa) is at most
+  $\eps(\secpar)$.
+
+  \medskip\noindent
+  We now analyze the probability that $\adv$ wins in Game $\game{2}$. Since
+  $\PCOM$ is simulation extractable, there exists an extractor $\ext_\bdv$ which 
+  extracts, for $i \in \range{1}{\noofp}$, polynomials $f_i$ if $\bdv$ output
+  \begin{inparaenum}[(1)]
+  \item commitment $c_i$ and $c_i \in \image(\com(f_i))$;
+  \item evaluations $s_i$ for evaluation points $z_i$ provided by the $\PS.\verifier$;
+  \item openings $o_i$;
+  \end{inparaenum}
+  
 \end{proof}
 
 \bibliographystyle{alpha}
