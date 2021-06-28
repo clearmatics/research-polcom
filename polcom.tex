@@ -169,14 +169,18 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 \subsection{Polynomial commitment schemes}
 \begin{definition}[Simulation extractable polynomial commitment]
   \label{def:sepcom}
-  Let $\PCOM$ be a polynomial commitment scheme, let $\oracles$ be an 
-  oracle which on input
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
+  scheme. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  committed, $H$ be a set of $\maxdeg + 1$ elements in $\FF$ and
+  $\van{H}$ is a vanishing polynomial for $H$.
+  
+  Let $\oracles$ be an oracle which on input
   \begin{description}
 %   \item [$(\msg{commit}, f)$:] returns commitment $c = \com(f)$ and adds $(f,
 % c)$ to list $Q$.
 \item[$(\msg{commit}, f, d)$:] for $\deg(f) = d'$, $d' \leq d \leq \maxdeg$,
   picks $d - d'$ random elements $r_1, \ldots, r_{d - d'}$, sets 
-  polynomial $g(X) = f(X) + r_1 X^{d' + 1} + \ldots + r_{d - d'} X^{d}$, returns
+  polynomial $g(X) = f(X) + \van{H}(r_1 X^{d' + 1} + \ldots + r_{d - d'} X^{d})$, returns
   commitment $c = \com(g)$ and adds $(g, c)$ to list $\Qcom$.
   \item[$(\msg{evaluate}, c, z)$:] returns $f(z)$ where $f$ is a polynomial
     which commitment is $c$ and $(f, c) \in \Qcom$; add $z$ to $\Qev$.
@@ -236,20 +240,31 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
    to $\Qcom$.
  \end{definition}
 
- \begin{definition}[\hl{Good name needed}]
-   We call a commitment scheme $\PCOM$ \hl{good name needed} if any $\adv$ who
-   outputs commitments $c_1, \ldots, c_k$, evaluation point $z$, evaluations
-   $s_1, \ldots, s_k$ and batch opening $o$, which certifies that polynomials
-   $f_i$ evaluates at $z$ to $s_i$ and $c_i \in \image(\com(f_i))$, can also
-   produce valid openings $o_i$ for each triple $(c_i, z, s_i)$.
+ \begin{definition}[One-to-many openable\hl{Good name needed}]
+   We call a commitment scheme $\PCOM$ one-to-many openable \hl{good name
+     needed} if for any $\adv$ who outputs commitments $c_1, \ldots, c_k$,
+   evaluation point $z$, evaluations $s_1, \ldots, s_k$ and batch opening $o$,
+   which certifies that polynomials $f_i$ evaluates at $z$ to $s_i$ and
+   $c_i \in \image(\com(f_i))$, there exists $\ppt$ algorithm $\bdv$ that
+   produces valid openings $o_i$ for each triple $(c_i, z, s_i)$.
  \end{definition}
+ Intuitively, we say that a polynomial commitment is one-to-many openable if we
+ can deduce that adversary who successfully batch opens a number of polynomial
+ commitments could also successfully open each of the commitments separately.
+
  \michals{23.06}{That's easy for KZG batched as in Plonk (with minor difference)
- -- just get a number of batch openings and do Gaussian elimination.}
+   -- just get a number of batch openings and do Gaussian elimination.}
+
+ \begin{definition}[Polynomial proof system]
+\hl{The proof system and the polynomial commitment scheme use virtually the same
+SRS. (Both SRS could differ in some efficiency related elements, but computation
+    of these don't require any secret knowledge)}
+   \end{definition}
 
 \subsection{Polynomial IOP}
  \begin{definition}[$\eps$-sufficiently simulatable PCOM]
    Let $\PCOM$ be a SE polynomial commitment scheme and
-   $\PS = (\kgen, \prover, \verifier, \simulator)$ a zero-knowledge proof system
+   $\PS = (\kgen, \prover, \verifier, \simulator)$ a polynomial zero-knowledge proof system
    for relation $\REL$. We call $\PCOM$ \emph{$\eps$-sufficiently simulatable for
      $\PS$} if there exist a $\ppt$ algorithm $\adv$ such that for
    $\srs \sample \kgen$, all $(\inp, \wit) \in \REL$ holds
@@ -279,9 +294,18 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
   $z_j \in \FF$, the oracle responds with the value $f_i(z_j)$; 
 \item $\verifier$ sends challenges $\alpha_k \in \FF$ to $\prover$;
 \item $\verifier$ is public coin.
+\item $\verifier$ accepts the transcript $\zkproof$ if
+  \[
+    \condprob{\vereq_{\zkproof}(X) \neq 0}{\zkproof \gets \langle\prover(\inp,
+        \wit), \verifier(\inp)\rangle} \leq \eps(\secpar),
+  \]
+  for some predefined negligible $\eps$ and verification equation $\vereq_{\cdot}(X)$
+  parametrized by $\zkproof$.
+ \michals{28.06}{Introduce idealised check here?}
 \end{itemize}
 \end{definition}
 
+\michals{28.06}{Adjust for verification equations}
 \michals{28.04}{Add preprocessing and zero knowledge}
 
 \begin{definition}[Witness encoding PIOP (WEPIOP)]
@@ -355,6 +379,39 @@ verifier's challenges.
   \caption{From PIOP to PS}
 \end{figure}
 
+\subsection{From PIOP to zkPIOP}
+\michals{24.06}{Need to show how to get a ZK PIOP from PIOP}
+
+\begin{theorem}[From WEPIOP to ZK WEPIOP]
+  Let $\PIOP = (\prover, \verifier)$ be a WEPIOP and $E$ its encoding set,
+  $\maxdeg$ be a maximal degree of polynomials sent by the prover; and
+  let $\PIOP' = (\prover', \verifier')$ be a WEPIOP such that
+  \begin{itemize}
+  \item Both parties get as input a set of $\FF$ elements $H$, such that
+    $\abs{H} = \maxdeg + 1$. Denote the vanishing polynomial for $H$ by $\van{H}$.
+  \item $\prover'$ acts as $\prover$ except for $f_i(X) \in E$. Let $k_i$ be a
+    number of queries $\verifier$ makes to the oracle $\oracleo_{f_i}$ and
+    $d_i = \deg(f_i)$, then $\prover'$ computes
+      \[
+        g_i(X) = f_i(X) + \van{H}\left(X^{d_i + 1} b_1 + \ldots
+        X^{d_i + k_i + 1} b_{k_i + 1}\right)
+      \]
+      for random $b_1, \ldots, b_{k + 1}$ and sets oracle $\oracleo_{g_i}$.
+    \item $\verifier'$ acts as $\verifier$. \michals{28.06}{We don't want to
+        change the verifier and its equations -- that's why we have $\van{H}$.}
+  \end{itemize}
+\end{theorem}
+\begin{proof}
+  \ncase{Completeness} 
+
+  \ncase{Soundness}
+
+  \ncase{Zero-knowledge}
+\end{proof}
+
+\comment{
+\subsection{Security of compilation}
+\michals{28.06}{This section is more for learning than a real result}
 \begin{theorem}
   Let $\PS = (\PS.\prover, \PS.\verifier, \PS.\simulator)$ be a ZK PIOP with knowledge soundness error
   $\epsks$ where the prover sends up to $\noofp$ polynomials. Let $\PCOM$ be a
@@ -449,28 +506,10 @@ verifier's challenges.
   \]
   \qed
 \end{proof}
+}
 
-\michals{24.06}{Need to show how to get a ZK PIOP from PIOP}
-
-\begin{theorem}[From WEPIOP to ZK WEPIOP]
-  Let $\PIOP = (\prover, \verifier)$ be a WEPIOP and $E$ its encoding set and
-  let $\PIOP' = (\prover', \verifier')$ be a WEPIOP such that
-  \begin{itemize}
-    \item[$\prover'$] acts as $\prover$ except for $f_i(X) \in E$. Let $k_i$ be a
-      number of queries $\verifier$ makes to the oracle $\oracleo_{f_i}$ and
-      $d_i = \deg(f_i)$, then $\prover'$ 
-      computes
-      \[
-        g_i(X) = f_i(X) + X^{d_i + 1} b_1 + \ldots
-        X^{d_i + k_i + 1} b_{k_i + 1}
-      \]
-      for random $b_1, \ldots, b_{k + 1}$ and sets oracle $\oracleo_{g_i}$.
-    \item[$\verifier'$] \michals{24.06}{Do we need to change the verifier?}
-  \end{itemize}
-\end{theorem}
-\begin{proof}
-  
-\end{proof}
+\subsection{Simulation extractable NIZKs from simulation extractable polynomial
+  commitments}
 
 \begin{theorem}
   Let $\PIOP = (\PIOP.\prover, \PIOP.\verifier, \PIOP.\simulator)$ be a ZK PIOP
@@ -519,11 +558,6 @@ verifier's challenges.
 
   \ngame{2} In this game $\adv$'s access to $\oraclesps$ is substituted by
   access to $\bdv^\oraclespcom$ which simulates $\oraclesps$.
-  % The simulation
-  % goes as follows:
-  % \begin{itemize}
-  % \item On $\adv$ 
-  % \end{itemize}
   Since $\PCOM$ is sufficiently simulatable for $\PS$, probability that $\adv$
   wins in Game $\game{1}$ but not in $\game{2}$ (or vice-versa) is at most
   $\eps(\secpar)$.
