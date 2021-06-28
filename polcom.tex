@@ -280,9 +280,11 @@ SRS. (Both SRS could differ in some efficiency related elements, but computation
  \begin{definition}[Polynomial IOP,~\cite{EPRINT:Szepieniec20}]
   \label{def:piop}
   Let $\REL$ be an indexed relation with a corresponding language $\LANG$, $\FF$
-  some finite field, and $\maxdeg$ a degree bound and $\noofp$ a parameter. A
-  \emph{polynomial IOP for $\REL$ with degree bound $\maxdeg$} is a pair of
-  interactive machines $\prover, \verifier$ such that
+  some finite field, $\maxdeg$ a degree bound, $\vereq_{\cdot}(X) \in \FF[X]$ a
+  verification equation, and $\eps, \noofp$ parameters.
+  A \emph{polynomial
+    IOP for $\REL$ with degree bound $\maxdeg$} is a pair of interactive
+  machines $\prover, \verifier$ such that
 \begin{itemize}
 \item $(\prover, \verifier)$ is an interactive proof for $\LANG$ with $r$ rounds
   and soundness error $\epss$;
@@ -295,10 +297,10 @@ SRS. (Both SRS could differ in some efficiency related elements, but computation
 \item $\verifier$ sends challenges $\alpha_k \in \FF$ to $\prover$;
 \item $\verifier$ is public coin.
 \item $\verifier$ accepts the transcript $\zkproof$ if
-  \[
+  \(
     \condprob{\vereq_{\zkproof}(X) \neq 0}{\zkproof \gets \langle\prover(\inp,
         \wit), \verifier(\inp)\rangle} \leq \eps(\secpar),
-  \]
+  \)
   for some predefined negligible $\eps$ and verification equation $\vereq_{\cdot}(X)$
   parametrized by $\zkproof$.
  \michals{28.06}{Introduce idealised check here?}
@@ -518,8 +520,8 @@ verifier's challenges.
   simulatable polynomial commitment scheme for $\PS$ with extraction error
   $\epsext$. Let $\PS = (\PS.\prover, \PS.\verifier, \PS.\simulator)$ be a proof system such
   that
-  \begin{description}
-  \item[$\PS.\prover$] acts as $\PIOP.\prover$, except
+  \begin{enumerate}
+  \item $\PS.\prover$ acts as $\PIOP.\prover$, except
     \begin{itemize}
     \item when $\PIOP.\prover$ sets up a polynomial oracle $\oracleo_f$,
       $\PS.\prover$ sends commitment $c = \com(f)$;
@@ -527,10 +529,10 @@ verifier's challenges.
       $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
       the opening.
   \end{itemize}
-  \item[$\PS.\verifier$] acts as $\PIOP.\verifier$, except when $\PIOP.\verifier$
+  \item $\PS.\verifier$ acts as $\PIOP.\verifier$, except when $\PIOP.\verifier$
     asks oracle $\oracleo_f$ for an evaluation of $f$ at $z$, $\PS.\verifier$
     sends $z$ to $\PS.\prover$ and expects $f(z)$ in return.
-  \item[$\PS.\simulator$] acts as $\PIOP.\simulator$, except
+  \item $\PS.\simulator$ acts as $\PIOP.\simulator$, except
      \begin{itemize}
     \item when $\PIOP.\simulator$ sets up a polynomial oracle $\oracleo_f$,
       $\PS.\simulator$ sends commitment $c = \com(f)$;
@@ -538,7 +540,7 @@ verifier's challenges.
       $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
       the opening.
   \end{itemize}
-  \end{description}
+  \end{enumerate}
   Then $\PS$ is simulation extractable with extraction error at most \hl{...}.
 \end{theorem}
 \begin{proof}
@@ -571,6 +573,11 @@ verifier's challenges.
   \item evaluations $s_i$ for evaluation points $z_i$ provided by the $\PS.\verifier$;
   \item openings $o_i$;
   \end{inparaenum}
+  \michals{28.06}{Stopped here -- we need more details of PIOP to argue about
+    $\bdv$ returning a valid opening of commitment. Further we want to state
+    that if the proof was accepted then the commitments have been opened
+    successfully. If the proof system allow for batch opening, then still we can
+  open every single commitment.}
   
 \end{proof}
 
