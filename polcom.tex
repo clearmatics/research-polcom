@@ -167,6 +167,52 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 
 \section{New definitions and primitives}
 \subsection{Polynomial commitment schemes}
+
+\begin{definition}[Simulation extractable polynomial commitment]
+  \label{def:sepcom}
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
+  scheme with a simulator $\mathsf{SimSample}, \mathsf{SimOpen}$. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  committed.
+  Let $\oracles$ be an oracle which on input
+  \begin{description}
+%   \item [$(\msg{commit}, f)$:] returns commitment $c = \com(f)$ and adds $(f,
+% c)$ to list $Q$.
+\item[$(\msg{commit})$:] Run $c \gets \mathsf{SimSample}(\secparam)$ and add $c$ to $\Qcom$.
+  \item[$(\msg{open}, c, x, y)$:] if $c \in \Qcom$ and $x\notin \Qev$, add $x$ to $\Qev$ and return $\mathsf{SimOpen(\td, c,x,y)}$.
+  \end{description}
+  We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
+  adversary $\adv$ with oracle access to $\oracles$ there exists extractor
+  $\ext$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & \p{f} = \ext_\adv(\srs, c; r),\\
+      & c = \com(\srs, \p{f}),\\
+      & \verify(\srs, c, z, s, o) = 1,\\
+      & z \not\in \Qev
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & \srs,\td \gets \kgen(\secparam, \maxdeg),\\
+      & (c, z, s, o) \gets \adv^{\oracles}(\srs; r), \\
+      % & z \sample \FF,\\
+      % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
+    \end{aligned}
+  \right.\right]
+  \geq 1 - \epsk(\secpar).
+\]
+\end{definition}
+
+
+
 \begin{definition}[Simulation extractable polynomial commitment]
   \label{def:sepcom}
   Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
