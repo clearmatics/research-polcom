@@ -621,10 +621,10 @@ $\ck_\kzg = \{g^{\alpha^i}\}_{i=0}^{n-1}, \allowbreak\vk_\kzg = h^\alpha$.
 \item[$\Kzg.\check(\vk_\kzg = h^\alpha, C_f, x, y, \pi) \to 1/0$:] Check if $e(C_f \cdot  g^{-y}, h)=e(C_q , h^{\alpha}\cdot h^{-x})$.
 \end{description}
 
+We move toward considering a symbolic verification equation $V'$ for which we have:
 $V(C_{f},x,y,\pi) =  e(C_f \cdot  g^{-y}, h) - e(C_q , h^{\alpha}\cdot h^{-x}) = 0$ iff $V'(K * Transcript (T)) = 0$.
 
 The trapdoors variables $T$ consist of the trapdoor variable $X$ of the setup and the randomness variables $A_{i}$ of simulated proofs:
-
 $T=(X, \{A_{i}\})$
 
 The transcript consists of the setup $\{[X^{i}]_{1}\}, [X]_{2}$ and simulated proofs $\{[A_{i} + y_{i}]_{1}, [\frac{A_{i}}{X-x_{i}}]\}$.
@@ -637,15 +637,24 @@ $q(X, \{A_{i}\}) = \sum Q_{1i} X^{i} + \sum Q_{2i} A_{i} + \sum Q_{3i} \frac{A_{
 
 The security game gives us that $x \neq x_{i}$.
 
+We inline to get the following equation which we then analyze in detail,
 \begin{align*}
   \left[\sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3i} \frac{A_{i}}{X-x_{i}} - y\right]_{1} \circ [1]_{2} - \left[\sum Q_{1i} X^{i} + \sum Q_{2i} A_{i} + \sum Q_{3i} \frac{A_{i}}{X-x_{i}}\right]_{1} \circ [X-x]_{2} = 0
   \end{align*}
 
 We now look at diferent monomials in $T$ of this equation to derive constraints on $C_{ji}$ and $Q_{ji}$ imposed by the verification equation:
 \begin{itemize}
+  \item[$A_{i}$:] $C_{2i} A_{i} = - Q_{2i}A_{i} x$. As $Q_{2i}=0$, it follows
+        that $C_{{2i}}=0$. This step relies on $x \neq x_{i}$ and thus
+        $\frac{A_{i} (X-x)}{X-x_{i}}$ cannot cancel out its denominator.
   \item[$A_{i}X$:] $Q_{2i} A_{i} X = 0$
-        \item[$A_{i}$:] $C_{2i} A_{i} = Q_{2i}A_{i} - x$
-\end{itemize}
+  \item[$\frac{A_{i}X}{X-x_{i}}$:] $Q_{3i} \frac{A_{i} X}{X-x_{i}} = 0$.
+  \item[$\frac{A_{i}}{X-x_{i}}$:]
+        $C_{3i} \frac{A_{i}}{X-x_{i}} = Q_{{3i}} \frac{A_{i}}{X-x_{i}} $. As $Q_{3i}=0$, it follows
+        that $C_{{3i}}=0$.
+      \end{itemize}
+
+      We are thus back to the honest verification equation.
 
 \bibliographystyle{alpha}
 \bibliography{cryptobib/abbrev1,cryptobib/crypto}
