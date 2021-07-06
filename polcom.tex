@@ -294,6 +294,7 @@ SRS. (Both SRS could differ in some efficiency related elements, but computation
   contains one oracle for each polynomial it has received from the prover;
 \item When an oracle associated with a polynomial $f_i(X)$ is queried on a point
   $z_j \in \FF$, the oracle responds with the value $f_i(z_j)$; 
+\item Oracle for $f_i$ can be queried at at most $\noofq$ points; 
 \item $\verifier$ sends challenges $\alpha_k \in \FF$ to $\prover$;
 \item $\verifier$ is public coin.
 \item $\verifier$ accepts the transcript $\zkproof$ if
@@ -406,9 +407,20 @@ verifier's challenges.
 \begin{proof}
   \ncase{Completeness} 
 
-  \ncase{Soundness}
+  \ncase{Soundness} 
 
-  \ncase{Zero-knowledge}
+  \ncase{Zero-knowledge} To show the property we construct a simulator
+  $\simulator$ and argue that it produces proofs indistinguishable from proofs
+  of a real prover. The simulator behaves as real prover, except for
+  witness-encoding polynomials in $\smallset{f_i}_{i \in E}$. For
+  $f_j \in \smallset{f_i}_{i \in E}$, where it
+  \begin{itemize}
+  \item Picks randomizers $b_1, \ldots, b_{\noofq_j}$ and computes polynomial
+    $g_i(X) =  \van{H}(b_1 X + \ldots b_{\noofq_j} X^{\noofq_j})$. 
+  \item \michals{28.06}{The simulator can open the commitment to any value, but
+      he need to know *which* value}
+  \end{itemize}
+  
 \end{proof}
 
 \comment{
