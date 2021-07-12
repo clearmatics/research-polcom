@@ -45,7 +45,7 @@
 
 \include{macros}
 
-\title{On PIOP-based zkSNARKs}
+\title{On PHP-based zkSNARKs}
 
 \author{} 
 %\iflncs{
@@ -57,7 +57,7 @@
 
 \begin{abstract}
   In this paper we investigate properties of zkSNARKs obtained by
-  compiling a PIOP proof using a polynomial commitment scheme. The question we
+  compiling a PHP proof using a polynomial commitment scheme. The question we
   try to answer is \say{What polynomial commitment's properties propagate to
     the resulting zkSNARK?}. The properties we focus on are:
   \begin{compactenum}
@@ -80,9 +80,9 @@
     extractable NIZKs.
   \item The polynomial IOP is defined very generally, cf.~\cref{def:piop}, what
     makes showing generic properties difficult. The paper would propose tighter
-    definitions which would emphasize more the structure of PIOP,
+    definitions which would emphasize more the structure of PHP,
     but would not narrow a class of possible (from the practical point of view)
-    PIOPs too much, cf.~\cref{def:wepiop,def:sdwepiop}.
+    PHP too much, cf.~\cref{def:wepiop,def:sdwepiop}.
   \end{compactenum}
   
 \end{abstract}
@@ -134,13 +134,14 @@ $\PCOM$:
 	
 
 \begin{description}
-\item[Commitment of knowledge] For every $\ppt$ adversary $\adv$ who produces
-  commitment $c$, gets random evaluation point $z$, and outputs evaluation $s$
-  with an opening $o$ there exists a $\ppt$ extractor $\ext$ such that
+\item[Commitment of knowledge] For every $\ppt$ adversary
+  $\adv = (\adv_1, \adv_2)$ who produces commitment $c$, gets random evaluation
+  point $z$, and outputs evaluation $s$ with an opening $o$ there exists a
+  $\ppt$ extractor $\ext$ such that
 \[
   \Pr \left[
     \begin{aligned}
-      & \p{f} = \ext_\adv(\srs, c; r),\\
+      & \p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
       & c = \com(\srs, \p{f}),\\
       & \verify(\srs, c, z, s, o) = 1
     \end{aligned}
@@ -154,7 +155,8 @@ $\PCOM$:
         }
     \begin{aligned}
       & \srs \gets \kgen(\secparam, \maxdeg),\\
-      & (c, z, s, o) \gets \adv(\srs; r)
+      & (c, \aux) \gets \adv_1(\srs; r_1), z \sample \FF, \\
+      &  (s, o) \gets \adv_2(\srs, \aux, c, z; r_2)
     \end{aligned}
   \right.\right]
   \geq 1 - \epsk(\secpar).
@@ -237,15 +239,14 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
     holds $f(x) = y$.
   \end{description}
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
-  adversary $\adv$ with oracle access to $\oracles$ there exists extractor
-  $\ext$ such that
+  adversary $\adv = (\adv_1, \adv_2)$ with oracle access to $\oracles$ there
+  exists extractor $\ext$ such that
 \[
   \Pr \left[
     \begin{aligned}
-      & \p{f} = \ext_\adv(\srs, c; r),\\
+      & \p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
       & c = \com(\srs, \p{f}),\\
-      & \verify(\srs, c, z, s, o) = 1,\\
-      & z \not\in \Qev
+      & \verify(\srs, c, z, s, o) = 1,
     \end{aligned}
     \,\left|\,
       \vphantom{
@@ -258,35 +259,17 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
         }
     \begin{aligned}
       & \srs \gets \kgen(\secparam, \maxdeg),\\
-      & (c, z, s, o) \gets \adv^{\oracles}(\srs; r), \\
-      % & z \sample \FF,\\
-      % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
+      & (c, \aux) \gets \adv_1^{\oracles}(\srs; r_1), \\
+      & z \sample \FF, \\
+      & (s, o) \gets \adv_2^{\oracles}(\srs, c, z, \aux; r_2)
     \end{aligned}
   \right.\right]
   \geq 1 - \epsk(\secpar).
 \]
-%\michals{21.06}{Write it as a game.}
   \michals{23.04}{Can $\ext$ ask $\adv$ to give evaluations of the committed
     polynomial? That is how $\ext$ in a proof system works -- it evaluates
     polynomials submitted by the adversary on multiple challenges.}
 \end{definition}
-
-\begin{definition}[Rational SE PCOM]
-   \label{def:rational_sepcom}
-   We call a simulation extractable polynomial commitment $\PCOM$
-   \emph{rational} if $\oracles$ on input $(\msg{commit}, f, d)$ accepts $f$
-   being a rational function (not only a polynomial).
- \end{definition}
-
- \begin{definition}[$f$-SE PCOM]
-   \label{def:f_sepcom}
-   We call a simulation extractable polynomial commitment $\PCOM$ $f$-simulation
-   extractable if $\oracles$ accepts input
-   $(\msg{operate}, f, c_1, \ldots, c_k)$. On that input, $\oracles$ retrieves
-   polynomials $f_1, \ldots, f_k$ which are committed in $c_1, \ldots, c_k$, 
-   returns $c = \com(f(f_1, \ldots, f_k))$, and adds $(f(f_1, \ldots, f_k), c)$
-   to $\Qcom$.
- \end{definition}
 
  \begin{definition}[One-to-many openable\hl{Good name needed}]
    We call a commitment scheme $\PCOM$ one-to-many openable \hl{good name
@@ -303,10 +286,11 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
  \michals{23.06}{That's easy for KZG batched as in Plonk (with minor difference)
    -- just get a number of batch openings and do Gaussian elimination.}
 
- \begin{definition}[Polynomial proof system]
+ \begin{definition}
 \hl{The proof system and the polynomial commitment scheme use virtually the same
 SRS. (Both SRS could differ in some efficiency related elements, but computation
-    of these don't require any secret knowledge)}
+of these don't require any secret knowledge)}
+\michals{12.07}{Check how it is done in Lunar}
    \end{definition}
 
 \subsection{Polynomial IOP}
@@ -325,56 +309,30 @@ SRS. (Both SRS could differ in some efficiency related elements, but computation
  $\adv$ given access to $\PCOM$'s simulator oracle $\oraclespcom$ can produce a
  simulated proof for $\PS$.
 
- \begin{definition}[Polynomial IOP,~\cite{EPRINT:Szepieniec20}]
-  \label{def:piop}
+ \begin{definition}[Polynomial Holomorphic Proof System (PHP)]
+  \label{def:php}
   Let $\REL$ be an indexed relation with a corresponding language $\LANG$, $\FF$
   some finite field, $\maxdeg$ a degree bound, $\vereq_{\cdot}(X) \in \FF[X]$ a
   verification equation, and $\eps, \noofp$ parameters.
-  A \emph{polynomial
-    IOP for $\REL$ with degree bound $\maxdeg$} is a pair of interactive
-  machines $\prover, \verifier$ such that
-\begin{itemize}
-\item $(\prover, \verifier)$ is an interactive proof for $\LANG$ with $r$ rounds
-  and soundness error $\epss$;
-\item $\prover$ sends to $\verifier$ polynomials $f_i \in \FF[X]$,
-  $i \in \range{1}{\noofp}$, of degree at most $\maxdeg$;
-\item $\verifier$ is an oracle machine with access to a list of oracles, which
-  contains one oracle for each polynomial it has received from the prover;
-\item When an oracle associated with a polynomial $f_i(X)$ is queried on a point
-  $z_j \in \FF$, the oracle responds with the value $f_i(z_j)$; 
-\item Oracle for $f_i$ can be queried at at most $\noofq$ points; 
-\item $\verifier$ sends challenges $\alpha_k \in \FF$ to $\prover$;
-\item $\verifier$ is public coin.
-\item $\verifier$ accepts the transcript $\zkproof$ if
-  \(
-    \condprob{\vereq_{\zkproof}(X) \neq 0}{\zkproof \gets \langle\prover(\inp,
-        \wit), \verifier(\inp)\rangle} \leq \eps(\secpar),
-  \)
-  for some predefined negligible $\eps$ and verification equation $\vereq_{\cdot}(X)$
-  parametrized by $\zkproof$.
- \michals{28.06}{Introduce idealised check here?}
-\end{itemize}
+  \michals{12.07}{Continue}
 \end{definition}
 
-\michals{28.06}{Adjust for verification equations}
-\michals{28.04}{Add preprocessing and zero knowledge}
-
-\begin{definition}[Witness encoding PIOP (WEPIOP)]
-  \label{def:wepiop}
-  Let $\PS$ be a PIOP.  We say that $\PS$ is \emph{witness encoding} if there is
+\begin{definition}[Witness encoding PHP (WEPHP)]
+  \label{def:wephp}
+  Let $\PS$ be a PHP.  We say that $\PS$ is \emph{witness encoding} if there is
   a function $\decode$ and set $\encset \in [\noofp]$ such that for any
   $(\inp, \wit) \in \REL$ and polynomials $\smallset{f_i}_{i \in [\noofp]}$ sent by an
   honest prover, $\decode(\smallset{f_i}_{i \in \encset}) = \wit$. We call $\encset$ the
   \emph{encoding set}.
 \end{definition}
-In other words, PIOP is witness encoding if for any valid proof for a statement
+In other words, PHP is witness encoding if for any valid proof for a statement
 $\inp$ in the language, the corresponding witness can be read from the
 polynomial coefficients. We note that this is the case for virtually all
-PIOPs. \michals{28.04}{Check!}
+PHPs. \michals{28.04}{Check!}
 
-\begin{definition}[Somehow deterministic WEPIOP]
-  \label{def:sdwepiop}
-  Let $\PS$ be a WEPIOP for $\REL$. For each polynomial $f_i$ sent by the prover
+\begin{definition}[Somehow deterministic WEPHP]
+  \label{def:sdwephp}
+  Let $\PS$ be a WEPHP for $\REL$. For each polynomial $f_i$ sent by the prover
   denote by $A_i$ the set of challenges sent by the verifier and by $F_i$ the
   set of polynomials sent by the prover \emph{before} the prover sends
   $f_i$. Let $\encset$ be an encoding set. We say that $\PS$ is \emph{somehow
@@ -388,55 +346,20 @@ PIOPs. \michals{28.04}{Check!}
     \item the witness $\wit$.
   \end{itemize}
 \end{definition}
-Intuitively, we say that WEPIOP is somehow deterministic if the only
+Intuitively, we say that WEPHP is somehow deterministic if the only
 non-deterministic messages send by the prover are polynomials encoding the
 witness, and all other messages are determined by the previous one, witness, and
 verifier's challenges.
 
-\section{From polynomial IOP to a usable proof system}
-\begin{figure}
-  \centering
-    \begin{description}
-    \item[Input]
-      \begin{itemize}
-      \item ZK PIOP $\PIOP = (\prover, \verifier, \simulator)$
-      \item PCOM $\PCOM = (\kgen, \com, \open, \verify)$
-      \end{itemize}
-    \item[Compiler]
-      \begin{itemize}
-        \item $\PS.\prover$ acts as $\PIOP.\prover$, except
-          \begin{itemize}
-          \item when $\PIOP.\prover$ sets up a polynomial oracle $\oracleo_f$,
-            $\PS.\prover$ sends commitment $c = \com(f)$;
-          \item when $\PS.\verifier$ asks $\PS.\prover$ to open a commitment
-            $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of
-            correctness of the opening.
-          \end{itemize}
-        \item $\PS.\verifier$ acts as $\PIOP.\verifier$, except when
-          $\PIOP.\verifier$ asks oracle $\oracleo_f$ for an evaluation of $f$ at
-          $z$, $\PS.\verifier$ sends $z$ to $\PS.\prover$ and expects $f(z)$
-          in return.
-        \item $\PS.\simulator$  acts as $\PIOP.\simulator$, except
-          \begin{itemize}
-          \item when $\PIOP.\simulator$ sets up a polynomial oracle $\oracleo_f$,
-            $\PS.\simulator$ sends commitment $c = \com(f)$;
-          \item when $\PS.\verifier$ asks $\PS.\simulator$ to open a commitment
-            $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of
-            correctness of the opening.
-          \end{itemize}
-        \end{itemize}
-    \end{description}  
-  \label{fig:piop_to_ps}
-  \caption{From PIOP to PS}
-\end{figure}
+\section{PHP-to-NIZK compiler}
 
-\subsection{From PIOP to zkPIOP}
-\michals{24.06}{Need to show how to get a ZK PIOP from PIOP}
+\subsection{From PHP to zkPHP}
+\michals{24.06}{Need to show how to get a ZK PHP from PHP}
 
-\begin{theorem}[From WEPIOP to ZK WEPIOP]
-  Let $\PIOP = (\prover, \verifier)$ be a WEPIOP and $E$ its encoding set,
+\begin{theorem}[From WEPHP to ZK WEPHP]
+  Let $\PHP = (\prover, \verifier)$ be a WEPHP and $E$ its encoding set,
   $\maxdeg$ be a maximal degree of polynomials sent by the prover; and
-  let $\PIOP' = (\prover', \verifier')$ be a WEPIOP such that
+  let $\PHP = (\prover', \verifier')$ be a WEPHP such that
   \begin{itemize}
   \item Both parties get as input a set of $\FF$ elements $H$, such that
     $\abs{H} = \maxdeg + 1$. Denote the vanishing polynomial for $H$ by $\van{H}$.
@@ -471,130 +394,31 @@ verifier's challenges.
   
 \end{proof}
 
-\comment{
-\subsection{Security of compilation}
-\michals{28.06}{This section is more for learning than a real result}
-\begin{theorem}
-  Let $\PS = (\PS.\prover, \PS.\verifier, \PS.\simulator)$ be a ZK PIOP with knowledge soundness error
-  $\epsks$ where the prover sends up to $\noofp$ polynomials. Let $\PCOM$ be a
-  knowledge polynomial commitment scheme with extraction error $\epsext$. Let
-  $\PSc = (\PS.\prover, \PS.\verifier, \PS.\simulator)$ be a proof system such that
-  \begin{description}
-  \item[$\PS.\prover$] acts as $\PIOP.\prover$, except
-    \begin{itemize}
-    \item when $\PIOP.\prover$ sets up a polynomial oracle $\oracleo_f$,
-      $\PS.\prover$ sends commitment $c = \com(f)$;
-    \item when $\PS.\verifier$ asks $\PS.\prover$ to open a commitment
-      $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
-      the opening.
-  \end{itemize}
-  \item[$\PS.\verifier$] acts as $\PIOP.\verifier$, except when $\PIOP.\verifier$
-    asks oracle $\oracleo_f$ for an evaluation of $f$ at $z$, $\PS.\verifier$
-    sends $z$ to $\PS.\prover$ and expects $f(z)$ in return.
-  \item[$\PS.\simulator$]  acts as $\PIOP.\simulator$, except
-    \begin{itemize}
-    \item when $\PIOP.\simulator$ sets up a polynomial oracle $\oracleo_f$,
-      $\PS.\simulator$ sends commitment $c = \com(f)$;
-    \item when $\PS.\verifier$ asks $\PS.\simulator$ to open a commitment
-      $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
-      the opening.
-  \end{itemize}
-  \end{description}
-  Then $\PSc$ is knowledge sound with knowledge error at most $\epsks + \noofp \cdot \epsext$.
-\end{theorem}
-\begin{proof}
-  Let $\adv$ be an adversary that breaks knowledge soundness of $\PSc$ with
-  probability $\eps$ greater than $\epsks + \noofp \cdot \epsext$.  We build
-  $\bdv$ that breaks knowledge soundness of $\PS$ with probability greater than
-  $\epsks$. More precisely, let $\ext_\adv$ be an extractor for $\adv$ and
-  $\ext_\bdv$ be an extractor for $\bdv$. We show that if $\adv$ produces an
-  instance and proof such that $\ext_\adv$ fails to extract the corresponding
-  witness, then $\bdv$ produces an instance and proof that $\ext_\bdv$ fails as well.
-
-  $\bdv$ starts by picking an SRS $\srs$ for the polynomial commitment scheme
-  $\PCOM$ and provides $\srs$ to $\adv$. Let $\ext^{\PCOM}_\adv$ be a polynomial
-  commitment extractor for $\adv$ that for any commitment $c$ produced by $\adv$
-  outputs polynomial $f$ such that $c \in \image(\com(f))$, except with
-  probability $\epsext$.  Let $\inp$ be the instance $\adv$ creates a proof
-  for. Each time $\adv$ sends a commitment $c$, $\bdv$ uses $\ext^{\PCOM}_\adv$
-  to extract polynomial $f$ from $c$ and sends $f$ to a newly set oracle
-  $\oracleo_f$.  \michals{5.5}{how much we can generalize here?  I.e.~could we
-    have a single proof that would cover algebraic adversaries that returns with
-    $c$ also a vector of group elements' logarithms; or commitment schemes where
-    there is an extraction key $k$ allowing to extract $f$ from $c$?}  Each time
-  $\PS.\verifier$ sends a challenge $\alpha$, $\bdv$ passes $\alpha$ to $\adv$
-  as $\PSc.\verifier$'s challenge. Note that $\PS.\verifier$ expects an oracle
-  for some (challenge-dependent) polynomial $f$ as an answer, thus $\adv$
-  replies with a commitment to some polynomial $f'$. $\bdv$ extracts $f'$ and
-  sets a new oracle for it.  When $\PS.\verifier$ queries some oracle
-  $\oracleo_f$ at $z$ to learn $f(z)$, $\bdv$ replies with $f(z)$, sends $z$
-  to $\adv$ and gets $y$. If $\adv$ provides $y \neq f(z)$, then $\bdv$ aborts
-  the proof. Importantly, that may happen with probability $\epsev$ only as an
-  acceptable proof from $\adv$ would require breaking evaluation binding
-  property of $\PCOM$. 
-  
-  Eventually, $\adv$ finalizes its proof for $\inp$. Note that
-  if $\PSc.\verifier$ accepts the proof provided by $\adv$, then $\PS.\verifier$
-  accepts the proof provided by $\bdv$.
-
-  Probability that $\bdv$ \emph{fails} is upper-bounded by three events. One is
-  that $\adv$ fails to provide a convincing proof such that $\ext_\adv$ does not
-  output a corresponding witness. Probability of this event is upper-bounded by
-  $(1 - \eps)$. Another is that $\adv$ breaks evaluation binding property of the
-  commitment scheme, since $\verifier$ makes up to $\noofev$ evaluations, that
-  happens with probability at most $\noofev \cdot \epsev$ Furthermore, $\bdv$
-  may fail to extract some of the polynomials which $\adv$ made commitments
-  for. Since $\adv$ commits to $\noofp$ polynomials and $\bdv$ fails to extract
-  each of them with probability at most $\epsext$, by the union bound $\bdv$
-  fails to extract \emph{some} of the polynomials with probability upper-bounded
-  by $\noofp \cdot \epsext$.
-
-  Note that if $\adv$ manages to output an instance $\inp$ and proof $\zkproof$
-  that extractor $\ext_\adv$ fails to produce a corresponding witness $\wit$,
-  then $\ext_\bdv$ also fails to produce a witness for the instance output by
-  $\bdv$. This comes from the simple observation, if $\ext_\bdv$ was successful,
-  then $\ext_\adv$ could run $\bdv$ internally along with $\adv$ until the former
-  outputs instance $\inp$ and proof $\zkproof'$, then use $\ext_\bdv$ to extract
-  witness $\wit$ for $\inp$. Importantly, both $\adv$ and $\bdv$ output the same instance.
-
-  Hence the probability of $\bdv$'s failure in generating a proof for instance
-  $\inp$ that $\ext_\bdv$ fails to extract a correct witness is upper-bounded by
-  \[
-    (1 - \eps) + \noofp \cdot \epsext.
-  \]
-  Hence, for $\eps > \epsks + \noofp \cdot \epsext$ adversary $\bdv$ wins with probability at least
-  \[
-    \epsks + \noofp \cdot \epsext - \noofp \cdot \epsext  = \epsks.
-  \]
-  \qed
-\end{proof}
-}
-
 \subsection{Simulation extractable NIZKs from simulation extractable polynomial
   commitments}
 
 \begin{theorem}
-  Let $\PIOP = (\PIOP.\prover, \PIOP.\verifier, \PIOP.\simulator)$ be a ZK PIOP
+  Let $\WEPHP = (\PHP.\prover, \PHP.\verifier, \PHP.\simulator)$ be a ZK PHP
   for $\REL$ with knowledge soundness error $\epsks$ where the prover sends up
   to $\noofp$ polynomials. Let $\PCOM$ be $\eps(\secpar)$-sufficiently
   simulatable polynomial commitment scheme for $\PS$ with extraction error
   $\epsext$. Let $\PS = (\PS.\prover, \PS.\verifier, \PS.\simulator)$ be a proof system such
   that
   \begin{enumerate}
-  \item $\PS.\prover$ acts as $\PIOP.\prover$, except
+  \item $\PS.\prover$ acts as $\PHP.\prover$, except
     \begin{itemize}
-    \item when $\PIOP.\prover$ sets up a polynomial oracle $\oracleo_f$,
+    \item when $\PHP.\prover$ sets up a polynomial oracle $\oracleo_f$,
       $\PS.\prover$ sends commitment $c = \com(f)$;
     \item when $\PS.\verifier$ asks $\PS.\prover$ to open a commitment
       $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
       the opening.
   \end{itemize}
-  \item $\PS.\verifier$ acts as $\PIOP.\verifier$, except when $\PIOP.\verifier$
+  \item $\PS.\verifier$ acts as $\PHP.\verifier$, except when $\PHP.\verifier$
     asks oracle $\oracleo_f$ for an evaluation of $f$ at $z$, $\PS.\verifier$
     sends $z$ to $\PS.\prover$ and expects $f(z)$ in return.
-  \item $\PS.\simulator$ acts as $\PIOP.\simulator$, except
+  \item $\PS.\simulator$ acts as $\PHP.\simulator$, except
      \begin{itemize}
-    \item when $\PIOP.\simulator$ sets up a polynomial oracle $\oracleo_f$,
+    \item when $\PHP.\simulator$ sets up a polynomial oracle $\oracleo_f$,
       $\PS.\simulator$ sends commitment $c = \com(f)$;
     \item when $\PS.\verifier$ asks $\PS.\simulator$ to open a commitment
       $c = \com(f)$ at $z$ it returns $f(z)$ and a proof $o$ of correctness of
@@ -633,7 +457,7 @@ verifier's challenges.
   \item evaluations $s_i$ for evaluation points $z_i$ provided by the $\PS.\verifier$;
   \item openings $o_i$;
   \end{inparaenum}
-  \michals{28.06}{Stopped here -- we need more details of PIOP to argue about
+  \michals{28.06}{Stopped here -- we need more details of PHP to argue about
     $\bdv$ returning a valid opening of commitment. Further we want to state
     that if the proof was accepted then the commitments have been opened
     successfully. If the proof system allow for batch opening, then still we can
