@@ -177,8 +177,10 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
   \begin{description}
 %   \item [$(\msg{commit}, f)$:] returns commitment $c = \com(f)$ and adds $(f,
 % c)$ to list $Q$.
-\item[$(\msg{commit})$:] Run $c \gets \mathsf{SimSample}(\secparam)$ and add $c$ to $\Qcom$.
-  \item[$(\msg{open}, c, x, y)$:] if $c \in \Qcom$ and $x\notin \Qev$, add $x$ to $\Qev$ and return $\mathsf{SimOpen(\td, c,x,y)}$.
+\item[$(\msg{commit})$:] Run $C_{i} \gets \mathsf{SimSample}(\secparam)$
+  \item[$(\msg{open}, c, x, y)$:] returns an opening $o$ for commitment $c$
+    assuring that for some polynomial $f$, such that $c \in \image(\com(f))$,
+    holds $f(x) = y$.
   \end{description}
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
   adversary $\adv$ with oracle access to $\oracles$ there exists extractor
@@ -201,7 +203,7 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
         \end{aligned}
         }
     \begin{aligned}
-      & \srs,\td \gets \kgen(\secparam, \maxdeg),\\
+      & \srs \gets \kgen(\secparam, \maxdeg),\\
       & (c, z, s, o) \gets \adv^{\oracles}(\srs; r), \\
       % & z \sample \FF,\\
       % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
@@ -690,10 +692,10 @@ We inline to get the following equation which we then analyze in detail,
 
 We now look at diferent monomials in $T$ of this equation to derive constraints on $C_{ji}$ and $Q_{ji}$ imposed by the verification equation:
 \begin{itemize}
+  \item[$A_{i}X$:] $Q_{2i} A_{i} X = 0$
   \item[$A_{i}$:] $C_{2i} A_{i} = - Q_{2i}A_{i} x$. As $Q_{2i}=0$, it follows
         that $C_{{2i}}=0$. This step relies on $x \neq x_{i}$ and thus
         $\frac{A_{i} (X-x)}{X-x_{i}}$ cannot cancel out its denominator.
-  \item[$A_{i}X$:] $Q_{2i} A_{i} X = 0$
   \item[$\frac{A_{i}X}{X-x_{i}}$:] $Q_{3i} \frac{A_{i} X}{X-x_{i}} = 0$.
   \item[$\frac{A_{i}}{X-x_{i}}$:]
         $C_{3i} \frac{A_{i}}{X-x_{i}} = Q_{{3i}} \frac{A_{i}}{X-x_{i}} $. As $Q_{3i}=0$, it follows
