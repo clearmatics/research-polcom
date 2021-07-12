@@ -134,13 +134,14 @@ $\PCOM$:
 	
 
 \begin{description}
-\item[Commitment of knowledge] For every $\ppt$ adversary $\adv$ who produces
-  commitment $c$, gets random evaluation point $z$, and outputs evaluation $s$
-  with an opening $o$ there exists a $\ppt$ extractor $\ext$ such that
+\item[Commitment of knowledge] For every $\ppt$ adversary
+  $\adv = (\adv_1, \adv_2)$ who produces commitment $c$, gets random evaluation
+  point $z$, and outputs evaluation $s$ with an opening $o$ there exists a
+  $\ppt$ extractor $\ext$ such that
 \[
   \Pr \left[
     \begin{aligned}
-      & \p{f} = \ext_\adv(\srs, c; r),\\
+      & \p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
       & c = \com(\srs, \p{f}),\\
       & \verify(\srs, c, z, s, o) = 1
     \end{aligned}
@@ -154,7 +155,8 @@ $\PCOM$:
         }
     \begin{aligned}
       & \srs \gets \kgen(\secparam, \maxdeg),\\
-      & (c, z, s, o) \gets \adv(\srs; r)
+      & (c, \aux) \gets \adv_1(\srs; r_1), z \sample \FF, \\
+      &  (s, o) \gets \adv_2(\srs, \aux, c, z; r_2)
     \end{aligned}
   \right.\right]
   \geq 1 - \epsk(\secpar).
