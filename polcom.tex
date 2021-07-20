@@ -448,10 +448,10 @@ verifier's challenges.
   wins in Game $\game{1}$ but not in $\game{2}$ (or vice-versa) is at most
   $\eps(\secpar)$.
 
-  \medskip\noindent
-  We now analyze the probability that $\adv$ wins in Game $\game{2}$. Since
-  $\PCOM$ is simulation extractable, there exists an extractor $\ext_\bdv$ which 
-  extracts, for $i \in \range{1}{\noofp}$, polynomials $f_i$ if $\bdv$ output
+  \medskip\noindent We now analyze the probability that $\adv$ wins in Game
+  $\game{2}$. Since $\PCOM$ is simulation extractable, there exists an extractor
+  $\ext_\bdv$ which extracts, for $i \in \range{1}{\noofp}$, polynomials $f_i$
+  if $\bdv$ output
   \begin{inparaenum}[(1)]
   \item commitment $c_i$ and $c_i \in \image(\com(f_i))$;
   \item evaluations $s_i$ for evaluation points $z_i$ provided by the $\PS.\verifier$;
@@ -464,8 +464,7 @@ verifier's challenges.
   open every single commitment.}
   
 \end{proof}
-\newcommand{\Kzg}{\mathsf{KZG}}
-\newcommand{\kzg}{\mathsf{kzg}}
+\newcommand{\Kzg}{\mathsf{KZG}} \newcommand{\kzg}{\mathsf{kzg}}
 
 \def\cgen{{\sf ComGen}}
 \def\commit{{\sf Com}}
@@ -502,10 +501,14 @@ $T=(X, \{A_{i}\})$
 The transcript consists of the setup $\{[X^{i}]_{1}\}, [X]_{2}$ and simulated proofs $\{[A_{i} + y_{i}]_{1}, [\frac{A_{i}}{X-x_{i}}]\}$.
 
 The honest verification equation is
-$[f(X) - y]_1 \circ [h]_{2} - [q(X)]_1 \circ [X-x]_{2}=0$
-while an adversary can provide rational functions
-$f(X, \{A_{i}\}) = \sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3i} \frac{A_{i}}{X-x_{i}}$ and
-$q(X, \{A_{i}\}) = \sum Q_{1i} X^{i} + \sum Q_{2i} A_{i} + \sum Q_{3i} \frac{A_{i}}{X-x_{i}}$ computed as linear combinations of elements in the transcript. Note that we performed a simplification here as the $y_{i}$ are picked and known by the adversary.
+$[f(X) - y]_1 \circ [h]_{2} - [q(X)]_1 \circ [X-x]_{2}=0$ while an adversary can
+provide rational functions
+$f(X, \{A_{i}\}) = \sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3i}
+\frac{A_{i}}{X-x_{i}}$ and
+$q(X, \{A_{i}\}) = \sum Q_{1i} X^{i} + \sum Q_{2i} A_{i} + \sum Q_{3i}
+\frac{A_{i}}{X-x_{i}}$ computed as linear combinations of elements in the
+transcript. Note that we performed a simplification here as the $y_{i}$ are
+picked and known by the adversary.
 
 The security game gives us that $x \neq x_{i}$.
 
@@ -518,16 +521,49 @@ We now look at diferent monomials in $T$ of this equation to derive constraints 
 \begin{itemize}
   \item[$A_{i}X$:] $Q_{2i} A_{i} X = 0$
   \item[$A_{i}$:] $C_{2i} A_{i} = - Q_{2i}A_{i} x$. As $Q_{2i}=0$, it follows
-        that $C_{{2i}}=0$. This step relies on $x \neq x_{i}$ and thus
-        $\frac{A_{i} (X-x)}{X-x_{i}}$ cannot cancel out its denominator.
+    that $C_{{2i}}=0$. This step relies on $x \neq x_{i}$ and thus
+    $\frac{A_{i} (X-x)}{X-x_{i}}$ cannot cancel out its denominator.
   \item[$\frac{A_{i}X}{X-x_{i}}$:] $Q_{3i} \frac{A_{i} X}{X-x_{i}} = 0$.
   \item[$\frac{A_{i}}{X-x_{i}}$:]
-        $C_{3i} \frac{A_{i}}{X-x_{i}} = Q_{{3i}} \frac{A_{i}}{X-x_{i}} $. As $Q_{3i}=0$, it follows
-        that $C_{{3i}}=0$.
-      \end{itemize}
+    $C_{3i} \frac{A_{i}}{X-x_{i}} = Q_{{3i}} \frac{A_{i}}{X-x_{i}} $. As
+    $Q_{3i}=0$, it follows that $C_{{3i}}=0$.
+  \end{itemize}
+We are thus back to the honest verification equation.
 
-      We are thus back to the honest verification equation.
+\section{Simulation extractability of $\plonk$ from simulation extractability of
+  KZG}
+\michals{19.07}{Write down modified version of $\plonk$ where every polynomial
+  send by the prover is randomized}
+Let $\bdv$ be a deterministic adversary against SE of the polynomial commitment $\PCOM$ and
+$\adv$ be an adversary against SE of the proof system $\PS$. We show that
+existence of the extractor $\ext_\bdv$ implies existence of $\ext_\adv$. To that
+end we show that $\bdv^{\oracles^{\PCOM}}$ can be used to make simulated proofs
+for $\adv$.
 
+$\bdv$ on $\adv$'s query $(\inp, \wit)$ proceeds as follows
+\begin{enumerate}
+\item Send $(\msg{commit}, 0, 2)$ to $\oracles^{\PCOM}$ three times and obtain commitments $c_a$,
+  $c_b$, $c_c$ which play roles of commitments to the witness-carrying
+  polynomials $\p{a}(X)$, $\p{b}(X)$, $\p{c}(X)$.
+\item Compute challenges $\beta, \gamma$ by querying the random oracle.
+\item Send $(\msg{commit}, 0, 3)$ to $\oracles^{\PCOM}$ and get commitment $c_z$
+  which plays the role of commitment to $\p{z}(X)$.
+\item Compute challenge $\alpha$.
+\item Send $(\msg{commit}, 0, 2)$ to $\oracles^{\PCOM}$ three times and obtain
+  commitments $c_{tlo}$, $c_{tmid}$, $c_{thi}$ which play roles of commitments
+  to polynomials $\p{t'_{lo}}(X)$, $\p{t'_{mid}}(X)$, $\p{t'_{hi}}(X)$.
+\item Compute challenge $\chz$.
+\item Ask $\oracles^{\PCOM}$ for evaluations of $\ev{a}, \ev{b}, \ev{c},
+  \ev{t'_{lo}}, \ev{t'_{mid}}, \ev{t'_{hi}}$ of  $c_a, c_b, c_c, c_{tlo},
+  c_{tmid}, c_{thi}$ at $\chz$.
+\item Compute $\p{t}(\chz)$ and $\p{r}(\chz)$. 
+\item Set $\ev{t'} = \ev{t'_{lo}} + \chz^\noofc
+  \ev{t'_{mid}} + \chz^{2 \noofc} \ev{t'_{hi}}$.
+\item Compute
+  $\p{r'}(\chz) = \p{r}(\chz) + (\p{t'_{lo}}(\chz) - \p{t_{lo}}(\chz)) +
+  (\p{t'_{mid}}(\chz) - \p{t_{mid}}(\chz))\chz^\noofc + (\p{t'_{hi}}(\chz) - \p{t_{hi}}(\chz))\chz^{2\noofc}$.
+\end{enumerate}
+  
 \bibliographystyle{alpha}
 \bibliography{cryptobib/abbrev1,cryptobib/crypto}
 
