@@ -209,7 +209,7 @@
 \newcommand{\noofev}{\pcvarstyle{k'}}
 \newcommand{\encset}{E}
 \newcommand{\PSc}{\PS_{com}}
-\newcommand{\PHP}{\pcschemestyle{\Gamma}}
+\newcommand{\PHP}{\ensuremath{\pcschemestyle{\Gamma}}}
 
 \newcommand{\dlog}{\pcvarstyle{dlog}}
 \newcommand{\ldlog}{\pcvarstyle{ldlog}}
@@ -269,6 +269,7 @@
 \definecolor{lightmagenta}{rgb}{0.9,0.9,0.9}
 \definecolor{darkred}{rgb}{0.7,0,0}
 \definecolor{blueish}{rgb}{0.1,0.1,0.5}
+\definecolor{greenish}{rgb}{0.1,0.4,0.1}
 \definecolor{pinkish}{rgb}{0.9,0.8,0.8}
 \definecolor{darkgreen}{rgb}{0,0.6,0}
 \definecolor{lightgreen}{rgb}{0.85,1,0.85}
@@ -278,6 +279,7 @@
 %comments
 \DeclareRobustCommand{\markulf}[2]  {{\color{darkmagenta}\hl{\scriptsize\textsf{Markulf #1:} #2}}}
 \DeclareRobustCommand{\michals}[2]  {{\color{blueish}\sethlcolor{pinkish}\hl{\scriptsize\textsf{Michal #1:} #2}}}
+\DeclareRobustCommand{\antonio}[2]  {{\color{greenish}\sethlcolor{pinkish}\hl{\scriptsize\textsf{Antonio #1:} #2}}}
 \newcommand{\task}[2]{\todo[author=\textbf{Task},inline]{({\textit{#1}}) #2}}
 % \newcommand{\task}[2] {\xcommenti{Task}{#1}{#2}}
 % \DeclareRobustCommand{\task}[2]  {{\color{black}\sethlcolor{yellow}\hl{\textsf{TASK #1:} #2}}}

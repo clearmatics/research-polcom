@@ -40,10 +40,13 @@
 \newcommand{\dboxed[1]}{\dbox{\ensuremath{#1}}}
 \usepackage{hyperref}
 \usepackage[capitalise]{cleveref}
+\usepackage{braket} %for the \braket{} command
 
 %\usepackage{mathptmx}
 
+
 \include{macros}
+\include{macros_antonio}
 
 \title{On PHP-based zkSNARKs}
 
@@ -329,6 +332,24 @@ In other words, PHP is witness encoding if for any valid proof for a statement
 $\inp$ in the language, the corresponding witness can be read from the
 polynomial coefficients. We note that this is the case for virtually all
 PHPs. \michals{28.04}{Check!}
+
+\antonio{27.07}{This definition reminded me that in Lunar we define straight-line extractability for PHP.
+	The def is stronger than def above.  I think that every "natural" PHP should
+	also be straight-line extractable. I copy-paste the definition below:}
+	%
+\begin{definition}[PHPs with straight-line extractor]
+\label{def:knownsound_wc_poly}
+A $\PS$ is $\epsilon$-knowledge-sound with straight-line extractor if there exists an
+extractor $\WitExtract$ such that for any prover $\Pphp^*$, every field $\FF \in \Fam$,
+relation $\ind$, and instance $\inp$: 
+\[ \Prob{ (\ind, \inp, \WitExtract(\tuple\pora{\nprv})) \in \relfam}
+	\geq \Prob{ \braket{ \Pphp^*,\Vphp^{\Iphp(\FF,\ind)}(\FF,\inp) } = 1} - \epsilon
+\]
+where $\tuple\pora{\nprv}$ are the polynomials output by $\Pphp^*$ in an execution of
+$\braket{\Pphp^*, \Vphp^{\Iphp(\FF,\ind)}(\FF,\inp)}$.
+\end{definition}
+
+
 
 \begin{definition}[Somehow deterministic WEPHP]
   \label{def:sdwephp}
