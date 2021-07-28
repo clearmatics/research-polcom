@@ -555,17 +555,19 @@ $\bdv$ and $\ext_\bdv$.
 More precisely, we show that $\adv$'s access to $\oraclesps$ can be substituted
 with some \emph{deterministic} algorithm $\bdv$ and $\oraclespcom$. We then
 build $\ext_\adv$ using $\bdv$ and $\ext_\bdv$. To do that we need
-to ``translate'' $\ext_\bdv$'s inputs to $\ext_\adv$'s inputs. From a high level
+to ``translate'' $\ext_\adv$'s inputs as $\ext_\bdv$'s inputs. From a high level
 perspective this is achieved as follows:
 \begin{description}
-\item[$\adv$'s code:] $\bdv$ that provides $\adv$ with simulated proofs using
-  its access to $\oraclespcom$. More precisely on $\adv$'s query to $\oraclesps$
-  $\bdv$ parses it as a set of $\oraclespcom$ queries, then it parses oracle's
-  responeses to make a $\PS$ proof out of them. Such proof is send back to
-  $\adv$. Since $\ext_\bdv$ knows the code of $\bdv$ it also knows the code of
-  $\adv$ which is $\bdv$'s subroutine.
-\item[$\adv$'s randomness:] $\bdv$ runs deterministically except for the
-  subroutine that runs $\adv$. Thus $r_\adv = r_\bdv$.
+\item[$\bdv$'s code:] $\bdv$ code compounds of two elements: a subroutine that
+  runs $\adv$ and an overlay $\cdv$ that is responsible for providing $\adv$ with
+  simulated proofs using its access to $\oraclespcom$. More precisely on
+  $\adv$'s query to $\oraclesps$ $\cdv$ parses it as a set of $\oraclespcom$
+  queries, then it parses oracle's responeses to make a $\PS$ proof out of
+  them. Such proof is send back to $\adv$. Hence, $\bdv$'s code composes of code
+  of $\adv$ and some (publicly known and universal, i.e.~one for all $\adv$'s)
+  code of algorithm $\cdv$. 
+\item[$\adv$'s randomness:] Since $\cdv$ is deterministic, we have
+  $r_\adv = r_\bdv$.
 \item[auxiliary input $\aux_\adv$:] 
 \end{description}
 
