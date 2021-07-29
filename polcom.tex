@@ -551,40 +551,97 @@ We now look at diferent monomials in $T$ of this equation to derive constraints 
   \end{itemize}
 We are thus back to the honest verification equation.
 
-\section{Simulation extractability of $\plonk$ from simulation extractability of
-  KZG}
-\michals{19.07}{Write down modified version of $\plonk$ where every polynomial
-  send by the prover is randomized}
-Let $\bdv$ be a deterministic adversary against SE of the polynomial commitment $\PCOM$ and
-$\adv$ be an adversary against SE of the proof system $\PS$. We show that
-existence of the extractor $\ext_\bdv$ implies existence of $\ext_\adv$. To that
-end we show that $\bdv^{\oracles^{\PCOM}}$ can be used to make simulated proofs
-for $\adv$.
+\section{Simulation extractable NIZK from a simulation extractable polynomial
+  commitment and polynomial protocol}
+Here we show that given a simulation extractable polynomial commitment scheme
+and polynomial protocol one can use the polynomial protocol-to-NIZK compiler
+from \cite{EPRINT:GabWilCio19} to get a simulation extractable NIZK. The idea of
+the construction is following. First we observe that since the polynomial
+commitment is simulation extractable then for every adversary $\bdv$ who, given
+access to a polynomial commitment simulator oracle $\oraclespcom$, outputs a
+vector of commitments $\vec{c} = (c_1, \ldots, c_\ell)$ and its valid opening $\vec{o}$ at random points
+$\vec{z}$, there exists an
+extractor $\ext_\bdv$ which, given
+\begin{itemize}
+\item $\bdv$'s code,
+\item its randomness $r_\bdv$, and
+\item auxiliary input $\aux_\bdv$, where $\aux_\bdv$ consists of all
+  $\oraclespcom$'s responses for $\bdv$ queries
+\end{itemize}
+outputs $\vec{f}$ such that $c_i \in \image(\com(f_i))$, for
+$i \in \range{1}{\ell}$.  Then we take a simulation-extractability adversary for
+the compiled NIZK $\adv$ and build its corresponding extractor $\ext_\adv$ using
+$\bdv$ and $\ext_\bdv$.
 
-$\bdv$ on $\adv$'s query $(\inp, \wit)$ proceeds as follows
-\begin{enumerate}
-\item Send $(\msg{commit}, 0, 2)$ to $\oracles^{\PCOM}$ three times and obtain commitments $c_a$,
-  $c_b$, $c_c$ which play roles of commitments to the witness-carrying
-  polynomials $\p{a}(X)$, $\p{b}(X)$, $\p{c}(X)$.
-\item Compute challenges $\beta, \gamma$ by querying the random oracle.
-\item Send $(\msg{commit}, 0, 3)$ to $\oracles^{\PCOM}$ and get commitment $c_z$
-  which plays the role of commitment to $\p{z}(X)$.
-\item Compute challenge $\alpha$.
-\item Send $(\msg{commit}, 0, 2)$ to $\oracles^{\PCOM}$ three times and obtain
-  commitments $c_{tlo}$, $c_{tmid}$, $c_{thi}$ which play roles of commitments
-  to polynomials $\p{t'_{lo}}(X)$, $\p{t'_{mid}}(X)$, $\p{t'_{hi}}(X)$.
-\item Compute challenge $\chz$.
-\item Ask $\oracles^{\PCOM}$ for evaluations of $\ev{a}, \ev{b}, \ev{c},
-  \ev{t'_{lo}}, \ev{t'_{mid}}, \ev{t'_{hi}}$ of  $c_a, c_b, c_c, c_{tlo},
-  c_{tmid}, c_{thi}$ at $\chz$.
-\item Compute $\p{t}(\chz)$ and $\p{r}(\chz)$. 
-\item Set $\ev{t'} = \ev{t'_{lo}} + \chz^\noofc
-  \ev{t'_{mid}} + \chz^{2 \noofc} \ev{t'_{hi}}$.
-\item Compute
-  $\p{r'}(\chz) = \p{r}(\chz) + (\p{t'_{lo}}(\chz) - \p{t_{lo}}(\chz)) +
-  (\p{t'_{mid}}(\chz) - \p{t_{mid}}(\chz))\chz^\noofc + (\p{t'_{hi}}(\chz) - \p{t_{hi}}(\chz))\chz^{2\noofc}$.
-\end{enumerate}
+More precisely, we show that $\adv$'s access to $\oraclesps$ can be substituted
+with some \emph{deterministic} algorithm $\bdv$ and $\oraclespcom$. We then
+build $\ext_\adv$ using $\bdv$ and $\ext_\bdv$. To do that we need
+to ``translate'' $\ext_\adv$'s inputs as $\ext_\bdv$'s inputs. From a high level
+perspective this is achieved as follows:
+\begin{description}
+\item[$\bdv$'s code:] $\bdv$ code compounds of two elements: a subroutine that
+  runs $\adv$ and an overlay $\cdv$ that is responsible for providing $\adv$ with
+  simulated proofs using its access to $\oraclespcom$. More precisely on
+  $\adv$'s query to $\oraclesps$ $\cdv$ parses it as a set of $\oraclespcom$
+  queries, then it parses oracle's responeses to make a $\PS$ proof out of
+  them. Such proof is send back to $\adv$. Hence, $\bdv$'s code composes of code
+  of $\adv$ and some (publicly known and universal, i.e.~one for all $\adv$'s)
+  code of algorithm $\cdv$. 
+\item[$\bdv$'s randomness:] Since $\cdv$ is deterministic, we have
+  $r_\adv = r_\bdv$.
+\item[Auxiliary input $\aux_\bdv$:] Since the simulated proofs from $\oraclesps$
+  collected in $\aux_\adv$ compounds of polynomial commitments, their evaluation
+  and openings, they can be naturally translated to a number of $\oraclespcom$
+  calls.
+\end{description}
+After the extractor $\ext_\bdv$ produces an output -- a vector of polynomials --
+$\ext_\adv$ needs to parse it to its needs. To that end, it makes $\PS$'s proofs
+out of them.
+
+\begin{lemma}[Trapdoor-free simulatability of polynomial protocols.]
+  Let $\PS$ be a polynomial protocol with verification equation
+  \[
+    \vereq := G(X, h_1(v_1(X)), \ldots, h_\ell(v_\ell (X))) = 0.
+  \]
+  Assume that for all $i, j, k, l \in \range{1}{\ell}$, $a_j, a_{k, l} \in \FF$ holds
+  \[
+    h_i(v_i(X)) \neq a_j h_j(v_j(X)) + \sum_{k, l} a_{k, l} h_k(v_k (X)) h_l (v_l (X)),
+  \]
+  additionaly assume uber assumption \cite{}.
+  Then there exists simulator $\simulator$ such that for any $\ppt$ adversary
+  $\adv$
+  \[
+    \text{no polynomial adversary can distinguish the proofs -- computational ZK}
+  \]
+\end{lemma}
+\begin{proof}[draft]
+  The simulation idea is similar to the one presented in
+  \cite{EPRINT:CFFQR20}. When $\prover$ sends a polynomial commitment $c$ to
+  some polynomial $f$, the simulator picks a random commitment
+  $c_\simulator$. When all commitments have been submitted, the simulator
+  computes $ G(X, h_1(v_1(X)), \ldots, h_\ell(v_\ell (X)))$ and finds its root
+  $\chz$. Then it programs the random oracle to return $\chz$ as the polynomial
+  protocol challenge.
+
+  First, since the uber assumption holds, no $\ppt$ algorithm can tell
+  commitment to a randomly picked $f$ from a real one. \michals{28.07}{Here we
+    assume that $\PCOM$ is the KZG scheme but it should be generalizable to any
+    polynomial commitment.} Also, relaying on the same assumption, no $\ppt$
+  algorithm can tell evaluation of $f$ at a random point from an evaluation of a
+  random polynomial.
+  Furthermore, since the simulator picks $\chz$ such that verification equation
+  holds, the verifier accepts such proof. \michals{28.07}{Probably need to argue
+    that $\chz$, which the simulator picks also ``looks random''.}
+  \qed
+\end{proof}
+
+\begin{theorem}[From simulation extractable $\PCOM$ to simulation extractable $\nizk$.]
+\end{theorem}
+\begin{proof}
+  \qed
   
+\end{proof}
+
 \bibliographystyle{alpha}
 \bibliography{cryptobib/abbrev1,cryptobib/crypto}
 
