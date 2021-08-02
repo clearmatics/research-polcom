@@ -294,6 +294,7 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 SRS. (Both SRS could differ in some efficiency related elements, but computation
 of these don't require any secret knowledge)}
 \michals{12.07}{Check how it is done in Lunar}
+\antonio{29.07}{I think you might want to look at Pag 71 of Lunar's manuscript, Definition 20.}
    \end{definition}
 
 \subsection{Polynomial IOP}
@@ -311,6 +312,9 @@ of these don't require any secret knowledge)}
  Intuitively, we call $\PCOM$ sufficiently simulatable for $\PS$ if a $\ppt$
  $\adv$ given access to $\PCOM$'s simulator oracle $\oraclespcom$ can produce a
  simulated proof for $\PS$.
+	\antonio{29.07}{If I understood correctly, $\PS$ should the ``compiled'' proof system,
+		namely the PS obtained using polycommitment and an information-theoretic proof system
+		(like a PHP),right? I don't really understand why you need this def.}
 
  \begin{definition}[Polynomial Holomorphic Proof System (PHP)]
   \label{def:php}
@@ -334,7 +338,7 @@ polynomial coefficients. We note that this is the case for virtually all
 PHPs. \michals{28.04}{Check!}
 
 \antonio{27.07}{This definition reminded me that in Lunar we define straight-line extractability for PHP.
-	The def is stronger than def above.  I think that every "natural" PHP should
+	The straight-line extractability def is stronger than def above but I think that every "natural" PHP should
 	also be straight-line extractable. I copy-paste the definition below:}
 	%
 \begin{definition}[PHPs with straight-line extractor]
@@ -371,6 +375,7 @@ Intuitively, we say that WEPHP is somehow deterministic if the only
 non-deterministic messages send by the prover are polynomials encoding the
 witness, and all other messages are determined by the previous one, witness, and
 verifier's challenges.
+\antonio{29.07}{Why do we need this definition?}
 
 \section{PHP-to-NIZK compiler}
 
@@ -396,6 +401,13 @@ verifier's challenges.
         change the verifier and its equations -- that's why we have $\van{H}$.}
   \end{itemize}
 \end{theorem}
+\antonio{29.07}{How can we choose the set $H$? In other words, how do we select an $H$ that
+does not mess with the completeness or the soundness of the PHP?
+Can we just say that if the original PHP checks $G(X,h_1(v_1(X)),...)=0$ then the new PHP
+checks $G(X,h'_1(v_1(X)),\dots)$ where $h'_i(X)=h'_i(X)+V_H(X)r_i(X)$ for some randomly
+chosen $r_i$? ($V_H$ is the vanishing poly at $H$) I guess completeness would hold for any
+$H$ but not sure about soundness, right?
+}
 \begin{proof}
   \ncase{Completeness} 
 
@@ -641,6 +653,113 @@ out of them.
   \qed
   
 \end{proof}
+
+
+
+
+\section{DRAFT-Notes on transformation from PHP to Interactive Arguments}
+
+\antonio{02.08}{Writing this note to convince myself that things aren't so easy as I
+thought. Please could you tell me where the argument below should fail?}
+In Lunar we define the notion of Universal Interactive Argument Systems in the SRS model
+as a middle ground for our transformation from PHP to Universal SNARKs.
+
+Here I want to show that we can reduce sim-ext of Universal Interactive Argument System
+(UIA) to the "standard" security properties of UIA.
+We assume the following properties from the UIA:
+\begin{itemize}
+	\item {\bf Straight-line extractability in the AGM.}
+		There exists an ``extractor'' $\Ext$ (the name extractor might be slightly misleading, but I
+		cannot find a better name for now) s.t. for any algebraic adversary $\adv$:
+		\[
+			\Prob[\srs,r]{
+					b=1 \wedge (\inp,\wit)\not\in\ind:
+					\begin{array}{l}
+					\ind,\inp, \vec X \gets\adv(\srs),\\
+					(\vec P,b) \gets \braket{\adv(\srs),\verifier(\Iphp(\ind),\inp;r)}\\
+					\wit \gets \Ext(\inp,\ind,r,\vec X,\vec P)
+					\end{array}
+					}\in\negl
+		\]
+		In the probability above $r$ is uniformly random in $\bin^\secpar$, and $\vec P$ and
+		$\vec X$	describe all the group elements output by the adversary as linear combination of
+		$\srs$. $b=1$ means that the adversary convinces the verifier. Also, if $\inp$ or $\ind$
+		do not contain any group elements then $\vec X$ is	empty. Finally, for simplicity we assumes that the adversary outputs only element in
+		$\GG_1$ and $\GG_2$, so only linear combinations are allowed.
+	\item {\bf honest-verifier zero-knowledge w/o trapdoor.}
+		There exists a simulator $\sdv$ such that for any $\srs,\ind,\inp,\wit$ we have
+		$\sdv(\srs,\ind,\inp)\equiv
+		\braket{\prover(\srs,\ind,\inp,\wit),\verify(\srs,\Iphp(\ind),\inp)}$
+		(For simplicity I am assuming perfectly close, to assume comp./statical closeness one should also
+		take care of adaptive choice of $\inp,\ind$ w.r.t. $\srs$)
+
+	\item {\bf (technical property) algebraic simulator.}
+		The simulator additionally outputs a matrix $\vec T$ such that the output group elements
+		are linear combinations of $\srs,\ind,\inp$
+
+%	\item {\bf (technical property) unpredictability of honest prover .}
+%		For any $\srs,\ind,\inp,\wit$ and let $\pmsg_1,\vmsg_1,\dots,\pmsg_m$ be a transcript for
+%		$\braket{\prover(\srs,\ind,\inp,\wit),\verifier(\srs,\ind,\wit)}$ then	$\minH(\pmsg_1)\geq \secpar$.
+%		(Thus also the simulated $\tilde\pmsg_1$ has a lot of min entropy)
+\end{itemize}
+
+Let $\adv$ be an adversary for the sim-ext of the UIA.
+We wanna prove that:
+\[
+			\Prob[\srs,r]{
+					b=1 \wedge (\inp,\wit)\not\in\ind:
+					\begin{array}{l}
+						\ind,\inp, \vec X \gets\adv^{SIM}(\srs),\\
+					(\vec P,b) \gets \braket{\adv(\srs),\verifier(\Iphp(\ind),\inp;r)}\\
+					\wit \gets \Ext(\inp,\ind,r,\vec X,\vec P)
+					\end{array}
+					}\in\negl
+\]
+where $SIM( \ind,\inp )$ produces a simulated (honest-verifier) proof for $\ind$ and $\inp$.
+\antonio{02.08}{This notion of sim-ext plus a technical property that says that the first
+message of the honest prover is unpredictable (it has high min-entropy) should imply
+sim-sound for the compiled fiat-shamir protocol.}
+
+Consider the algebraic adversary $\bdv$ described below:
+\begin{itemize}
+	\item Input is $\srs$ and it runs $\adv$ with input $\srs$, let $[\vec s]$ be (an
+		initially empty)	dynamic vector that includes all the group elements seen by $\adv$ through calls to
+		$SIM$.
+%	\item Lazy simulate the random oracle (we assume $RO$ codomain is $\FF$ so verifier's
+%		messages)
+	\item On $\adv$ sending $\ind,\inp$ to $SIM$, notice that $\adv$ is algebraic, thus it
+		additionally outputs $\vec X$ that describes $\ind,\inp$ as linear combinations of
+		$\srs$ and $[\vec s]$:
+		\begin{enumerate}
+			\item Let $\vec S$ be a description of $[\vec s]$ as lin.comb of $\srs$ (set to empty
+				matrix if first call).
+				From $\vec X$ and $\vec S$ we can define a new matrix $\vec X'$ that describes
+				$\ind,\inp$ as linear combs of $\srs$.
+			\item Run $\sdv(\srs,\ind,\inp)$ and get a simulated transcript together with a matrix $\vec T$
+				 that describes all the group elements in the simulated transcript as linear combinations of $\srs,\ind,\inp$.
+					From $\vec X'$ and $\vec T$ we can compute a matrix $\vec T'$ that describes all
+					the group elements in the transcript of the proof as linear combinations of the
+					$\srs$. Update $\vec S$ concatenating the matrix $\vec T'$.
+			\item Return the simulated transcript to $\adv$.
+		\end{enumerate}
+	\item On output $\ind,\inp,\vec X$ of $\adv$ define $\vec X'$ from $\vec X$ and $\vec S$
+		and output $\ind,\inp,\vec X$ as first output for the sim-ext experiment.
+	\item Similarly, follow the protocol proxing messages from/to $\adv$ and the external verifier.
+		Eventually $\adv$ outputs $\vec T$, thus given $\vec S$ and $\vec T$ compute $\vec T'$
+		that describes all the group elements in the transcript as linear combinations of the
+		$\srs$.
+\end{itemize}
+
+
+Here I am being very sloppy with how we obtain, for example, $\vec X'$ from $\vec X$ and
+$\vec S$.
+More in detail, if 
+$\vec y = (\vec M_0, \vec M_1) \pmtrx{\vec x\\\vec x'}$ and $\vec x' = \vec N \vec x$ then
+easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
+
+
+
+
 
 \bibliographystyle{alpha}
 \bibliography{cryptobib/abbrev1,cryptobib/crypto}
