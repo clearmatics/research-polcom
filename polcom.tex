@@ -274,6 +274,58 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
     polynomials submitted by the adversary on multiple challenges.}
 \end{definition}
 
+\begin{definition}[$(k, \eps)$-aux-simulation extractable polynomial commitment]
+  \label{def:sepcom}
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
+  scheme. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  committed, $H$ be a set of $\maxdeg + 1$ elements in $\FF$ and
+  $\van{H}$ is a vanishing polynomial for $H$.
+  
+  Let $\oracles$ be an oracle which on input
+  \begin{description}
+\item[$(\msg{commit}, f, d)$:] for $\deg(f) = d'$, $d' \leq d \leq \maxdeg$,
+  picks $d - d'$ random elements $r_1, \ldots, r_{d - d'}$, sets 
+  polynomial $g(X) = f(X) + \van{H}(r_1 X^{d' + 1} + \ldots + r_{d - d'} X^{d})$, returns
+  commitment $c = \com(g)$ and adds $(g, c)$ to list $\Qcom$.
+\item[$(\msg{commit}, rand, d)$:] picks a random polynomial $f$ of degree $d$ and
+  outputs commitment $c = \com(f)$ and adds $(f, c)$ to the list $\Qcom$.
+  \item[$(\msg{evaluate}, c, z)$:] returns $f(z)$ where $f$ is a polynomial
+    which commitment is $c$ and $(f, c) \in \Qcom$; add $z$ to $\Qev$.
+  \item[$(\msg{open}, c, z, y)$:] returns an opening $o$ for commitment $c$
+    assuring that for some polynomial $f$, such that $c \in \image(\com(f))$,
+    holds $f(z) = y$.
+  \end{description}
+  We say that $\PCOM$ is \emph{$(3, \eps)$-aux-simulation extractable} if for
+  any $\ppt$ adversary $\adv$ with oracle access to
+  $\oracles$ and random oracle $ro$ there exists extractor $\ext$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & \p{f_1}, \ldots, \p{f_k} = \ext_\adv(\srs, (c_1, \ldots, c_k), r),\\
+      & c_i = \com(\srs, \p{f_i}),\\
+      & \verify(\srs, c_i, z_i, s_i o_i) = 1, \text{ for } i \in \range{1}{k}\\
+      & z = \ro(\aux) 
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & \srs \gets \kgen(\secparam, \maxdeg),\\
+      & ((c_1, \ldots, c_k), \aux, z, (s_1, \ldots, s_k),\\
+      & \qquad \qquad (o_1, \ldots, o_k)) \gets \adv^{\oracles}(\srs, r), \\
+    \end{aligned}
+  \right.\right]
+  \geq 1 - \eps(\secpar).
+\]
+\end{definition}
+
+
  \begin{definition}[One-to-many openable\hl{Good name needed}]
    We call a commitment scheme $\PCOM$ one-to-many openable \hl{good name
      needed} if for any $\adv$ who outputs commitments $c_1, \ldots, c_k$,
@@ -519,11 +571,17 @@ $H$ but not sure about soundness, right?
 \section{KZG commitments are simulation extractable}
 $\Kzg.\PC = (\Kzg.\cgen,\Kzg.\CM,\allowbreak  \Kzg.\open,\allowbreak \Kzg.\check)$ is defined over bilinear groups $\gk=(p,\GG_1,\allowbreak \GG_2, \allowbreak \GG_T )$ with $\GG_1 =\langle g\rangle, \GG_2 =\langle h \rangle$ as follows:
 \begin{description}%[topsep=5pt]
-\item[$\Kzg.\cgen(1^\secpar, n) \to (\ck_\kzg, \vk_\kzg)$:] Set keys
-$\ck_\kzg = \{g^{\alpha^i}\}_{i=0}^{n-1}, \allowbreak\vk_\kzg = h^\alpha$.
-\item[$\Kzg.\CM(\ck_\kzg; f(X)) \to C_f$:]  For $f(X) = \sum_{i=0}^{n-1} f_i X^i$, computes  $C_f=\prod _{i=0}^{n-1} g^{f_i \alpha^i} = g^{f(\alpha)} $.
-\item[$\Kzg.\open(\ck_\kzg; C_f, x, y; f(X)) \to \pi$:] For an evaluation point $x$, a value $y$, compute the quotient  polynomial $q(X) = \displaystyle\frac{f(X) -y }{X-x}$ and output a proof $\pi = C_q = \Kzg.\CM(\ck_\kzg; q(X)) $.
-\item[$\Kzg.\check(\vk_\kzg = h^\alpha, C_f, x, y, \pi) \to 1/0$:] Check if $e(C_f \cdot  g^{-y}, h)=e(C_q , h^{\alpha}\cdot h^{-x})$.
+\item[$\Kzg.\cgen(1^\secpar, n) \to (\ck_{\kzg}, \vk_{\kzg})$:] Set keys
+$\ck_{\kzg} = \{g^{\alpha^i}\}_{i=0}^{n-1}, \allowbreak\vk_{\kzg} = h^\alpha$.
+\item[$\Kzg.\CM(\ck_{\kzg}; f(X)) \to C_f$:] For
+  $f(X) = \sum_{i=0}^{n-1} f_i X^i$, computes
+  $C_f=\prod _{i=0}^{n-1} g^{f_i \alpha^i} = g^{f(\alpha)} $.
+\item[$\Kzg.\open(\ck_{\kzg}; C_f, x, y; f(X)) \to \pi$:] For an evaluation point
+  $x$, a value $y$, compute the quotient polynomial
+  $q(X) = \displaystyle\frac{f(X) -y }{X-x}$ and output a proof
+  $\pi = C_q = \Kzg.\CM(\ck_{\kzg}; q(X)) $.
+\item[$\Kzg.\check(\vk_{\kzg} = h^\alpha, C_f, x, y, \pi) \to 1/0$:] Check if
+  $e(C_f \cdot g^{-y}, h)=e(C_q , h^{\alpha}\cdot h^{-x})$.
 \end{description}
 
 We move toward considering a symbolic verification equation $V'$ for which we have:
@@ -1084,7 +1142,7 @@ such that
 		\p{b}(X) &= (b_3 X + b_4)\p{Z_H}(X) + \sum_{i = 1}^{\noofc} \wit_{\noofc + i} \lag_i(X) \\
 		\p{c}(X) &= (b_5 X + b_6)\p{Z_H}(X) + \sum_{i = 1}^{\noofc} \wit_{2 \cdot \noofc + i} \lag_i(X) 
 	\end{align*}
-	Output polynomial commitments $\PCOM.\com(\p{a}(X)), \PCOM.\com(\p{b}(X)), \PCOM.\com(\p{c}(X))}$.
+	Output polynomial commitments $\PCOM.\com(\p{a}(X)), \PCOM.\com(\p{b}(X)), \PCOM.\com(\p{c}(X))$.
 	
 	\item[Round 2]
 	Get challenges $\beta, \gamma \in \FF_p$
@@ -1220,18 +1278,97 @@ The \plonk{} simulator proceeds as an honest prover would, except:
  polynomial commitment scheme.
 
   \begin{theorem}
-    Let $\PCOM$ be a simulation-extractable polynomial commitment, then
-    $\plonkprotfs^{\PCOM}$ is simulation extractable.
+    Let $\PCOM$ be a $(3, \eps)$-aux-simulation-extractable polynomial commitment, then
+    $\plonkprotfs^{\PCOM}$ is $()$-simulation extractable.
+    \michals{16.08}{$(3, \eps)$-aux-simulation-extractable -- $3$ polynomials are
+      extracted, $1 - \eps$ is probability of extractor's success, aux -- see
+      how we compute the challenge}
   \end{theorem}
   \begin{proof}
-    Let $\adv$ be a SE adversary for $\plonkprotfs^{\kzg}$ and $\bdv$ be a
-    SE-PCOM adversary. We show how to use extractor $\ext_\bdv$ to build
-    extractor $\ext_\adv$, which given $\adv$'s randomness, its code, and
-    instance $\inp$ and proof its produces, outputs witness $\wit$ such that
-    $\REL(\inp, \wit)$.
+    Let $\adv^{\oraclesps}(\srs, \srss, \radv)$ be a SE adversary for
+    $\plonkprotfs^{\PCOM}$ and $\bdv^{\oraclespcom}(\srs_{\PCOM}, \rbdv)$ be a
+    SE-PCOM adversary. We show how to use extractor
+    $\ext_\bdv(\srs_{\PCOM}, \qbdv, \rbdv)$, where $\qbdv$ is a list of all
+    queries to $\oraclespcom$ and their responses, to build extractor
+    $\ext_\adv(\srs, \srss, \qadv, \radv)$, where $\qadv$ is a list of all
+    queries to $\oraclesps$ and their responses,
+    outputs witness $\wit$ such that $\REL(\inp, \wit) = 1$.
 
-    
-  \end{proof}
+    We may equip adversary $\bdv$ with $\adv$'s code and its randomness
+    $\radv$. More precisely, we hardcode $\adv$'s code into $\bdv$ and set
+    $\rbdv = \radv$. (Importantly $\bdv$ does not use any randomness on its own). Such
+    $\bdv$ proceeds as follows
+    \begin{enumerate}
+    \item Given $\PCOM$ reference string $\srs_{\PCOM}$, prepare $\PS$'s master
+      SRS $\srs$ and specialized SRS $\srss$. 
+    \item Start $\adv(\srs, \srss, \radv)$.
+    \item On each $\adv$'s query $(\inp, \wit)$ to $\oraclesps$:
+      \begin{enumerate}
+      \item Check $\REL(\inp, \wit) = 1$ and ignore if that's not the case. 
+      \item Prepare a simulated proof for $\adv$ using $\oraclespcom$, that is
+        \begin{itemize}
+        \item Ask $\oraclespcom$ for 7 commitments to random polynomials, denote
+          the commitments by
+          $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t'_1}, \cp{t'_2}, \cp{t'_3}$.
+        \item Compute random elements $\alpha, \beta, \gamma, \delta, \chz$ as
+          random oracle evaluations at partial transcripts. 
+        \item Ask $\oraclespcom$ to evaluate all the polynomials at $\chz$ and
+          get openings $W^{\p{f}}_\chz$, for
+          $\p{f} \in \smallset{\p{a}, \p{b}, \p{c}, \p{z}}$.
+        \item Ask $\oraclespcom$ to evaluate $\p{z}$ at $\omega \chz$ and get
+          openings $W^{\p{z}}_{\omega \chz}$.
+        \item Compute evaluations $\p{S_{\sigma 1}}(\chz)$, $\p{S_{\sigma 2}}(\chz)$ and
+          openings $W^{\p{S_{\sigma 1}}}_\chz$, $W^{\p{S_{\sigma 2}}}_\chz$. 
+        \item For $i \in \range{1}{3}$, compute values of $\p{t_i}(\chz)$ as
+          defined by the proof.
+        \item For $i \in \range{1}{3}$, ask $\oraclespcom$ to evaluate
+          $\cp{t'_i}$ to open $\p{t'_i}(\chz)$ to $\p{t_i}(\chz)$.
+        \item From the obtained commitments, evaluations, openings, and random
+          elements compute a simulated proof $\zkproof$ for $\inp$. 
+        \end{itemize}
+      \item Add $(\inp, \zkproof)$ to $\qadv$.
+      \end{enumerate}
+    \item On $\adv$'s challenge instance $\inp$ and proof $\zkproof$.
+      \begin{enumerate}
+      \item Parse $\zkproof$ to obtain
+        \begin{itemize}
+        \item commitments
+          $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t_1}, \cp{t_2}, \cp{t_3}$,
+        \item random elements $\alpha, \beta, \gamma$,
+        \item openings $W_\chz^{\p{a}}, W_\chz^{\p{b}}, W_\chz^{\p{c}}$.
+        \end{itemize} 
+      \item Compute
+        $\aux = (\cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \p{z}, \alpha, \cp{t_1},
+        \cp{t_2}, \cp{t_3})$.
+      \item Output
+        \begin{itemize}
+        \item commitments $\cp{a}$, $\cp{b}$, $\cp{c}$, 
+        \item auxiliary input $\aux$, 
+        \item challenge $z = \ro(\aux)$,
+        \item openings  $W_z^{\p{a}} := W_\chz^{\p{a}}$,  $W_z^{\p{b}} :=
+          W_\chz^{\p{a}}$,  $W_z^{\p{c}} := W_\chz^{\p{c}}$.
+        \end{itemize}
+      \end{enumerate}
+    \end{enumerate}
+    \michals{16.08}{Open questions: (1) How to use adversary $\bdv$ that is tasked to
+      output only 1 commitent and its opening? (2) Can we state SE of PCOM as
+      above? I.e. with an adversary $\bdv$ who provides $\aux$ which determines
+      PCOM challenge $z = \ro(\aux)$? Sounds fine -- no adversary should be able
+    to efficiently find a $z$ that would fit it that way, but a formal reasoning
+    is needed.}
+
+  Now, since the polynomial commitment scheme is $(3, \eps)$-aux-simulation
+  extractable, then there exists an extractor $\ext_{\bdv}(\srs_{\PCOM}, \qbdv,
+  \rbdv)$ that outputs $\p{a}, \p{b}, \p{c}$.
+  Since for $\plonk$ these are witness-encoding polynomials, one can reveal
+  $\inp$'s witness $\wit$.
+
+  Hence, the extractor $\ext_\adv$ proceeds as follows, it gets as input $\srs,
+  \srss$, the list $\qadv$ is as constructed above by $\bdv$, randomness
+  $\radv$.
+
+  \qed
+    \end{proof}
   
 
 
