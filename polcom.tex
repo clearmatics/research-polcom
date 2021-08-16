@@ -716,6 +716,43 @@ out of them.
 \bibliographystyle{alpha}
 \bibliography{cryptobib/abbrev1,cryptobib/crypto}
 
+\appendix
+\section{Additional assumptions}
+\subsection{On uber assumption}
+\begin{definition}[$(m, F)$-independent polynomial]
+  Let $F = \smallset{f_1, \ldots, f_k}$ be a family of polynomials. We say that $g$ is \emph{$2$-independent
+    from $F$} if
+  \[
+    a_h h(X) = \sum_{i_1 = 1}^{k} a_{i_1} f_{i_1} + \sum_{i_1, i_2}^{k, k} a_{i_1, i_2}
+    f_{i_1} f_{i_2} + \ldots \sum_{i_1, \ldots, i_m}^{k, \ldots, k} a_{i_1,
+      \ldots, i_m} f_{i_1} \ldots f_{i_m},
+  \]
+  only iff all coefficients $a_h$, $a_{i_1}$, $a_{i_1, i_2}$, \ldots, $a_{i_1},
+  \ldots, a_{i_m}$ are zero. 
+\end{definition}
+
+In this paper we consider only case of $m = 2$. For that case we ``fine tune''
+the definition above and allow two different families of polynomials that $h$ is
+independent from. That is,
+
+\begin{definition}[$(2, F, G)$-independent polynomial]
+  Let $F = \smallset{f_1, \ldots, f_k}$, $G = \smallset{g_1, \ldots, g_l}$ be
+  families of polynomials. We say that $h$ is \emph{$(2, F, G)$-independent} if
+  \[
+    a_h h(X) = \sum_{i = 1}^{k} a_{i} f_{i} + \sum_{i}^l b_{i} g_i + \sum_{i, j}^{k, l} c_{i, j}
+    f_{i} g_{j},
+  \]
+  only iff all coefficients $a_h$, $a_{i}$, $b_i$, $c_{i, j}$ are zero. 
+\end{definition}
+This definition is equivalen to definition of independent polynomials from
+\cite{PAIRING:Boyen08}.
+
+\begin{definition}[Independent proof elements]
+  Let $\PHP$ be a PHP proof system, and $f_1, \ldots, f_l$ all polynomials sent
+  by the prover. 
+\end{definition}
+
+
  \section{Unoptimized $\plonk$ with arbitrary polynomial commitment $\PCOM$}
  In the following we assume either
  \begin{enumerate}
