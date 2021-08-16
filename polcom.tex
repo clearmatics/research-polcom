@@ -716,6 +716,7 @@ out of them.
 
 
 \appendix
+\COMMENT{
 \section{Unoptimzed $\plonk$}
 \subsection{$\plonk$ protocol rolled out}
 \label{sec:plonk_explained}
@@ -947,63 +948,6 @@ The \plonk{} verifier works as follows
 	\ev{t_3} & =  (\ev{z} - 1) \lag_1(\chz) \frac{1}{\p{Z_H}(\chz)}
 \end{align*}
 \item[Step 9] Verify all polynomial commitment openings.
-  
-% 	\item[Step 9] Compute batched polynomial commitment
-% 	$\gone{D} = v \gone{r} + u \gone {z}$ that is
-% 	\begin{align*}
-% 		\gone{D} & = v
-% 		\left(
-% 		\begin{aligned}
-%           & \p{a}(\chz)\p{b}(\chz) \cdot \gone{\selmulti} + \p{a}(\chz)  \gone{\selleft} + \p{b}  \gone{\selright} + \p{c}  \gone{\seloutput} + \\
-%           & + (	(\p{a}(\chz) + \beta \chz + \gamma) (\p{b}(\chz) + \beta k_1 \chz + \gamma) (\p{c} + \beta k_2 \chz + \gamma) \alpha  + \lag_1(\chz) \alpha^2)  + \\
-% 			% &   \\
-%           & - (\p{a}(\chz) + \beta \p{S_{\sigma 1}}(\chz) + \gamma) (\p{b}(\chz)
-%           + \beta \p{S_{\sigma 2}}(\chz) + \gamma) \alpha \beta \p{z}(\chz
-%           \omega) \gone{\p{S_{\sigma 3}}(\chi)})
-% 		\end{aligned}
-% 		\right) + \\
-% 		& + u \gone{\p{z}(\chi)}\,.
-% 	\end{align*}
-% 	\item[Step 10] Computes full batched polynomial commitment $\gone{F}$:
-% 	\begin{align*}
-%       \gone{F} & = \left(\gone{\p{t_{lo}}(\chi)} + \chz^\noofc \gone{\p{t_{mid}}(\chi)} + \chz^{2 \noofc} \gone{\p{t_{hi}}(\chi)}\right) + u \gone{\p{z}(\chi)} + \\
-%                & + v
-%                  \left(
-% 		\begin{aligned}
-% 			& \p{a}(\chz)\p{b}(\chz) \cdot \gone{\selmulti} + \p{a}(\chz)  \gone{\selleft} + \p{b}(\chz)   \gone{\selright} + \p{c}(\chz)  \gone{\seloutput} + \\
-% 			& + (	(\p{a}(\chz) + \beta \chz + \gamma) (\p{b}(\chz) + \beta k_1 \chz + \gamma) (\p{c}(\chz)  + \beta k_2 \chz + \gamma) \alpha  + \lag_1(\chz) \alpha^2)  + \\
-% 			% &   \\
-% 			& - (\p{a}(\chz) + \beta \p{S_{\sigma 1}}(\chz) + \gamma) (\p{b}(\chz) + \beta \p{S_{\sigma 2}}(\chz) + \gamma) \alpha  \beta \p{z}(\chz \omega) \gone{\p{S_{\sigma 3}}(\chi)})
-% 		\end{aligned}
-% 		\right) \\
-% 		& + v^2 \gone{\p{a}(\chi)} + v^3 \gone{\p{b}(\chi)} + v^4 \gone{\p{c}(\chi)} + v^5 \gone{\p{S_{\sigma 1}(\chi)}} + v^6 \gone{\p{S_{\sigma 2}}(\chi)}\,.
-% 	\end{align*}
-% 	\item[Step 11] Compute group-encoded batch evaluation $\gone{E}$
-% 	\begin{align*}
-% 		\gone{E}  = \frac{1}{\p{Z_H}(\chz)} & \gone{
-% 		\begin{aligned}
-% 			& \p{r}(\chz) + \pubinppoly(\chz) +  \alpha^2  \lag_1 (\chz) + \\
-% 			& - \alpha \left( (\p{a}(\chz) + \beta \p{S_{\sigma 1}} (\chz) + \gamma) (\p{b}(\chz) + \beta \p{S_{\sigma 2}} (\chz) + \gamma) (\p{c}(\chz) + \gamma) \p{z}(\chz \omega) \right)
-% 		\end{aligned}
-%            }\\
-%       + & \gone{v \p{r}(\chz) + v^2 \p{a}(\chz) + v^3 \p{b}(\chz) + v^4 \p{c}(\chz) + v^5 \p{S_{\sigma 1}}(\chz) + v^6 \p{S_{\sigma 2}}(\chz) + u \p{z}(\chz \omega) }\,.
-% 	\end{align*}
-% \item[Step 12] Check whether the verification
-%  % $\vereq_\zkproof(\chi)$
-%   equation holds
-% 	\begin{multline}
-% 		\label{eq:ver_eq}
-% 		\left( \gone{\p{W_{\chz}}(\chi)} + u \cdot \gone{\p{W_{\chz
-%                 \omega}}(\chi)} \right) \bullet
-% 		\gtwo{\chi} - %\\
-% 		\left( \chz \cdot \gone{\p{W_{\chz}}(\chi)} + u \chz \omega \cdot
-%           \gone{\p{W_{\chz \omega}}(\chi)} + \gone{F} - \gone{E} \right) \bullet
-%         \gtwo{1} = 0\,.
-% 	\end{multline}
-%   The verification equation is a batched version of the verification equation
-%   from \cite{AC:KatZavGol10} which allows the verifier to check openings of
-%   multiple polynomials in two points (instead of checking an opening of a single
-%   polynomial at one point).
 \end{description}
 
 \ncase{$\plonk$ simulator $\simulator_\chi(\REL, \srs, \td= \chi, \inp)$}\ \newline
@@ -1030,17 +974,29 @@ The \plonk{} simulator proceeds as an honest prover would, except:
  \end{enumerate}
  \michals{11.08}{Should we write down Plonk such that we show where we use
    which PCOM protocols?}
+ }
 
  \section{Unoptimized $\plonk$ with arbitrary polynomial commitment $\PCOM$}
- \michals{11.08}{write down the protocol in more abstract way}
-\subsection{$\plonk$ protocol rolled out}
-% \label{sec:plonk_explained}
-% \newcommand{\vql}{\vec{q_{L}}}
-% \newcommand{\vqr}{\vec{q_{R}}}
-% \newcommand{\vqm}{\vec{q_{M}}}
-% \newcommand{\vqo}{\vec{q_{O}}}
-% \newcommand{\vx}{\vec{x}}
-% \newcommand{\vqc}{\vec{q_{C}}}
+ In the following we assume either
+ \begin{enumerate}
+ \item the polynomial commitments $\PCOM$ is $l$-hiding, or \michals{16.08}{$l$
+    -hiding -- impossible to tell commitments to two polynomials given up to $l$
+  evaluations}
+ \item \hl{...} uber assumption holds \michals{16.08}{the distinguisher cannot
+     tell a commitment to a random polynomial (case of simulated proof) from a
+     commitment to a specific polynomial (that is not in the span of SRS
+     polynomials, case of a real proof)}
+ \end{enumerate}
+ that the polynomial commitment has one of the
+ following prope
+ \subsection{$\plonk$ protocol rolled out}
+\label{sec:plonk_explained}
+\newcommand{\vql}{\vec{q_{L}}}
+\newcommand{\vqr}{\vec{q_{R}}}
+\newcommand{\vqm}{\vec{q_{M}}}
+\newcommand{\vqo}{\vec{q_{O}}}
+\newcommand{\vx}{\vec{x}}
+\newcommand{\vqc}{\vec{q_{C}}}
 \subsubsection{The constrain system}
 Assume $\CRKT$ is a fan-in two arithmetic circuit,
 which fan-out is unlimited and has $\numberofconstrains$ gates and $\noofw$ wires
