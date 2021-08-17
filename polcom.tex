@@ -193,7 +193,7 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 \[
   \Pr \left[
     \begin{aligned}
-      & \p{f} = \ext_\adv(\srs, c; r),\\
+      & \p{f} = \ext_\adv(\srs, Q_{\adv}; r),\\
       & c = \com(\srs, \p{f}),\\
       & \verify(\srs, c, z, s, o) = 1,\\
       & z \not\in \Qev
@@ -247,7 +247,7 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 \[
   \Pr \left[
     \begin{aligned}
-      & \p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
+      & \p{f} = \ext_\adv(\srs, Q_{\adv}, (r_1, z, r_2)),\\
       & c = \com(\srs, \p{f}),\\
       & \verify(\srs, c, z, s, o) = 1,
     \end{aligned}
@@ -262,9 +262,9 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
         }
     \begin{aligned}
       & \srs \gets \kgen(\secparam, \maxdeg),\\
-      & (c, \aux) \gets \adv_1^{\oracles}(\srs; r_1), \\
+      & (c, \state) \gets \adv_1^{\oracles}(\srs; r_1), \\
       & z \sample \FF, \\
-      & (s, o) \gets \adv_2^{\oracles}(\srs, c, z, \aux; r_2)
+      & (s, o) \gets \adv_2^{\oracles}(\srs, c, z; \state, r_2)
     \end{aligned}
   \right.\right]
   \geq 1 - \epsk(\secpar).
@@ -273,6 +273,8 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
     polynomial? That is how $\ext$ in a proof system works -- it evaluates
     polynomials submitted by the adversary on multiple challenges.}
 \end{definition}
+
+\markulf{17.08}{We can represent $\adv_{1}$ and $\adv_{2}$ using a single adversary $\adv_{\mathsf{chal}}$ with an additional oracle $\oraclec$ that on input $c$ returns $z$ on its single allowed call. The winning condition takes $c,z$ directly from that oracle call.}
 
 \begin{definition}[$(k, \eps)$-aux-simulation extractable polynomial commitment]
   \label{def:sepcom}
@@ -295,16 +297,16 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
     assuring that for some polynomial $f$, such that $c \in \image(\com(f))$,
     holds $f(z) = y$.
   \end{description}
-  We say that $\PCOM$ is \emph{$(3, \eps)$-aux-simulation extractable} if for
+  We say that $\PCOM$ is \emph{$(k, \eps)$-aux-simulation extractable} if for
   any $\ppt$ adversary $\adv$ with oracle access to
-  $\oracles$ and random oracle $ro$ there exists extractor $\ext$ such that
+  $\oracles$ and random oracle $\ro$ there exists extractor $\ext$ such that
 \[
   \Pr \left[
     \begin{aligned}
-      & \p{f_1}, \ldots, \p{f_k} = \ext_\adv(\srs, (c_1, \ldots, c_k), r),\\
+      & \p{f_1}, \ldots, \p{f_k} = \ext_\adv(\srs, Q_{\adv}, Q_{\ro}, r),\\
       & c_i = \com(\srs, \p{f_i}),\\
       & \verify(\srs, c_i, z_i, s_i o_i) = 1, \text{ for } i \in \range{1}{k}\\
-      & z = \ro(\aux) 
+      & z = \ro((c_1,\dots, c_{k}),\aux)
     \end{aligned}
     \,\left|\,
       \vphantom{
@@ -318,12 +320,16 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
     \begin{aligned}
       & \srs \gets \kgen(\secparam, \maxdeg),\\
       & ((c_1, \ldots, c_k), \aux, z, (s_1, \ldots, s_k),\\
-      & \qquad \qquad (o_1, \ldots, o_k)) \gets \adv^{\oracles}(\srs, r), \\
+      & \qquad \qquad (o_1, \ldots, o_k)) \gets \adv^{\oracles, \ro}(\srs, r), \\
     \end{aligned}
   \right.\right]
   \geq 1 - \eps(\secpar).
 \]
 \end{definition}
+
+\markulf{17.08}{
+  We show how to construct $ \ext_\adv$ from $|Q_{H}|$ extractors $\ext_{\bdv_{i}}$ obtained from adversaries $\bdv_{i}$ that run $\adv$ by simulating the random oracle internally using its random tape. Only for the $i$th $\ro$ query, does $\bdv_{i}$ submit the challenge $c$ to $\oraclec$ to learn $z$. As $\bdv_{i}$ is a valid $\adv_{\mathsf{chal}}$ adversary, by $k$ simulation extractability of the polynomial commitment scheme $\ext_{\bdv_{i}}$ exists. $\ext_{\adv}$ runs all $\ext_{\bdv_{i}}$ and thus does not occure an extraction loss for guessing $i$.
+}
 
 
  \begin{definition}[One-to-many openable\hl{Good name needed}]
@@ -917,7 +923,7 @@ X^{2\noofc}$, for $i \in \range{1}{3}$.
 	Output evaluations
 	\begin{align*}
     & \ev{a} = \p{a}(\chz), \ev{b} = \p{b}(\chz), \ev{c} = \p{c}(\chz),
-    \ev{S_{\sigma, 1}}, \ev{S_{\sigma 2}} = \p{S_{\sigma 2}}(\chz),  \\
+    \ev{S_{\sigma, 1}}= \p{S_{\sigma 1}}(\chz), \ev{S_{\sigma 2}} = \p{S_{\sigma 2}}(\chz),  \\
     & \ev{z} = \p{z}(\chz), \ev{z_\omega} = \p{z}(\chz \omega),
     \ev{t_1} = \p{t_1}(\chz), \ev{t_2} = \p{t_2}(\chz), \ev{t_3} = \p{t_3}(\chz)
 	\end{align*}
@@ -933,7 +939,7 @@ X^{2\noofc}$, for $i \in \range{1}{3}$.
       \cp{t_{hi, 2}}, \p{t_2}(\chz)), \\
     & \p{W_\chz^{t_3}} = \PCOM.\open(\srs, \cp{t_{lo, 3}} + \chz^\noofc \cp{t_{mid, 3}} + \chz^{2 \noofc}
       \cp{t_{hi, 3}}, \p{t_3}(\chz)), \\
-    & \p{W_\chz^{\p{r}}} = \PCOM.\open(\srs, \cp{r}, \p{r}(\chz)), \\
+ %  & \p{W_\chz^{\p{r}}} = \PCOM.\open(\srs, \cp{r}, \p{r}(\chz)), \\
     & \p{W_\chz^{\p{a}}} = \PCOM.\open(\srs, \cp{a}, \p{a}(\chz)), \\
     & \p{W_\chz^{\p{b}}} = \PCOM.\open(\srs, \cp{b}, \p{b}(\chz)), \\
     & \p{W_\chz^{\p{c}}} = \PCOM.\open(\srs, \cp{c}, \p{c}(\chz)), \\
@@ -1071,7 +1077,7 @@ The \plonk{} simulator proceeds as an honest prover would, except:
         \item openings $W_\chz^{\p{a}}, W_\chz^{\p{b}}, W_\chz^{\p{c}}$.
         \end{itemize} 
       \item Compute
-        $\aux = (\cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \p{z}, \alpha, \cp{t_1},
+        $\aux = (\cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}, \alpha, \cp{t_1},
         \cp{t_2}, \cp{t_3})$.
       \item Output
         \begin{itemize}
@@ -1093,12 +1099,20 @@ The \plonk{} simulator proceeds as an honest prover would, except:
   Now, since the polynomial commitment scheme is $(3, \eps)$-aux-simulation
   extractable, then there exists an extractor $\ext_{\bdv}(\srs_{\PCOM}, \qbdv,
   \rbdv)$ that outputs $\p{a}, \p{b}, \p{c}$.
-  Since for $\plonk$ these are witness-encoding polynomials, one can reveal
-  $\inp$'s witness $\wit$.
 
-  Hence, the extractor $\ext_\adv$ proceeds as follows, it gets as input $\srs,
-  \srss$, the list $\qadv$ is as constructed above by $\bdv$, randomness
-  $\radv$.
+  We now describe the extractor $\ext_\adv$ which makes a single call to $\ext_{\bdv}$: It gets as input $\srs,
+  \srss$ from which it can compute $\srs_{{\PCOM}}$. The list $\qadv$ is constructed as above by $\bdv$ from the queries to its oracles, consequently, it allows to derive $\qbdv$.  The randomness $\radv$ is reused unchanged as $\rbdv$.
+$\ext_{\bdv}(\srs_{\PCOM}, \qbdv,
+  \rbdv)$ outputs $\p{a}, \p{b}, \p{c}$ from which we decode the witness.
+
+  %Since for $\plonk$ these are witness-encoding polynomials, one can reveal
+  %$\inp$'s witness $\wit$.
+
+  To show that the extractor succeeds with overwheming probability, we relate the polynomials $\p{a}, \p{b}, \p{c}$ it produces to the coefficients $\p{a}', \p{b}', \p{c}'$ of the corresponding polynomial commitment produced by a related knowledge soundness algebraic adversary $\adv'$. $\adv'$ runs $\adv$ internally and simulates the signing oracle.
+
+  When $\ext_\adv$ fails to extract a valid witness, one of two cases must hold: (i) either $(\p{a}, \p{b}, \p{c}) \neq (\p{a}', \p{b}', \p{c}')$ in which case we break the soundness of the polynomial commitment scheme or (ii), $\adv'$ breaks knowledge soundness.
+
+
 
   \qed
     \end{proof}
