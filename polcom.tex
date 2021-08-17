@@ -247,7 +247,7 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 \[
   \Pr \left[
     \begin{aligned}
-      & \p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
+      & \p{f} = \ext_\adv(\srs, c, (r_1, z, r_2)),\\
       & c = \com(\srs, \p{f}),\\
       & \verify(\srs, c, z, s, o) = 1,
     \end{aligned}
@@ -295,16 +295,16 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
     assuring that for some polynomial $f$, such that $c \in \image(\com(f))$,
     holds $f(z) = y$.
   \end{description}
-  We say that $\PCOM$ is \emph{$(3, \eps)$-aux-simulation extractable} if for
+  We say that $\PCOM$ is \emph{$(k, \eps)$-aux-simulation extractable} if for
   any $\ppt$ adversary $\adv$ with oracle access to
-  $\oracles$ and random oracle $ro$ there exists extractor $\ext$ such that
+  $\oracles$ and random oracle $\ro$ there exists extractor $\ext$ such that
 \[
   \Pr \left[
     \begin{aligned}
       & \p{f_1}, \ldots, \p{f_k} = \ext_\adv(\srs, (c_1, \ldots, c_k), r),\\
       & c_i = \com(\srs, \p{f_i}),\\
       & \verify(\srs, c_i, z_i, s_i o_i) = 1, \text{ for } i \in \range{1}{k}\\
-      & z = \ro(\aux) 
+      & z = \ro((c_1,\dots, c_{k}),\aux)
     \end{aligned}
     \,\left|\,
       \vphantom{
@@ -1071,7 +1071,7 @@ The \plonk{} simulator proceeds as an honest prover would, except:
         \item openings $W_\chz^{\p{a}}, W_\chz^{\p{b}}, W_\chz^{\p{c}}$.
         \end{itemize} 
       \item Compute
-        $\aux = (\cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \p{z}, \alpha, \cp{t_1},
+        $\aux = (\cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}, \alpha, \cp{t_1},
         \cp{t_2}, \cp{t_3})$.
       \item Output
         \begin{itemize}
