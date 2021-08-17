@@ -917,7 +917,7 @@ X^{2\noofc}$, for $i \in \range{1}{3}$.
 	Output evaluations
 	\begin{align*}
     & \ev{a} = \p{a}(\chz), \ev{b} = \p{b}(\chz), \ev{c} = \p{c}(\chz),
-    \ev{S_{\sigma, 1}}, \ev{S_{\sigma 2}} = \p{S_{\sigma 2}}(\chz),  \\
+    \ev{S_{\sigma, 1}}= \p{S_{\sigma 1}}(\chz), \ev{S_{\sigma 2}} = \p{S_{\sigma 2}}(\chz),  \\
     & \ev{z} = \p{z}(\chz), \ev{z_\omega} = \p{z}(\chz \omega),
     \ev{t_1} = \p{t_1}(\chz), \ev{t_2} = \p{t_2}(\chz), \ev{t_3} = \p{t_3}(\chz)
 	\end{align*}
@@ -933,7 +933,7 @@ X^{2\noofc}$, for $i \in \range{1}{3}$.
       \cp{t_{hi, 2}}, \p{t_2}(\chz)), \\
     & \p{W_\chz^{t_3}} = \PCOM.\open(\srs, \cp{t_{lo, 3}} + \chz^\noofc \cp{t_{mid, 3}} + \chz^{2 \noofc}
       \cp{t_{hi, 3}}, \p{t_3}(\chz)), \\
-    & \p{W_\chz^{\p{r}}} = \PCOM.\open(\srs, \cp{r}, \p{r}(\chz)), \\
+ %  & \p{W_\chz^{\p{r}}} = \PCOM.\open(\srs, \cp{r}, \p{r}(\chz)), \\
     & \p{W_\chz^{\p{a}}} = \PCOM.\open(\srs, \cp{a}, \p{a}(\chz)), \\
     & \p{W_\chz^{\p{b}}} = \PCOM.\open(\srs, \cp{b}, \p{b}(\chz)), \\
     & \p{W_\chz^{\p{c}}} = \PCOM.\open(\srs, \cp{c}, \p{c}(\chz)), \\
@@ -1093,12 +1093,20 @@ The \plonk{} simulator proceeds as an honest prover would, except:
   Now, since the polynomial commitment scheme is $(3, \eps)$-aux-simulation
   extractable, then there exists an extractor $\ext_{\bdv}(\srs_{\PCOM}, \qbdv,
   \rbdv)$ that outputs $\p{a}, \p{b}, \p{c}$.
+
+  We now describe the extractor $\ext_\adv$ which makes a single call to $\ext_{\bdv}$: It gets as input $\srs,
+  \srss$ from which it can compute $\srs_{{\PCOM}}$. The list $\qadv$ is constructed as above by $\bdv$ from the queries to its oracles, consequently, it allows to derive $\qbdv$.  The randomness $\radv$ is reused unchanged as $\rbdv$.
+$\ext_{\bdv}(\srs_{\PCOM}, \qbdv,
+  \rbdv)$ outputs $\p{a}, \p{b}, \p{c}$ from which we decode the witness.
+
+
+  To show that the extractor works, we describe two reduction in the AGM. One breaks the binding property of the polynomial commitment scheme, the other the soundness of the PHP.
+
+
+
   Since for $\plonk$ these are witness-encoding polynomials, one can reveal
   $\inp$'s witness $\wit$.
 
-  Hence, the extractor $\ext_\adv$ proceeds as follows, it gets as input $\srs,
-  \srss$, the list $\qadv$ is as constructed above by $\bdv$, randomness
-  $\radv$.
 
   \qed
     \end{proof}
