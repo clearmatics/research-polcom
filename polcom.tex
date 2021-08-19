@@ -434,6 +434,8 @@ non-deterministic messages send by the prover are polynomials encoding the
 witness, and all other messages are determined by the previous one, witness, and
 verifier's challenges.
 \antonio{29.07}{Why do we need this definition?}
+\michals{18.08}{I though we may need it to show simulation extractability, but I
+am not sure anymore.}
 
 \section{PHP-to-NIZK compiler}
 
@@ -464,8 +466,8 @@ does not mess with the completeness or the soundness of the PHP?
 Can we just say that if the original PHP checks $G(X,h_1(v_1(X)),...)=0$ then the new PHP
 checks $G(X,h'_1(v_1(X)),\dots)$ where $h'_i(X)=h'_i(X)+V_H(X)r_i(X)$ for some randomly
 chosen $r_i$? ($V_H$ is the vanishing poly at $H$) I guess completeness would hold for any
-$H$ but not sure about soundness, right?
-}
+$H$ but not sure about soundness, right?}
+\michals{18.08}{$H$ is given. Need to think about the second part of your question.}
 \begin{proof}
   \ncase{Completeness} 
 
