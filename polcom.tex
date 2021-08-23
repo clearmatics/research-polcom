@@ -1152,12 +1152,16 @@ polynomial commitment scheme.
       \p{t_3}}$.} \michals{20.08}{How to deal with RO here? I.e. we know that KZG
       is extractable in the AGM. However, does it allow for a RO?}
   
-  \ncase{Game 4} In this game we consider a PHP adversary $\ddv$ that internally
-  runs $\cdv_{\p{f}}$ and $\ext_{\cdv_{\p{f}}}$ for $\p{f} \in \p{F}$. This is done as follows
+    \ncase{Game 4} \michals{20.08}{Add condition: adversary looses if the
+      extracted polynomials contain the witness} In this game we consider a PHP
+    adversary $\ddv$ that internally runs $\cdv_{\p{f}}$ and
+    $\ext_{\cdv_{\p{f}}}$ for $\p{f} \in \p{F}$. This is done as follows
   \begin{itemize}
   \item $\ddv$ runs $\cdv_{\p{a}}, \cdv_{\p{b}}, \cdv_{\p{c}}$ with
     $\ext_{\cdv_\p{a}}, \ext_{\cdv_\p{b}}, \ext_{\cdv_\p{c}}$ to learn
-    polynomials $\p{a}, \p{b}, \p{c}$. These are sent to $\PHP.\verifier$.
+    polynomials $\p{a}, \p{b}, \p{c}$. If these polynomials encode witness
+    $\wit'$, such that $\REL(\inp, \wit') = 1$ then the game returns 0. The
+    polynomials are sent to $\PHP.\verifier$.
   \item On $\PHP.\verifier$ challenges $\beta, \gamma$, 
   \end{itemize}
   After it get polynomials $\p{a}, \p{b}, \p{z},
