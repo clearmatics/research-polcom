@@ -144,9 +144,9 @@ $\PCOM$:
 \[
   \Pr \left[
     \begin{aligned}
-      & \p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
-      & c = \com(\srs, \p{f}),\\
-      & \verify(\srs, c, z, s, o) = 1
+      & \neg \verify(\srs, c, z, s, o) = 1 \lor \\
+      & (\p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
+      & c = \com(\srs, \p{f}) )\\
     \end{aligned}
     \,\left|\,
       \vphantom{
@@ -169,6 +169,8 @@ In that case we say that $\PCOM$ is $\epsk$-knowledge.
 Intuitively when a commitment scheme is a commitment of knowledge then if an
 adversary produces a (valid) commitment $c$, which it can open, then it also
 knows the underlying polynomial $\p{f}$ which commits to that value.
+
+\markulf{23/08}{Wondering if the $\verify$ condition is really needed for extraction. In the AGM, if the adversary only sees the $\srs$ it has to output group element that is a linear combination of it.}
 
 \section{New definitions and primitives}
 \subsection{Polynomial commitment schemes}
