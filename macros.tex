@@ -169,7 +169,7 @@
 \newcommand{\extProb}{\event{ext}}
 \newcommand{\FS}{\pcalgostyle{fs}} % Fiat-Shamir transform
 \newcommand{\aux}{\pcvarstyle{aux}} %auxiliary input
-\newcommand{\state}{\pcvarstyle{st}} %state
+\renewcommand{\state}{\pcvarstyle{st}} %state
 % \newcommand{\dlog}{\pcvarstyle{dlog}}
 \newcommand{\vereq}{\p{ve}}
 
@@ -178,6 +178,8 @@
 %Commitment schemes
 \newcommand{\COM}{\pcschemestyle{C}}
 \newcommand{\PCOM}{\pcschemestyle{PC}}
+\newcommand{\PC}{\PCOM}
+\newcommand{\srsPC}{\srs_{\PCOM}}
 \newcommand{\PCOMp}{\pcschemestyle{PC}_{\plonkprot}}
 \newcommand{\PCOMs}{\pcschemestyle{PC}_{\sonicprot}}
 \newcommand{\com}{\pcalgostyle{Com}}
