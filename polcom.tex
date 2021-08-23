@@ -184,21 +184,19 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
   \begin{description}
 %   \item [$(\msg{commit}, f)$:] returns commitment $c = \com(f)$ and adds $(f,
 % c)$ to list $Q$.
-\item[$(\msg{commit})$:] Run $C_{i} \gets \mathsf{SimSample}(\secparam)$
-  \item[$(\msg{open}, c, x, y)$:] returns an opening $o$ for commitment $c$
-    assuring that for some polynomial $f$, such that $c \in \image(\com(f))$,
-    holds $f(x) = y$.
+\item[$(\msg{commit})$:] Run $c \gets \mathsf{SimSample}(\secparam)$, add $c$ to $Q_{com}$, return $c$.
+  \item[$(\msg{open}, c, x, y)$:] If $c\in Q_{{com}}$, run $o\gets \mathsf{SimOpen}(td,c,x,y)$, add $(c,x,y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
   \end{description}
+  $Q_{sim}= (Q_{com},Q_{op})$. Let $\oraclec(c)$ be an oracle that returns $\bot$ if $Q_{chal}\neq \bot$. Otherwise sample $x$, set $Q_{chal}=(c,x)$, and return $x$.
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
   adversary $\adv$ with oracle access to $\oracles$ there exists extractor
   $\ext$ such that
 \[
   \Pr \left[
     \begin{aligned}
-      & \p{f} = \ext_\adv(\srs, Q_{\adv}; r),\\
-      & c = \com(\srs, \p{f}),\\
-      & \verify(\srs, c, z, s, o) = 1,\\
-      & z \not\in \Qev
+      & (\p{f} = \ext_\adv(\srs, Q_{sim}, Q_{chal}; r),\\
+      & \;c = \com(\srs, \p{f}))\\
+      & \lor \verify(\srs, c, x, y, o) = 0
     \end{aligned}
     \,\left|\,
       \vphantom{
@@ -210,8 +208,8 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
         \end{aligned}
         }
     \begin{aligned}
-      & \srs \gets \kgen(\secparam, \maxdeg),\\
-      & (c, z, s, o) \gets \adv^{\oracles}(\srs; r), \\
+      & (\srs, td) \gets \kgen(\secparam, \maxdeg),\\
+      & (y, o) \gets \adv^{\oracles,\oraclec}(\srs; r), \\
       % & z \sample \FF,\\
       % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
     \end{aligned}
@@ -579,23 +577,23 @@ $H$ but not sure about soundness, right?}
 \newcommand{\secp}{\lambda}
 
 \section{KZG commitments are simulation extractable}
-$\Kzg.\PC = (\Kzg.\cgen,\Kzg.\CM,\allowbreak  \Kzg.\open,\allowbreak \Kzg.\check)$ is defined over bilinear groups $\gk=(p,\GG_1,\allowbreak \GG_2, \allowbreak \GG_T )$ with $\GG_1 =\langle g\rangle, \GG_2 =\langle h \rangle$ as follows:
+$\Kzg.\PC = (\Kzg.\kgen, \Kzg.\com, \Kzg.\open, \Kzg.\verify)$ is defined over bilinear groups $\gk=(p,\GG_1,\allowbreak \GG_2, \allowbreak \GG_T )$ with $\GG_1 =\langle g\rangle, \GG_2 =\langle h \rangle$ as follows:
 \begin{description}%[topsep=5pt]
-\item[$\Kzg.\cgen(1^\secpar, n) \to (\ck_{\kzg}, \vk_{\kzg})$:] Set keys
-$\ck_{\kzg} = \{g^{\alpha^i}\}_{i=0}^{n-1}, \allowbreak\vk_{\kzg} = h^\alpha$.
-\item[$\Kzg.\CM(\ck_{\kzg}; f(X)) \to C_f$:] For
+\item[$\Kzg.\kgen(1^\secpar, n) \to \srs$:] Set keys
+$\srs = \{g^{\alpha^i}\}_{i=0}^{n-1}, h^\alpha$.
+\item[$\Kzg.\CM(\srs; f(X)) \to c$:] For
   $f(X) = \sum_{i=0}^{n-1} f_i X^i$, computes
-  $C_f=\prod _{i=0}^{n-1} g^{f_i \alpha^i} = g^{f(\alpha)} $.
-\item[$\Kzg.\open(\ck_{\kzg}; C_f, x, y; f(X)) \to \pi$:] For an evaluation point
+  $c=\prod _{i=0}^{n-1} g^{f_i \alpha^i} = g^{f(\alpha)} $.
+\item[$\Kzg.\open(\srs; c, x, y; f(X)) \to \pi$:] For an evaluation point
   $x$, a value $y$, compute the quotient polynomial
   $q(X) = \displaystyle\frac{f(X) -y }{X-x}$ and output a proof
-  $\pi = C_q = \Kzg.\CM(\ck_{\kzg}; q(X)) $.
-\item[$\Kzg.\check(\vk_{\kzg} = h^\alpha, C_f, x, y, \pi) \to 1/0$:] Check if
-  $e(C_f \cdot g^{-y}, h)=e(C_q , h^{\alpha}\cdot h^{-x})$.
+  $\pi = C_q = \Kzg.\CM(\srs; q(X)) $.
+\item[$\Kzg.\verify(\srs, c, x, y, \pi) \to 1/0$:] Check if
+  $e(c \cdot g^{-y}, h)=e(\pi , h^{\alpha}\cdot h^{-x})$.
 \end{description}
 
 We move toward considering a symbolic verification equation $V'$ for which we have:
-$V(C_{f},x,y,\pi) =  e(C_f \cdot  g^{-y}, h) - e(C_q , h^{\alpha}\cdot h^{-x}) = 0$ iff $V'(K * Transcript (T)) = 0$.
+$V(c,x,y,\pi) =  e(c \cdot  g^{-y}, h) - e(\pi , h^{\alpha}\cdot h^{-x}) = 0$ iff $V'(K * Transcript (T)) = 0$.
 
 The trapdoors variables $T$ consist of the trapdoor variable $X$ of the setup and the randomness variables $A_{i}$ of simulated proofs:
 $T=(X, \{A_{i}\})$
