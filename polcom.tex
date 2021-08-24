@@ -93,33 +93,33 @@
 \section{Preliminaries}
 \paragraph{Polynomial commitment scheme.}
 \label{sec:poly_com}
-In the polynomial commitment scheme $\PCOM = (\kgen, \com, \open, \verify)$ the
-prover $\prover$ convinces the verifier $\verifier$ that some polynomial $\p{f}$
-which $\prover$ committed to evaluates to $s$ at some point $z$ chosen by
-$\verifier$.  The key generation algorithm $\kgen$ takes as input a security
+In a polynomial commitment scheme $\PCOM = (\kgen, \com, \open, \verify)$ a
+prover $\prover$ convinces a verifier $\verifier$ that some polynomial $\p{f}$
+that $\prover$ committed to earlier evaluates to $y$ at some point $x$ chosen by
+$\verifier$. The key generation algorithm $\kgen$ takes security
 parameter $\secparam$ and a parameter $\maxdeg$ which determines the maximal
-degree of the committed polynomial. We assume that $\maxdeg$ can be read from
-the output SRS.
+degree of the committed polynomial as input and produces a (structured) reference string $\srs$ as output. We assume that $\maxdeg$ can be read from
+the $\srs$.
   
 We emphasize the following properties of a secure polynomial commitment
 $\PCOM$:
 \begin{description}
 \item[Evaluation binding:] A $\ppt$ adversary $\adv$ which outputs a commitment
-  $\vec{c}$ and evaluation points $\vec{z}$ has at most negligible chances to
-  open the commitment to two different evaluations $\vec{s}, \vec{s'}$. That is,
+  $\vec{c}$ and evaluation points $\vec{x}$ has at most negligible chances to
+  open the commitment to two different evaluations $\vec{y}, \vec{y'}$. That is,
   let $k \in \NN$ be the number of committed polynomials, $l \in \NN$ number of
   evaluation points, $\vec{c} \in \GRP^k$ be the commitments,
-  $\vec{z} \in \FF_p^l$ be the arguments the polynomials are evaluated at,
-  $\vec{s},\vec{s}' \in \FF_p^k$ the evaluations, and
+  $\vec{x} \in \FF_p^l$ be the arguments the polynomials are evaluated at,
+  $\vec{y},\vec{y}' \in \FF_p^{kl}$ the evaluations, and
   $\vec{o},\vec{o}' \in \FF_p^l$ be the commitment openings. Then for every
   $\ppt$ adversary $\adv$
 	\[
 		\Pr
 			\left[
 			\begin{aligned}
-				& \verify(\srs, \vec{c}, \vec{z}, \vec{s}, \vec{o}) = 1,  \\ 
-				& \verify(\srs, \vec{c}, \vec{z}, \vec{s}', \vec{o}') = 1, \\
-				& \vec{s} \neq \vec{s}'
+				& \verify(\srs, \vec{c}, \vec{x}, \vec{y}, \vec{o}) = 1,  \\
+				& \verify(\srs, \vec{c}, \vec{x}, \vec{y}', \vec{o}') = 1, \\
+				& \vec{y} \neq \vec{y}'
 			\end{aligned}
 			\,\left|\,\vphantom{\begin{aligned}
                   & \\
@@ -128,7 +128,7 @@ $\PCOM$:
                 \end{aligned}}
 			\begin{aligned}
 				& \srs \gets \kgen(\secparam, \maxdeg),\\
-				& (\vec{c}, \vec{z}, \vec{s}, \vec{s}', \vec{o}, \vec{o}') \gets \adv(\srs)
+				& (\vec{c}, \vec{x}, \vec{y}, \vec{y}', \vec{o}, \vec{o}') \gets \adv(\srs)
 			\end{aligned}
 			\right.\right] \leq \negl\,.
 	\]
@@ -139,12 +139,12 @@ $\PCOM$:
 \begin{description}
 \item[Commitment of knowledge] For every $\ppt$ adversary
   $\adv = (\adv_1, \adv_2)$ who produces commitment $c$, gets random evaluation
-  point $z$, and outputs evaluation $s$ with an opening $o$ there exists a
+  point $x$, and outputs evaluation $y$ with an opening $o$ there exists a
   $\ppt$ extractor $\ext$ such that
 \[
   \Pr \left[
     \begin{aligned}
-      & \neg \verify(\srs, c, z, s, o) = 1 \lor \\
+      & \neg \verify(\srs, c, x, y, o) = 1 \lor \\
       & (\p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
       & c = \com(\srs, \p{f}) )\\
     \end{aligned}
@@ -159,7 +159,7 @@ $\PCOM$:
     \begin{aligned}
       & \srs \gets \kgen(\secparam, \maxdeg),\\
       & (c, \aux) \gets \adv_1(\srs; r_1), z \sample \FF, \\
-      &  (s, o) \gets \adv_2(\srs, \aux, c, z; r_2)
+      &  (y, o) \gets \adv_2(\srs, \aux, c, x; r_2)
     \end{aligned}
   \right.\right]
   \geq 1 - \epsk(\secpar).
@@ -172,31 +172,69 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 
 \markulf{23/08}{Wondering if the $\verify$ condition is really needed for extraction. In the AGM, if the adversary only sees the $\srs$ it has to output group element that is a linear combination of it.}
 
-\section{New definitions and primitives}
-\subsection{Polynomial commitment schemes}
+\newcommand{\Kzg}{\mathsf{KZG}}
+%\newcommand{\kzg}{\mathsf{kzg}}
+
+\def\cgen{{\sf ComGen}}
+\def\commit{{\sf Com}}
+%\def\comopen{{\sf ComOpen}}
+%\def\openver{{\sf OpenVer}}
+% \newcommand{\comkg}{\mathsf{KG}}
+%\newcommand{\PC}{\mathsf{PC}}
+\newcommand{\CM}{\commit}
+
+%\def\open{{\sf Open}}
+% \def\check{{\sf Check}}
+%\def\witness{{\sf wit}}
+\def\gk{{\sf gk}}
+
+\def\ck{{\sf ck}}
+\newcommand{\secp}{\lambda}
+
+\paragraph{KZG commitments}
+We recall the Kate, Zaverucha, Goldberg polynomial commitment scheme $\Kzg$, which we use to instantiate our approach.
+
+$\Kzg.\PC = (\Kzg.\kgen, \Kzg.\com, \Kzg.\open, \Kzg.\verify)$ is defined over bilinear groups $\gk=(p,\GG_1,\allowbreak \GG_2, \allowbreak \GG_T )$ with $\GG_1 =\langle g\rangle, \GG_2 =\langle h \rangle$ as follows:
+\begin{description}%[topsep=5pt]
+\item[$\Kzg.\kgen(1^\secpar, n) \to \srs$:] Set keys
+$\srs = \{g^{\xi^i}\}_{i=0}^{n-1}, h^\xi$.
+\item[$\Kzg.\CM(\srs; f(X)) \to c$:] For
+  $f(X) = \sum_{i=0}^{n-1} f_i X^i$, computes
+  $c=\prod _{i=0}^{n-1} g^{f_i \xi^i} = g^{f(\xi)} $.
+\item[$\Kzg.\open(\srs; c, x, y; f(X)) \to o$:] For an evaluation point
+  $x$, a value $y$, compute the quotient polynomial
+  $q(X) = \displaystyle\frac{f(X) -y }{X-x}$ and output a proof
+  $o = \Kzg.\CM(\srs; q(X)) $.
+\item[$\Kzg.\verify(\srs, c, x, y, o) \to 1/0$:] Check if
+  $e(c \cdot g^{-y}, h)=e(o , h^{\xi}\cdot h^{-x})$.
+\end{description}
+
+
+
+
+\section{Simulation extractability of polynomial commitments}
 
 \begin{definition}[Simulation extractable polynomial commitment]
   \label{def:sepcom}
   Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
-  scheme with a simulator $\mathsf{SimSample}, \mathsf{SimOpen}$. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  scheme with a simulator $(\mathsf{SimGen}, \mathsf{SimSample}, \mathsf{SimOpen})$. Let $\maxdeg$ be a maximal degree of polynomials that can be
   committed.
   Let $\oracles$ be an oracle which on input
   \begin{description}
 %   \item [$(\msg{commit}, f)$:] returns commitment $c = \com(f)$ and adds $(f,
 % c)$ to list $Q$.
 \item[$(\msg{commit})$:] Run $c \gets \mathsf{SimSample}(\secparam)$, add $c$ to $Q_{com}$, return $c$.
-  \item[$(\msg{open}, c, x, y)$:] If $c\in Q_{{com}}$, run $o\gets \mathsf{SimOpen}(td,c,x,y)$, add $(c,x,y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
+  \item[$(\msg{open}, c, x', y)$:] If $c\in Q_{{com}}$ and $x'\neq x$, run $o\gets \mathsf{SimOpen}(td,c,x,y)$, add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
   \end{description}
-  $Q_{sim}= (Q_{com},Q_{op})$. Let $\oraclec(c)$ be an oracle that returns $\bot$ if $Q_{chal}\neq \bot$. Otherwise sample $x$, set $Q_{chal}=(c,x)$, and return $x$.
+  $Q_{sim}= (Q_{com},Q_{op})$. Let $\oraclec(c)$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(c,x)$ and $q_{{chal}}= |Q_{{op}|}$, and returns $x$. Otherwise it returns $\bot$
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
   adversary $\adv$ with oracle access to $\oracles$ there exists extractor
-  $\ext$ such that
+  $\ext_{\adv}$ such that
 \[
   \Pr \left[
     \begin{aligned}
-      & (\p{f} = \ext_\adv(\srs, Q_{sim}, Q_{chal}; r),\\
-      & \;c = \com(\srs, \p{f}))\\
-      & \lor \verify(\srs, c, x, y, o) = 0
+      & \verify(\srs, c, x, y, o) = 1, \\
+      & \;c \neq \com(\srs, \p{f})\\
     \end{aligned}
     \,\left|\,
       \vphantom{
@@ -208,15 +246,96 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
         \end{aligned}
         }
     \begin{aligned}
-      & (\srs, td) \gets \kgen(\secparam, \maxdeg),\\
+      & (\srs, td) \gets \mathsf{SimGen}(\secparam, \maxdeg),\\
       & (y, o) \gets \adv^{\oracles,\oraclec}(\srs; r), \\
+      & \p{f} \gets \ext_\adv(\srs, Q_{sim}, Q_{chal}; r)
       % & z \sample \FF,\\
       % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
     \end{aligned}
   \right.\right]
-  \geq 1 - \epsk(\secpar).
+  \leq \epsk(\secpar).
 \]
+% \[
+%   \Pr \left[
+%     \begin{aligned}
+%       & (\p{f} = \ext_\adv(\srs, Q_{sim}, Q_{chal}; r),\\
+%       & \;c = \com(\srs, \p{f}))\\
+%       & \lor \verify(\srs, c, x, y, o) = 0
+%     \end{aligned}
+%     \,\left|\,
+%       \vphantom{
+%         \begin{aligned}
+%           & \\
+%           & \\
+%           & \\
+%           &
+%         \end{aligned}
+%         }
+%     \begin{aligned}
+%       & (\srs, td) \gets \mathsf{SimGen}(\secparam, \maxdeg),\\
+%       & (y, o) \gets \adv^{\oracles,\oraclec}(\srs; r), \\
+%       % & z \sample \FF,\\
+%       % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
+%     \end{aligned}
+%   \right.\right]
+%   \geq 1 - \epsk(\secpar).
+% \]
 \end{definition}
+Note that when $\oraclec(c)$ has not been queried, $c$ and $x$ equal $\bot$ and $\verify$ returns $0$.
+
+\paragraph{KZG is simulation extractable}
+
+We consider an algebraic adversary $\adv$ that outputs a matrix $K$ with coefficients $\{C_{{1i}}\},\{C_{{2i}}\}, \{C_{{3ij}}\}$ for the commitment $c$ and $\{O_{{1i}}\},\{O_{{2i}}\}, \{O_{{3ij}}\}$ for the opening proof $o$. The matrix $K$ reconstructs $c,o$ as linear combination of the group elements in $\srs$ and $Q_{sim}$. We consider a representation of the group elements in $(\srs,Q_{{sim}})$ in terms of a function $\mathsf{Tr}_{\{x_{ij},y_{ij}\}}(\tau)$ of its underlying secret discrete logarithms $\tau=(\xi,\alpha_{i})$. Where $\xi$ is the traptor of the $\srs$ and the $\alpha_{i}$ are the randomness of simulated proofs.
+
+We move toward considering a verification equation $V'$ expressed in terms of $K$ and $\mathsf{Tr}_{\{x_{ij},y_{ij}\}}$ for which we have:
+$\verify(\srs,c,x,y,o) =  e(c \cdot  g^{-y}, h) - e(\pi , h^{\alpha}\cdot h^{-x}) = 0$ iff $\verify'_{{\xi,x,y}}(K \cdot \mathsf{Tr}_{\{x_{ij},y_{ij}\}} (\tau)) = 0$.
+
+We say that $\verify'_{{X,x,y}}$ is satisfied symbolically, if $\verify'_{{X,x,y}}(K \cdot \mathsf{Tr}_{\{x_{ij},y_{ij}\}} (T)) = 0$ for symbolic variables $T=(X, \{A_{i}\})$.
+
+The symbolic transcript consists of the SRS $\{[X^{i}]_{1}\}, [X]_{2}$, simulated commitments $\{[A_{i}]_{1}$, and simulated opening proofs $ [\frac{A_{ij}-y_{{ij}}}{X-x_{ij}}]\}$.
+
+The honest verification equation is
+$[f(X) - y]_1 \circ [h]_{2} - [q(X)]_1 \circ [X-x]_{2}=0$ while an adversary can
+provide rational functions
+$f(X, \{A_{i}\}) = \sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3ij}
+\frac{A_{i}-y_{ij}}{X-x_{ij}}$ and
+$q(X, \{A_{i}\}) = \sum O_{1i} X^{i} + \sum O_{2i} A_{i} + \sum O_{3ij}
+\frac{A_{i}- y_{ij}}{X-x_{ij}}$ computed as linear combinations of elements in the
+transcript.
+The security game gives us that $x$ is sampled independently from $x_{ij}$ for $j\leq q^{i}_{chal}$ and $x \neq x_{ij}$ otherwise. Here $q^{i}_{chal}$ are the number of simulated opening queries made for commitment $c_{i}$ before the challenge query.
+
+We inline to get the following equation which we then analyze in detail,
+\begin{align*}
+  \left[\sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - y\right]_{1} \!\!\!\circ\! [1]_{2} - \left[\sum O_{1i} X^{i} + \sum O_{2i} A_{i} + \sum O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}\right]_{1} \!\!\!\circ\! [X-x]_{2} = 0
+  \end{align*}
+
+We now look at different (rational) monomials in $T$ of this equation to derive constraints on $C_{1i}, C_{{2i}},C_{{3ij}}$ and $O_{1i},O_{2i},O_{3ij}$ imposed by the verification equation:
+\begin{itemize}
+  \item[$A_{i}X$:] We have that for all $i$, $O_{2i}=0$ as $O_{2i} A_{i} X = 0$.
+  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}, j>q^{i}_{chal}$:] $C_{3ij}=0$ as $\adv$ did not yet see them when it computes the commitment.
+\end{itemize}
+
+To obtain a simplified verificaton equation, we express the equation in the exponent and write $C_{1}(X)$ for $\sum C_{1i} X^{i}$ and  $O_{1}(X)$ for $\sum O_{1i} X^{i}$.
+Furhtermore, we let $x_{ij}= x+\delta_{ij}$ and replace $x$ with $x_{ij}-\delta_{ij}$
+\begin{align*}
+C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}+\delta_{ij}) = 0\\
+C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}) - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} \delta_{ij} = 0
+       \end{align*}
+
+\begin{itemize}
+  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}$:] $C_{3i} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{{3i}}\delta_{ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}=0$. As
+    $C_{3ij}=0$ for $j>q^{i}_{chal}$, it follows that $O_{{3ij}}=0$ for $j>q^{i}_{chal}$. Otherwise, we have $O_{3ij}= C_{3ij}/\delta_{ij}$.
+  \item[$A_{i}$:] $C_{2i} A_{i} - \sum O_{3ij} A_{i}=0$.
+\end{itemize}
+
+Informal step. $C_{2i}- \sum \frac{C_{3ij}}{x_{ij}-x} =0$ is a rational equation system. If $x_{ij}\neq x_{ij'}$, then the probability of randomly picking a solution $x$ is small unless all the $C_{2i}$, $C_{3ij}$ are $0$. Thus we also have $O_{{3ij}}=0$.
+If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value for the same commitment (potentially for different $y_{ij}$) multiple times. This is something we want to exclude.
+
+\begin{itemize}
+        \item[$X^{i}, i\geq 0$:] $C_{1}(X) - y - O_{1}(X)(X-x) + \sum \sum O_{3ij} y_{ij} = 0$, as $O_{3ij}=0$ we are back to the honest verification equation.
+\end{itemize}
+
+
 
 
 
@@ -557,78 +676,6 @@ $H$ but not sure about soundness, right?}
   open every single commitment.}
   
 \end{proof}
-\newcommand{\Kzg}{\mathsf{KZG}}
-%\newcommand{\kzg}{\mathsf{kzg}}
-
-\def\cgen{{\sf ComGen}}
-\def\commit{{\sf Com}}
-%\def\comopen{{\sf ComOpen}}
-%\def\openver{{\sf OpenVer}}
-% \newcommand{\comkg}{\mathsf{KG}}
-%\newcommand{\PC}{\mathsf{PC}}
-\newcommand{\CM}{\commit}
-
-%\def\open{{\sf Open}}
-\def\check{{\sf Check}}
-%\def\witness{{\sf wit}}
-\def\gk{{\sf gk}}
-
-\def\ck{{\sf ck}}
-\newcommand{\secp}{\lambda}
-
-\section{KZG commitments are simulation extractable}
-$\Kzg.\PC = (\Kzg.\kgen, \Kzg.\com, \Kzg.\open, \Kzg.\verify)$ is defined over bilinear groups $\gk=(p,\GG_1,\allowbreak \GG_2, \allowbreak \GG_T )$ with $\GG_1 =\langle g\rangle, \GG_2 =\langle h \rangle$ as follows:
-\begin{description}%[topsep=5pt]
-\item[$\Kzg.\kgen(1^\secpar, n) \to \srs$:] Set keys
-$\srs = \{g^{\alpha^i}\}_{i=0}^{n-1}, h^\alpha$.
-\item[$\Kzg.\CM(\srs; f(X)) \to c$:] For
-  $f(X) = \sum_{i=0}^{n-1} f_i X^i$, computes
-  $c=\prod _{i=0}^{n-1} g^{f_i \alpha^i} = g^{f(\alpha)} $.
-\item[$\Kzg.\open(\srs; c, x, y; f(X)) \to \pi$:] For an evaluation point
-  $x$, a value $y$, compute the quotient polynomial
-  $q(X) = \displaystyle\frac{f(X) -y }{X-x}$ and output a proof
-  $\pi = C_q = \Kzg.\CM(\srs; q(X)) $.
-\item[$\Kzg.\verify(\srs, c, x, y, \pi) \to 1/0$:] Check if
-  $e(c \cdot g^{-y}, h)=e(\pi , h^{\alpha}\cdot h^{-x})$.
-\end{description}
-
-We move toward considering a symbolic verification equation $V'$ for which we have:
-$V(c,x,y,\pi) =  e(c \cdot  g^{-y}, h) - e(\pi , h^{\alpha}\cdot h^{-x}) = 0$ iff $V'(K * Transcript (T)) = 0$.
-
-The trapdoors variables $T$ consist of the trapdoor variable $X$ of the setup and the randomness variables $A_{i}$ of simulated proofs:
-$T=(X, \{A_{i}\})$
-
-The transcript consists of the setup $\{[X^{i}]_{1}\}, [X]_{2}$ and simulated proofs $\{[A_{i} + y_{i}]_{1}, [\frac{A_{i}}{X-x_{i}}]\}$.
-
-The honest verification equation is
-$[f(X) - y]_1 \circ [h]_{2} - [q(X)]_1 \circ [X-x]_{2}=0$ while an adversary can
-provide rational functions
-$f(X, \{A_{i}\}) = \sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3i}
-\frac{A_{i}}{X-x_{i}}$ and
-$q(X, \{A_{i}\}) = \sum Q_{1i} X^{i} + \sum Q_{2i} A_{i} + \sum Q_{3i}
-\frac{A_{i}}{X-x_{i}}$ computed as linear combinations of elements in the
-transcript. Note that we performed a simplification here as the $y_{i}$ are
-picked and known by the adversary.
-
-The security game gives us that $x \neq x_{i}$.
-
-We inline to get the following equation which we then analyze in detail,
-\begin{align*}
-  \left[\sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3i} \frac{A_{i}}{X-x_{i}} - y\right]_{1} \circ [1]_{2} - \left[\sum Q_{1i} X^{i} + \sum Q_{2i} A_{i} + \sum Q_{3i} \frac{A_{i}}{X-x_{i}}\right]_{1} \circ [X-x]_{2} = 0
-  \end{align*}
-
-We now look at diferent monomials in $T$ of this equation to derive constraints on $C_{ji}$ and $Q_{ji}$ imposed by the verification equation:
-\begin{itemize}
-  \item[$A_{i}X$:] $Q_{2i} A_{i} X = 0$
-  \item[$A_{i}$:] $C_{2i} A_{i} = - Q_{2i}A_{i} x$. As $Q_{2i}=0$, it follows
-    that $C_{{2i}}=0$. This step relies on $x \neq x_{i}$ and thus
-    $\frac{A_{i} (X-x)}{X-x_{i}}$ cannot cancel out its denominator.
-  \item[$\frac{A_{i}X}{X-x_{i}}$:] $Q_{3i} \frac{A_{i} X}{X-x_{i}} = 0$.
-  \item[$\frac{A_{i}}{X-x_{i}}$:]
-    $C_{3i} \frac{A_{i}}{X-x_{i}} = Q_{{3i}} \frac{A_{i}}{X-x_{i}} $. As
-    $Q_{3i}=0$, it follows that $C_{{3i}}=0$.
-  \end{itemize}
-We are thus back to the honest verification equation.
 
 \section{Simulation extractable NIZK from a simulation extractable polynomial
   commitment and polynomial protocol}
