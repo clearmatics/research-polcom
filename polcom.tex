@@ -959,7 +959,7 @@ be computed using these SRS elements thus we leave them to be computed by the
 prover, verifier, and simulator.
 
 \paragraph{$\plonk$ SRS generating algorithm $\kgen(\REL)$:}
-The SRS generating algorithm picks at random $\chi \sample \FF_p$, computes
+The SRS generating algorithm picks at random $\xi \sample \FF_p$, computes
 and outputs
 \[
 	\srs \gets \PCOM.\kgen(\secparam).
@@ -1024,7 +1024,16 @@ such that
 	Get challenges $\beta, \gamma \in \FF_p$
 	\[
 		\beta = \ro(\zkproof[0..1], 0)\,, \qquad \gamma = \ro(\zkproof[0..1], 1)\,.
-	\]
+        \]
+        Compute
+        \begin{align*}
+          \p{f_{a}}(X) & = a(X) + \beta X + \gamma \\
+          \p{f_{b}}(X) & = b(X) + \beta \omega^{n} X + \gamma \\
+          \p{f_{c}}(X) & = c(X) + \beta \omega^{2n} X + \gamma \\
+          \p{g_{a}}(X) & = a(X) + \beta \p{S_{\sigma 1}}(X) + \gamma \\
+          \p{g_{b}}(X) & = b(X) + \beta \p{S_{\sigma 2}}(X) + \gamma \\
+          \p{g_{c}}(X) & = c(X) + \beta \p{S_{\sigma 3}}(X) + \gamma \\
+        \end{align*}
 	Compute permutation polynomial $\p{z}(X)$
 	\begin{multline*}
 		\p{z}(X) = (b_7 X^2 + b_8 X + b_9)\p{Z_H}(X) + \lag_1(X) + \\
@@ -1036,6 +1045,8 @@ such that
         \noofc + j- 1} + \gamma)}
 			{(\wit_j+\sigma(j) \beta + \gamma)(\wit_{\noofc + j} + \sigma(\noofc + j)\beta + \gamma)(\wit_{2 \noofc + j} + \sigma(2 \noofc + j)\beta + \gamma)}\right)
 	\end{multline*}
+        Note that $\p{z}\in \FF_{p}_{\leq 3n}[X]$ satisfies the property that $\p{z}(\omega)=1$ and for $i>1$, $\p{z}(\omega^{i}) = \prod_{j=1}^{i} \p{f}(\omega^{i})/\p{g}(\omega^{i})$ where $\p{f} = \p{f_{a}}\p{f_{b}}\p{f_{c}}$ and $\p{g} = \p{g_{a}}\p{g_{b}}\p{g_{c}}$.
+
 	Output polynomial commitment $\PCOM.\com(\p{z}(X))$
 		
 	\item[Round 3]
@@ -1044,7 +1055,8 @@ such that
 	\p{t_1}(X) & = (\p{a}(X) \p{b}(X) \selmulti(X) + \p{a}(X) \selleft(X) + 
                \p{b}(X)\selright(X) + \p{c}(X)\seloutput(X) + \pubinppoly(X) + \selconst(X)) 
                \frac{1}{\p{Z_H}(X)} \\
-	\p{t_2}(X) & = ((\p{a}(X) + \beta X + \gamma) (\p{b}(X) + \beta \omega^{\noofc} X + \gamma)(\p{c}(X) 
+  \p{t_2}(X) & = (\p{f}(X) \p{z}(X) - \p{g}(X) \p{z}(X\omega)) \frac{1}{\p{Z_H}(X)} =\\
+             &  ((\p{a}(X) + \beta X + \gamma) (\p{b}(X) + \beta \omega^{\noofc} X + \gamma)(\p{c}(X)
                + \beta \omega^{2 \noofc} X + \gamma)\p{z}(X)) \frac{1}{\p{Z_H}(X)} \\
              & - (\p{a}(X) + \beta \p{S_{\sigma 1}}(X) + \gamma)(\p{b}(X) + \beta 
                \p{S_{\sigma 2}}(X) + \gamma)(\p{c}(X) + \beta \p{S_{\sigma 3}}(X) + 
