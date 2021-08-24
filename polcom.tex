@@ -144,9 +144,9 @@ $\PCOM$:
 \[
   \Pr \left[
     \begin{aligned}
-      & \neg \verify(\srs, c, x, y, o) = 1 \lor \\
-      & (\p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
-      & c = \com(\srs, \p{f}) )\\
+      & \verify(\srs, c, x, y, o) = 1, \\
+      & \p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
+      & c \neq \com(\srs, \p{f}) \\
     \end{aligned}
     \,\left|\,
       \vphantom{
@@ -162,9 +162,9 @@ $\PCOM$:
       &  (y, o) \gets \adv_2(\srs, \aux, c, x; r_2)
     \end{aligned}
   \right.\right]
-  \geq 1 - \epsk(\secpar).
+  \leq \negl.
 \]
-In that case we say that $\PCOM$ is $\epsk$-knowledge.
+In that case we say that $\PCOM$ is a commitment of knowledge.
 \end{description}
 Intuitively when a commitment scheme is a commitment of knowledge then if an
 adversary produces a (valid) commitment $c$, which it can open, then it also
@@ -226,9 +226,9 @@ $\srs = \{g^{\xi^i}\}_{i=0}^{n-1}, h^\xi$.
 \item[$(\msg{commit})$:] Run $c \gets \mathsf{SimSample}(\secparam)$, add $c$ to $Q_{com}$, return $c$.
   \item[$(\msg{open}, c, x', y)$:] If $c\in Q_{{com}}$ and $x'\neq x$, run $o\gets \mathsf{SimOpen}(td,c,x,y)$, add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
   \end{description}
-  $Q_{sim}= (Q_{com},Q_{op})$. Let $\oraclec(c)$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(c,x)$ and $q_{{chal}}= |Q_{{op}|}$, and returns $x$. Otherwise it returns $\bot$
+  $Q_{sim}= (Q_{com},Q_{op})$. Let $\oraclec(c)$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(c,x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
-  adversary $\adv$ with oracle access to $\oracles$ there exists extractor
+  adversary $\adv$ with oracle access to $\oracles$ and $\oraclec$ there exists extractor
   $\ext_{\adv}$ such that
 \[
   \Pr \left[
@@ -253,7 +253,7 @@ $\srs = \{g^{\xi^i}\}_{i=0}^{n-1}, h^\xi$.
       % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
     \end{aligned}
   \right.\right]
-  \leq \epsk(\secpar).
+  \leq \negl.
 \]
 % \[
 %   \Pr \left[
@@ -316,7 +316,7 @@ We now look at different (rational) monomials in $T$ of this equation to derive 
 \end{itemize}
 
 To obtain a simplified verificaton equation, we express the equation in the exponent and write $C_{1}(X)$ for $\sum C_{1i} X^{i}$ and  $O_{1}(X)$ for $\sum O_{1i} X^{i}$.
-Furhtermore, we let $x_{ij}= x+\delta_{ij}$ and replace $x$ with $x_{ij}-\delta_{ij}$
+Furthermore, we let $x_{ij}= x+\delta_{ij}$ and replace $x$ with $x_{ij}-\delta_{ij}$
 \begin{align*}
 C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}+\delta_{ij}) = 0\\
 C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}) - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} \delta_{ij} = 0
@@ -328,7 +328,7 @@ C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{i
   \item[$A_{i}$:] $C_{2i} A_{i} - \sum O_{3ij} A_{i}=0$.
 \end{itemize}
 
-Informal step. $C_{2i}- \sum \frac{C_{3ij}}{x_{ij}-x} =0$ is a rational equation system. If $x_{ij}\neq x_{ij'}$, then the probability of randomly picking a solution $x$ is small unless all the $C_{2i}$, $C_{3ij}$ are $0$. Thus we also have $O_{{3ij}}=0$.
+Informal step. $C_{2i}- \sum \frac{C_{3ij}}{x_{ij}-x} =0$ is a rational equation system in $x$. If $x_{ij}\neq x_{ij'}$, then the probability of randomly picking a solution $x$ is small unless all the $C_{2i}$, $C_{3ij}$ are $0$. Thus we also have $O_{{3ij}}=0$.
 If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value for the same commitment (potentially for different $y_{ij}$) multiple times. This is something we want to exclude.
 
 \begin{itemize}
@@ -337,8 +337,96 @@ If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value fo
 
 
 
+\begin{definition}[Vectored simulation extractable polynomial commitment]
+  \label{def:sepcom}
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
+  scheme with a simulator $(\mathsf{SimGen}, \mathsf{SimSample}, \mathsf{SimOpen})$. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  committed.
+  We consider the same $\oracles$ and $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments and openings $\vec{c}, \vec{y}, \vec{o}$.
+   Let $\oraclec(\vec{c})$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(\vec{c},x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$
+  We say that $\PCOM$ is \emph{vector simulation extractable} if for any $\ppt$
+  adversary $\adv$ with oracle access to $\oracles$ and $\oraclec$ there exists extractor
+  $\ext_{\adv}$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
+      & \;\vec{c} \neq \com(\srs, \vec{\p{f}})\\
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & (\srs, td) \gets \mathsf{SimGen}(\secparam, \maxdeg),\\
+      & (\vec{y}, \vec{o}) \gets \adv^{\oracles,\oraclec}(\srs; r), \\
+      & \vec{\p{f}} \gets \ext_\adv(\srs, Q_{sim}, Q_{chal}; r)
+      % & z \sample \FF,\\
+      % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
+    \end{aligned}
+  \right.\right]
+  \leq \negl.
+\]
+\end{definition}
 
+\paragraph{A simulation extractable polynomial commitment is also vectored SE.}
+From $(\vec{y}, \vec{o}) \gets \adv^{\oracles,\oraclec}(\srs; r)$ we build $(y_{i}, o_{i}) \gets \adv_{i}^{\oracles,\oraclec'}(\srs; r)$ that output only the $i$th opening evaluation and opening proof.
 
+On the same $r$ and $x$, whenever $\adv$ passes verification, $\adv_{i}$ passes verification.  Thus by Definition 1 there exist extractors $\Ext_{\adv_{i}}$ that succeeds to extract for most $r$, $x$ and $\oracles$ randomness.
+
+We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{chal}; r)$ by parsing $Q_{chal}$ as $((c_{1},\dots, c_{k}), x)$ and running all $\Ext_{\adv_{i}}$ as $\p{f}_{i}\gets \Ext_{\adv_{i}}(\srs,Q_{sim},(c_{i},x); r)$ to return $(\p{f}_{1},\dots,\p{f}_{k})$.
+
+\begin{definition}[Vectored $\ro_{aux}$ simulation extractable polynomial commitment]
+  \label{def:sepcom}
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
+  scheme with a simulator $(\mathsf{SimGen}, \mathsf{SimSample}, \mathsf{SimOpen})$. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  committed.
+  We consider the same $\oracles$ and $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments and openings $\vec{c}, \vec{y}, \vec{o}$.
+   Let $\ro_{aux}(aux,\vec{c})$ be an oracle that when $Q_{\ro}[aux,\vec{c}] = \bot$, samples $x$, sets $Q_{\ro}[aux,\vec{c}]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns $Q_{\ro}[aux,\vec{c}]$.
+  We say that $\PCOM$ is \emph{vector $\ro_{aux}$ simulation extractable} if for any $\ppt$
+  adversary $\adv$ with oracle access to $\oracles$ and $\ro_{aux}$ there exists extractor
+  $\ext_{\adv}$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & x \gets \ro_{aux}(aux,\vec{c}), \\
+      & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
+      & \;\vec{c} \neq \com(\srs, \vec{\p{f}})\\
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & (\srs, td) \gets \mathsf{SimGen}(\secparam, \maxdeg),\\
+      & (aux,\vec{c},\vec{y}, \vec{o}) \gets \adv^{\oracles,\ro_{aux}}(\srs; r), \\
+      & \vec{\p{f}} \gets \ext_\adv(\srs, Q_{sim}, Q_{\ro}; r)
+      % & z \sample \FF,\\
+      % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
+    \end{aligned}
+  \right.\right]
+  \leq \negl.
+\]
+\end{definition}
+
+\paragraph{A vectored simulation extractable polynomial commitment is also vectored $\ro_{aux}$ SE.}
+From $(aux, \vec{c}, \vec{y}, \vec{o}) \gets \adv^{\oracles,\ro_{aux}}(\srs; r)$ we build $(\vec{y},\vec{o}) \gets \adv_{i}^{\oracles,\oraclec}(\srs; r\|(Q_{\ro}\setminus x_{i}))$ that simulates $\ro_{aux}$ on the $i$th query using the value $x_{i}$ returned by $\oraclec$ and using its extended random tape otherwise.
+
+On the same $r$ and $x$, whenever $\adv$ passes verification using $aux,\vec{c}$ that were passed in the $i$th query to $\ro_{aux}$, then $\adv_{i}$ passes verification.  Thus by Definition 2 there exist extractors $\Ext_{\adv_{i}}$ that succeeds to extract for most $r$, $x$ and $\oracles$ randomness under that condition.
+
+We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{\ro}; r)$ by running both $\adv$ internally by simulating $\oracles$ and $\ro_{aux}$ using $Q_{sim}$ and $Q_{\ro}$, and by running all $\Ext_{\adv_{i}}$ as $\p{f}_{i}\gets \Ext_{\adv_{i}}(\srs,Q_{sim},Q_{chal_{i}}; r\|(Q_{\ro}\setminus x_{i}))$ by splitting $Q_{\ro}$ into $Q_{chal_{i}}$ and $Q_{\ro}\setminus x_{i}$ to return $\p{f}_{i}$ whenever $\adv$ passed $aux,\vec{c}$ in the $i$th query to $\ro_{aux}$.
+
+\iffalse
 \begin{definition}[Simulation extractable polynomial commitment]
   \label{def:sepcom}
   Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
@@ -449,7 +537,7 @@ If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value fo
 \markulf{17.08}{
   We show how to construct $ \ext_\adv$ from $|Q_{H}|$ extractors $\ext_{\bdv_{i}}$ obtained from adversaries $\bdv_{i}$ that run $\adv$ by simulating the random oracle internally using its random tape. Only for the $i$th $\ro$ query, does $\bdv_{i}$ submit the challenge $c$ to $\oraclec$ to learn $z$. As $\bdv_{i}$ is a valid $\adv_{\mathsf{chal}}$ adversary, by $k$ simulation extractability of the polynomial commitment scheme $\ext_{\bdv_{i}}$ exists. $\ext_{\adv}$ runs all $\ext_{\bdv_{i}}$ and thus does not occure an extraction loss for guessing $i$.
 }
-
+\fi
 
  \begin{definition}[One-to-many openable\hl{Good name needed}]
    We call a commitment scheme $\PCOM$ one-to-many openable \hl{good name
