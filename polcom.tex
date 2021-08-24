@@ -1275,8 +1275,9 @@ polynomial commitment scheme.
   \ncase{Game 3} In this game we consider a set of algebraic adversary $\cdv_{\p{f}}(\srsPC)$
   that
   \begin{itemize}
-  \item internally runs $\adv$ and $\bdv$,
-  \item answers $\bdv$'s queries to $\oraclespcom$.
+  \item internally run $\adv$ and $\bdv$,
+  \item answer $\bdv$'s queries to $\oraclespcom$,
+  \item have access to the random oracle $\ro$.
 %  \item answers $\adv$, $\bdv$ queries to the random oracle by simulating it.
   \end{itemize}
 
@@ -1288,52 +1289,88 @@ polynomial commitment scheme.
   $\p{f} \in \p{F}$, adversary $\cdv_{\p{f}}$ outputs $\cp{\p{f}}$.
 
   Since $\cdv_{\p{f}}$ are algebraic, there exists extractors
-  $\ext_{\cdv_{\p{f}}}$ that output $\p{f}$.
-  
-  \comment{ These commitments are output by $\cdv$. Since $\cdv$ is algebraic,
-    there exists extractors $\ext_{\cdv, p{f}}(\srsPC)$ that output $\p{f}$ for
-    $\p{f} \in \smallset{ \p{a}, \p{b}, \p{z}, \p{t_1}, \p{t_2},
-      \p{t_3}}$.} \michals{20.08}{How to deal with RO here? I.e. we know that KZG
-    is extractable in the AGM. However, does it allow for a RO?}
+  $\ext_{\cdv_{\p{f}}}(\srsPC, \qro_{\p{f}}, r_{\p{f}})$ that output
+  $\p{f}$. Here $\qro_{\p{f}}$ is a set of all random oracle queries made by
+  $\cdv_{\pf}$ and responses it got. As usual, $r_\pf$ denotes $\cdv_\pf$'s
+  randomness.
 
+  \michals{24.08}{That's actually a set of games -- for each adversary and
+    extractor separately}
+  The game returns $1$ if some of the extractors fail to output a correct
+  polynomial and $0$ otherwise.
+  
   \michals{23.08}{In the following we reduce to a state-restoration soundness of
     the PHP (i.e. the proof system is non interactive, instantiated with a
     random oracle)}
 
   \ncase{Game 4} In this game we consider a PHP adversary $\ddv$ that internally
-  runs $\cdv_{\p{f}}$ and $\ext_{\cdv_{\p{f}}}$ for $\p{f} \in \p{F}$. This is
-  done as follows
-  \begin{itemize}
-  \item Run $\cdv_{\p{f}}$ and $\ext_{\cdv_{\p{f}}}$ for
-    $\p{f} \in \p{F}$.
-  \item Parse polynomials $\p{a}, \p{b}, \p{c}$. If these
-    polynomials encode witness $\wit'$, such that $\REL(\inp, \wit') = 1$ then
-    the game returns 0.
-  \item Else, send to $\PHP.\verifier$ the whole proof.
-  \end{itemize}
+  runs $\cdv_{\p{f}}$ and $\ext_{\cdv_{\p{f}}}$, for $\p{f} \in \p{F}$. We show
+  that if the adversary $\adv$ manages to produce a proof that verifies
+  correctly, but the extracted polynomials do not encode a valid witness, then
+  one can break PHP state-restoration soundness of the corresponding $\PHP$.
+  \begin{enumerate}
+  \item \label{it:a_b_c} Run $\cdv_{\p{a}}, \cdv_{\p{b}}, \cdv_{\p{c}}$ with
+    $\ext_{\cdv_\p{a}}(\srsPC, {\qro}_{\p{a}}, r_{\p{a}}),
+    \ext_{\cdv_\p{b}}(\srsPC, {\qro}_{\p{b}}, r_{\p{b}}),
+    \ext_{\cdv_\p{c}}(\srsPC, {\qro}_{\p{c}}, r_{\p{c}})$ to learn polynomials
+    $\p{a}, \p{b}, \p{c}$. If these polynomials encode witness $\wit'$, such
+    that $\REL(\inp, \wit') = 1$ then the game returns $0$, else the polynomials
+    are sent to $\PHP.\verifier$.
+  \item On $\PHP.\verifier$ challenges $\beta, \gamma$,
+    \begin{enumerate}
+    \item Run $\cdv_{\p{z}}(\srsPC)$ such that on $\cdv_{\p{z}}$'s random oracle
+      call on $(\inp, \cp{a}, \cp{b}, \cp{c})$ answer with $(\beta, \gamma)$;
+    \item Append $(\inp, \cp{a}, \cp{b}, \cp{c}), (\beta, \gamma)$ to lists
+      $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
+    \item If $\cdv_{\p{z}}$ finalizes its proof for $\inp$ with $\cp{a}, \cp{b},
+      \cp{c}$ then continue;
+    \item Else, if $\cdv_{\p{z}}$ rewinds the proof and queries the random
+      oracle on $(\inp', \cp{a'}, \cp{b'}, \cp{c'})$, 
+      \begin{enumerate}
+      \item Rewind the verifer $\PHP.\verifier$ and get fresh challenges
+        $\beta', \gamma'$.
+      \item Append $(\inp', \cp{a'}, \cp{b'}, \cp{c'}), (\beta', \gamma')$ to
+        lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
+      \item Go back to \cref{it:a_b_c} and run
+        $\cdv_{\p{a'}}, \cdv_{\p{b'}}, \cdv_{\p{c'}}$ along with corresponding
+        extractors to get $\p{a'}, \p{b'}, \p{c'}$.
+      \end{enumerate}
+    \end{enumerate}
+  \item Run $\ext_{\p{z}}$ to learn $\p{z}$, send $\p{z}$ to $\PHP.\verifier$.
+  \item On $\PHP.\verifier$ challenge $\alpha$.
+     \begin{enumerate}
+     \item Run
+       $\cdv_{\p{t_1}}(\srsPC), \cdv_{\p{t_2}}(\srsPC), \cdv_{\p{t_3}}(\srsPC)$
+       such that on $\cdv_{\p{t_i}}$'s, $\p{i} \in \range{1}{3}$, random oracle
+       call on $(\inp, \cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z})$ answer
+       with $\alpha$;
+     \item Append
+       $(\inp, \cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}), (\alpha)$ to
+       lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
+     \item If all $\cdv_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ finalizes its proof
+       for $\inp$ with $\cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}$ then
+       continue;
+     \item Else, some $\cdv_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ rewinds the
+       proof and queries the random oracle on
+       $(\inp', \cp{a'}, \cp{b'}, \cp{c'})$,
+      \begin{enumerate}
+      \item Rewind the verifer $\PHP.\verifier$ and get fresh challenges
+        $\beta', \gamma'$.
+      \item Append $(\inp', \cp{a'}, \cp{b'}, \cp{c'}), (\beta', \gamma')$ to
+        lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
+      \item Go back to \cref{it:a_b_c} and run
+        $\cdv_{\p{a'}}, \cdv_{\p{b'}}, \cdv_{\p{c'}}$ along with corresponding
+        extractors to get $\p{a'}, \p{b'}, \p{c'}$.
+      \end{enumerate}
+    \end{enumerate}
+  \item Run $\ext_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ to learn $\p{z}$, send
+    $\p{t_i}$, $\p{i} \in \range{1}{3}$ to $\PHP.\verifier$.
+  \end{enumerate}
+  The game returns $1$ if the PHP verifier $\PHP.\verifier$ accepts the proof
+  yet the sent polynomials $\p{a}, \p{b}, \p{c}$ does not encode a valid
+  witness. This can happen only with probability $\epssr$ as it breaks
+  state restoration soundness of $\PHP$.
 
-  Since the proof is acceptable, yet the witness-carrying polynomials do not
-  encode the valid witness, $\ddv$ breaks the state-restoriation knowledge
-  soundness of $\PHP$.
-
-    \michals{23.08}{In the following, old Game 4 the reduction goes to the
-      interactive PHP proof.}
-    \comment{
-    \ncase{Game 4}  In this game we consider a PHP
-    adversary $\ddv$ that internally runs $\cdv_{\p{f}}$ and
-    $\ext_{\cdv_{\p{f}}}$ for $\p{f} \in \p{F}$. This is done as follows
-  \begin{itemize}
-  \item $\ddv$ runs $\cdv_{\p{a}}, \cdv_{\p{b}}, \cdv_{\p{c}}$ with
-    $\ext_{\cdv_\p{a}}, \ext_{\cdv_\p{b}}, \ext_{\cdv_\p{c}}$ to learn
-    polynomials $\p{a}, \p{b}, \p{c}$. If these polynomials encode witness
-    $\wit'$, such that $\REL(\inp, \wit') = 1$ then the game returns 0. The
-    polynomials are sent to $\PHP.\verifier$.
-  \item On $\PHP.\verifier$ challenges $\beta, \gamma$, 
-  \end{itemize}
-  After it get polynomials $\p{a}, \p{b}, \p{z},
-  \p{t_1}, \p{t_2}, \p{t_3}$ it plays the role of a PHP prover $\PHP.\prover$ while
-  interacing with a PHP verifier $\PHP.\verifier$.
-  }
   \michals{20.08}{Need to include possibility that $\ddv$ programs the random
     oracle for the guys inside.} 
   
