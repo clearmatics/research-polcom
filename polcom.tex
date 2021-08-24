@@ -1170,15 +1170,24 @@ polynomial commitment scheme.
   We now show that the extracted polynomials indeed encode witness $\wit'$ (this
   witness may differ from the witness $\wit$ provided by the prover) such that
   $\REL(\inp, \wit') = 1$. For that end, we introduce the following games.
-  
+
+  \ncase{$\game{0} \mapsto \game{1}$} Probability that $\game{1}$ and $\game{2}$
+  return different values is \hl{zero} as the adversary $\adv$ gets the same
+  input and oracle $\oraclesps$ and $\bdv$ composed with $\oraclespcom$ provide
+  answers from the same distribution.
+ 
   \ncase{Game 2} In this game $\bdv$, instead of providing $\adv$ simulated
   proofs, outputs real proofs. That is, \michals{20.08}{Here comes description
-    how $\bdv$ creates real proofs.}
+    how $\bdv$ creates real proofs.}\michals{23.08}{Can $\bdv$ use randomness
+    here?} \michals{23.08}{Does $\bdv$ use the pcom simulator here?}
+
+ \ncase{$\game{1} \mapsto \game{2}$} Probability that $\game{1}$ and $\game{2}$
+  return different values is $\epszk$ \hl{...}
 
   \ncase{Game 3} In this game we consider a set of algebraic adversary $\cdv_{\p{f}}(\srsPC)$
   that
   \begin{itemize}
-  \item internally runs $\adv, \bdv$,
+  \item internally runs $\adv$ and $\bdv$,
   \item answers $\bdv$'s queries to $\oraclespcom$.
 %  \item answers $\adv$, $\bdv$ queries to the random oracle by simulating it.
   \end{itemize}
@@ -1197,19 +1206,46 @@ polynomial commitment scheme.
     there exists extractors $\ext_{\cdv, p{f}}(\srsPC)$ that output $\p{f}$ for
     $\p{f} \in \smallset{ \p{a}, \p{b}, \p{z}, \p{t_1}, \p{t_2},
       \p{t_3}}$.} \michals{20.08}{How to deal with RO here? I.e. we know that KZG
-      is extractable in the AGM. However, does it allow for a RO?}
-  
+    is extractable in the AGM. However, does it allow for a RO?}
+
+  \michals{23.08}{In the following we reduce to a state-restoration soundness of
+    the PHP (i.e. the proof system is non interactive, instantiated with a
+    random oracle)}
+
   \ncase{Game 4} In this game we consider a PHP adversary $\ddv$ that internally
-  runs $\cdv_{\p{f}}$ and $\ext_{\cdv_{\p{f}}}$ for $\p{f} \in \p{F}$. This is done as follows
+  runs $\cdv_{\p{f}}$ and $\ext_{\cdv_{\p{f}}}$ for $\p{f} \in \p{F}$. This is
+  done as follows
+  \begin{itemize}
+  \item Run $\cdv_{\p{f}}$ and $\ext_{\cdv_{\p{f}}}$ for
+    $\p{f} \in \p{F}$.
+  \item Parse polynomials $\p{a}, \p{b}, \p{c}$. If these
+    polynomials encode witness $\wit'$, such that $\REL(\inp, \wit') = 1$ then
+    the game returns 0.
+  \item Else, send to $\PHP.\verifier$ the whole proof.
+  \end{itemize}
+
+  Since the proof is acceptable, yet the witness-carrying polynomials do not
+  encode the valid witness, $\ddv$ breaks the state-restoriation knowledge
+  soundness of $\PHP$.
+
+    \michals{23.08}{In the following, old Game 4 the reduction goes to the
+      interactive PHP proof.}
+    \comment{
+    \ncase{Game 4}  In this game we consider a PHP
+    adversary $\ddv$ that internally runs $\cdv_{\p{f}}$ and
+    $\ext_{\cdv_{\p{f}}}$ for $\p{f} \in \p{F}$. This is done as follows
   \begin{itemize}
   \item $\ddv$ runs $\cdv_{\p{a}}, \cdv_{\p{b}}, \cdv_{\p{c}}$ with
     $\ext_{\cdv_\p{a}}, \ext_{\cdv_\p{b}}, \ext_{\cdv_\p{c}}$ to learn
-    polynomials $\p{a}, \p{b}, \p{c}$. These are sent to $\PHP.\verifier$.
+    polynomials $\p{a}, \p{b}, \p{c}$. If these polynomials encode witness
+    $\wit'$, such that $\REL(\inp, \wit') = 1$ then the game returns 0. The
+    polynomials are sent to $\PHP.\verifier$.
   \item On $\PHP.\verifier$ challenges $\beta, \gamma$, 
   \end{itemize}
   After it get polynomials $\p{a}, \p{b}, \p{z},
   \p{t_1}, \p{t_2}, \p{t_3}$ it plays the role of a PHP prover $\PHP.\prover$ while
   interacing with a PHP verifier $\PHP.\verifier$.
+  }
   \michals{20.08}{Need to include possibility that $\ddv$ programs the random
     oracle for the guys inside.} 
   
