@@ -813,23 +813,25 @@ out of them.
 \appendix
 \section{Additional assumptions}
 \subsection{On uber assumption}
-\begin{definition}[$(m, F)$-independent polynomial]
-  Let $F = \smallset{f_1, \ldots, f_k}$ be a family of polynomials. We say that $g$ is \emph{$2$-independent
-    from $F$} if
-  \[
-    a_h h(X) = \sum_{i_1 = 1}^{k} a_{i_1} f_{i_1} + \sum_{i_1, i_2}^{k, k} a_{i_1, i_2}
-    f_{i_1} f_{i_2} + \ldots \sum_{i_1, \ldots, i_m}^{k, \ldots, k} a_{i_1,
-      \ldots, i_m} f_{i_1} \ldots f_{i_m},
-  \]
-  only iff all coefficients $a_h$, $a_{i_1}$, $a_{i_1, i_2}$, \ldots, $a_{i_1},
-  \ldots, a_{i_m}$ are zero. 
-\end{definition}
+% \begin{definition}[$(F^1, \ldots, F^m)$-independent polynomial]
+%   Let $F^i = \smallset{f^i_1, \ldots, f^i_{k_i}}$, $i \in \range{1}{m}$, be
+%   families of polynomials. We say that $g$ is \emph{$2$-independent from
+%     $(F^1, \ldots, F^m)$} if
+%   \[
+%     a_g g(X) = \sum_{i = 1}^{m} \sum_{j_i = 1}^{k_i} a_{j_i} f_{j_i} + %
+%     \sum_{i = 1}^{m} \sum_{j_i, i_2}^{k_i, k_j} a_{i_1, i_2} f_{i_1} f_{i_2} +
+%     \ldots \sum_{i_1, \ldots, i_m}^{k, \ldots, k} a_{i_1, \ldots, i_m} f_{i_1}
+%     \ldots f_{i_m},
+%   \]
+%   only iff all coefficients $a_h$, $a_{i_1}$, $a_{i_1, i_2}$, \ldots, $a_{i_1},
+%   \ldots, a_{i_m}$ are zero. 
+% \end{definition}
 
-In this paper we consider only case of $m = 2$. For that case we ``fine tune''
-the definition above and allow two different families of polynomials that $h$ is
-independent from. That is,
+% In this paper we consider only case of $m = 2$. For that case we ``fine tune''
+% the definition above and allow two different families of polynomials that $h$ is
+% independent from. That is,
 
-\begin{definition}[$(2, F, G)$-independent polynomial]
+\begin{definition}[$(F, G)$-independent polynomial]
   Let $F = \smallset{f_1, \ldots, f_k}$, $G = \smallset{g_1, \ldots, g_l}$ be
   families of polynomials. We say that $h$ is \emph{$(2, F, G)$-independent} if
   \[
@@ -841,10 +843,58 @@ independent from. That is,
 This definition is equivalen to definition of independent polynomials from
 \cite{PAIRING:Boyen08}.
 
-\begin{definition}[Independent proof elements]
-  Let $\PHP$ be a PHP proof system, and $f_1, \ldots, f_l$ all polynomials sent
-  by the prover. 
+\begin{definition}[$2$-independent proof system]
+  Let $\PHP$ be a PHP proof system, and $F = \brak{f_1, \ldots, f_l}$
+  polynomials sent by the prover. Denote by
+  $F_{\neg i} = \brak{f_1, \ldots, f_{i - 1}, f_{i + 1}, \ldots, f_l}$.  We say
+  that $\PHP$ is \emph{2-independent} \michals{25.08}{good name needed} if for all
+  $f_i \in F$, $f_i$ is $(F_{\neg i}, F_{\neg i})$-independent.
 \end{definition}
+
+For a family of polynomials $F = \smallset{f_1, \ldots, f_k}$ where each $f_i
+\in \FF[X]$ we write $F(x)$ to denote $\smallset{f_1(x), \ldots, f_k(x)}$. 
+
+\begin{definition}[$(F, G)$-uber assumption, \cite{PAIRING:Boyen08}]
+  Let $h(X)$ be an
+  $(F = \smallset{f_1, \ldots, f_k}, G = \smallset{g_1, \ldots,
+    g_l})$-independent polynomial of degree $d$, and $r$ be a random polynomial
+  from $\FF^d[X]$. Then for any $\ppt$ adversary $\adv$
+  \begin{multline}
+%    \begin{split}
+    \Pr\left[ \adv(F(x), G(x), F \otimes G (x), r(x)) = 1 \,\left|\, x \sample \FF
+      \right.\right] \approx 
+    \Pr\left[ \adv(F(x), G(x), F \otimes G (x), h(x)) = 1 \,\left|\, x \sample \FF
+      \right.\right].
+ % \end{split}
+  \end{multline}
+\end{definition}
+
+\michals{25.08}{Focus on a single ver eq, work later on multi ver eq case.}
+
+\begin{lemma}[Simulatability of $2$-independent proof systems]
+  Let $\PHP$ \michals{25.08}{$\PHP$ or $\PS$?} be a $2$-independent proof system
+  \hl{...}  Let $\pf_1(X), \ldots, \pf_k(X)$ be the polynomials that the prover
+  sends and $\vereq_i(X) = G_i(X, h_1(v_1(X)), \ldots, h_\ell (v_\ell(X)))$, for
+  $i \in \range{1}{m}$, be the set of verification equations \hl{...}
+\end{lemma}
+\begin{proof}
+  For a verification equation $\vereq_i(X)$ denote by $\p{F}_i$ all polynomials
+  that are required to compute $\vereq_i(X)$ and by $\pf_{j_i}$ the last
+  polynomial in $\p{F}_i$ send by the prover. Set
+  $L = \smallset{\pf_{j_1}, \ldots, \pf_{j_m}}$. \michals{25.08}{Need to adjust
+    in case some polynomial is ``last'' for more than one verification equation}
+  Assume $\pf_{j_i} = \pf_{j_{i'}}$, that is, there is some polynomial that is
+  the last polynomial for more than one verification equation. Assume
+  $\pf_{j_i}$ is sent by the prover no later than $\pf_{j_{i'}}$ then pick the
+  last polynomial from $\p{F}_{i} \setminus \smallset{\pf_{j_i}}$ and add it to
+  $L$. Continue till there is no The simulator proceeds as follows: If
+  $\pf_i \not\in L$ then $\simulator$ picks a random polynomial $\pf'_i(X)$ ans
+  sends it as $\pf_i$. Alternatively, if $\pf_{j_i} \in L$, then the simulator
+  computes
+  \[
+    \vereq_i(X) 
+  \]
+\end{proof}
 
 \section{Additional definitions and results we may need at some point}
 
