@@ -1,15 +1,16 @@
 % !TeX spellcheck = en_UK
-% \let\accentvec\vec              
+ \let\accentvec\vec              
 \documentclass[runningheads,11pt]{llncs}
-%\let\spvec\vec \let\vec\accentvec
+\let\spvec\vec \let\vec\accentvec
 \newcommand\hmmax{0}
 \newcommand\bmmax{0}
 
 \usepackage{amssymb,amsmath}
-%\let\vec\spvec
+\let\vec\spvec
 %\usepackage{lmodern}
 \usepackage{newtxmath,newtxtext}
-\usepackage[T1]{fontenc}
+%\usepackage{fouriernc}
+%\usepackage[T1]{fontenc}
 % \def\vec#1{\mathchoice{\mbox{\mathbf$\displaystyle#1$}}
 % {\mbox{\mathbf$\textstyle#1$}} {\mbox{\mathbf$\scriptstyle#1$}}
 % {\mbox{\mathbf$\scriptscriptstyle#1$}}}
@@ -18,6 +19,8 @@
 \DeclareFontShape{U}{mathx}{m}{n}{<-> mathx10}{}
 \DeclareSymbolFont{mathx}{U}{mathx}{m}{n}
 \DeclareMathAccent{\widebar}{0}{mathx}{"73}
+
+\usepackage{bm}
 
 \usepackage{soulutf8} \soulregister\cite7 \soulregister\ref7
 \soulregister\pageref7 \usepackage{hyperref}
@@ -914,7 +917,8 @@ $H$ but not sure about soundness, right?}
   
 \end{proof}
 
- \section{Unoptimized $\plonk$ with arbitrary polynomial commitment $\PCOM$}
+\section{Unoptimized $\plonk$ with arbitrary polynomial commitment $\PCOM$}
+\michals{25.08}{This part is unfinished.}
  In the following we assume either
  \begin{enumerate}
  \item the polynomial commitments $\PCOM$ is $l$-hiding, or \michals{16.08}{$l$
