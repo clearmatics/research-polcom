@@ -1186,12 +1186,13 @@ polynomial commitment scheme.
 
 \noindent
   \textbf{Building simulator for SNARK from simulator for PC}
-We describe $\oraclesps$ in terms of calls to $\oraclespcom$.
-      \begin{itemize}
-      \item Ask $\oraclespcom$ for 7 random commitments,
+We describe $\oraclesps,\ro$ in terms of calls to $\oraclespcom,\ro_{\aux}$.
+\begin{itemize}
+      \item Simulate $\ro(x_{1}\|x_{2})$ via calls to $\ro_{aux}(x_{1},x_{2})$, where $x_{1}$ has length of 3 commitments.
+      \item For a query $(\inp, \wit)$ to $\oraclesps$, ask $\oraclespcom$ for 7 random commitments,
         $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t'_1}, \cp{t'_2}, \cp{t'_3}$, using the $(\msg{commit})$ query.
       \item Compute random elements $\beta, \gamma, \chz$ as
-        random oracle evaluations at partial transcripts.
+        random oracle evaluations of $\ro_{aux}$ at partial transcripts.
       \item Pick random evaluations $\ev{a}, \ev{b}, \ev{c}, \ev{z}$ and ask $\oraclespcom$ to simulate openings of the corresponding commitments at $\chz$ to get
         openings $W^{\p{f}}_\chz$, for
         $\p{f} \in \smallset{\p{a}, \p{b}, \p{c}, \p{z}}$.
@@ -1211,7 +1212,7 @@ We describe $\oraclesps$ in terms of calls to $\oraclespcom$.
 \noindent
 \textbf{Building an adversary for PC from adversary for SNARK}
 Given an SE adversary $\adv^{\oraclesps}(\srs, \srss, \radv)$ for $\plonkprotfs^{\PCOM}$
-we build an adversary $\bdv^{\oraclespcom}(\srs_{\PCOM}, \rbdv)$ for the a SE-PCOM.
+we build an adversary $\bdv^{\oraclespcom}(\srs_{\PCOM}, \rbdv)$ for the SE-PCOM.
 
 We equip adversary $\bdv$ with $\adv$'s code and randomness
   $\radv$. (Importantly $\bdv$ does not use any randomness on its
@@ -1220,10 +1221,13 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
   \item Given $\PCOM$ reference string $\srs_{\PCOM}$, prepare $\PS$'s master
     SRS $\srs$ and specialized SRS $\srss$ for relation $\REL$.
   \item Start $\adv(\srs, \srss, \radv)$.
-  \item On each $\adv$'s query $(\inp, \wit)$ to $\oraclesps$:
+    \item On each $\adv$'s query $(\inp, \wit)$ to $\oraclesps$:
     \begin{enumerate}
     \item Check $\REL(\inp, \wit) = 1$ and ignore if that's not the case.
-    \item Prepare a simulated proof for $\adv$ using $\oraclespcom$, that is
+      \item Prepare a simulated proof $\zkproof$ for $\adv$ using $\oraclespcom$ and $\ro_{aux}$ as described above.
+
+            \iffalse
+            , that is
       \begin{itemize}
       \item Ask $\oraclespcom$ for 7 commitments to random polynomials, denote
         the commitments by
@@ -1250,6 +1254,7 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
       \item From the obtained commitments, evaluations, openings, and random
         elements compute a simulated proof $\zkproof$ for $\inp$.
       \end{itemize}
+            \fi
     \item Add $(\inp, \zkproof)$ to $\qadv$.
     \end{enumerate}
   \item On $\adv$'s challenge instance $\inp$ and proof $\zkproof$.
@@ -1258,19 +1263,18 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
       \begin{itemize}
       \item commitments
         $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t_1}, \cp{t_2}, \cp{t_3}$,
-      \item random elements $\alpha, \beta, \gamma$,
+      \item random elements $\beta, \gamma$,
       \item openings $W_\chz^{\p{a}}, W_\chz^{\p{b}}, W_\chz^{\p{c}}$.
       \end{itemize}
     \item Compute
-      $\aux = (\cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}, \alpha, \cp{t_1},
+      $\aux = (\beta, \gamma, \cp{z}, \cp{t_1},
       \cp{t_2}, \cp{t_3})$.
     \item Output
       \begin{itemize}
       \item commitments $\cp{a}$, $\cp{b}$, $\cp{c}$,
       \item auxiliary input $\aux$,
-      \item challenge $z = \ro(\aux)$,
-      \item openings $W_z^{\p{a}} := W_\chz^{\p{a}}$,
-        $W_z^{\p{b}} := W_\chz^{\p{a}}$, $W_z^{\p{c}} := W_\chz^{\p{c}}$.
+    %  \item challenge $z = \ro(\aux)$,
+      \item openings $o = (W_\chz^{\p{a}}, W_\chz^{\p{a}},  W_\chz^{\p{c}})$.
       \end{itemize}
     \end{enumerate}
   \end{enumerate}
@@ -1462,6 +1466,7 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
     many times as the sr-snd adversary is polynomial). Each rewinding requiers
     to run an extractor, which may fail. In that case we loose. But with
     multiple rewindings, probability that some of the extraactors fail increases.}
+  \markulf{25.08}{Number of polynomial submitted to $\ro$ is polynomial, a polynomial sum of negligible probabilities is still negligible?}
   \qed
     \end{proof}
   
