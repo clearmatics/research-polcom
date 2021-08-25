@@ -91,6 +91,43 @@
 \end{abstract}
 
 \section{Preliminaries}
+
+\begin{definition}[Whitebox Simulation extractable NIZK]
+  \label{def:sepcom}
+  Let $NIZK = (\kgen, \prove, \verify)$ be a NIZK proof system
+  with a simulator $(\mathsf{SimGen}, \mathsf{SimProve})$.
+  Let $\oracles(\srs,td,\phi,w)$ be an oracle that when $(\phi,w)\in \REL$, runs $\pi \gets \mathsf{SimProve(\srs,\tau,\phi)}$ internally, records $(\pi,\phi)$ in $Q$, and returns $\pi$.
+  We say that $NIZK$ is \emph{simulation extractable} if for any $\ppt$
+  adversary $\adv$ with oracle access to $\oracles$ and $\ro$ there exists extractor
+  $\ext_{\adv}$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & \verify(\srs, \phi, \pi) = 1, \\
+      & \;(\phi,w) \neq \REL\\
+      & (\pi,\phi) \notin Q
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & (\srs, td) \gets \mathsf{SimGen}(\secparam, \REL),\\
+      & (\phi, \pi) \gets \adv^{\oracles,\ro}(\srs; r), \\
+      & \wit \gets \ext_\adv(\srs, Q_{sim}, Q_{\ro}; r)
+      % & z \sample \FF,\\
+      % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
+    \end{aligned}
+  \right.\right]
+  \leq \negl.
+\]
+\end{definition}
+
 \paragraph{Polynomial commitment scheme.}
 \label{sec:poly_com}
 In a polynomial commitment scheme $\PCOM = (\kgen, \com, \open, \verify)$ a
@@ -208,6 +245,7 @@ $\srs = \{g^{\xi^i}\}_{i=0}^{n-1}, h^\xi$.
 \item[$\Kzg.\verify(\srs, c, x, y, o) \to 1/0$:] Check if
   $e(c \cdot g^{-y}, h)=e(o , h^{\xi}\cdot h^{-x})$.
 \end{description}
+
 
 
 
@@ -1285,10 +1323,17 @@ polynomial commitment scheme.
   \item have access to the random oracle $\ro$.
   \end{itemize}
 
-  Since $\ddv_{\pf}$ are algebraic, there exists extractors
-  $\ext_{\ddv_{\pf}}(\srsPC, \qro_{\pf}, r_{\pf})$ that output
-  $\p{f}$. Here $\qro_{\p{f}}$ is a set of all random oracle queries made by
-  $\ddv_{\pf}$ and responses it got. As usual, $r_\pf$ denotes $\ddv_\pf$'s
+  Let $\inp, \zkproof$ be the challenge instance--proof pair output by the
+  adversary $\adv$ that contain commitments
+  $\cp{a}, \cp{b}, \cp{z}, \cp{t_1}, \cp{t_2}, \cp{t_3}$ to polynomials
+  $\p{a}, \p{b}, \p{z}, \p{t_1}, \p{t_2}, \p{t_3}$. Denote the set of
+  commitments by $\p{C}$ and set of polynomials by $\p{F}$. For
+  $\p{f} \in \p{F}$, adversary $\cdv_{\p{f}}$ outputs $\cp{\p{f}}$.
+
+  Since $\cdv_{\p{f}}$ are algebraic, there exists extractors
+  $\ext_{\cdv_{\p{f}}}(\srsPC, {\qro}_{\p{f}}, r_{\p{f}})$ that output
+  $\p{f}$. Here ${\qro}_{\p{f}}$ is a set of all random oracle queries made by
+  $\cdv_{\pf}$ and responses it got. As usual, $r_\pf$ denotes $\cdv_\pf$'s
   randomness.
 
   \michals{24.08}{That's actually a set of games -- for each adversary and
