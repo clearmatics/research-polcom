@@ -1063,21 +1063,22 @@ such that
                \gamma)\p{z}(X \omega))  \frac{1}{\p{Z_H}(X)} \\
 	\p{t_3}(X) & =  (\p{z}(X) - 1) \lag_1(X) \frac{1}{\p{Z_H}(X)}
 \end{align*}
-Output $\cp{t_i} = \p{t_i}(\chi)$, for $i \in \range{1}{3}$.
+Output $\cp{t_i} = \p{t_i}(\xi)$, for $i \in \range{1}{3}$. \markulf{24/08}{Why isn't this: 	Output polynomial commitment $\PCOM.\com(\p{z}(X))$?}
 	
 \item[Round 4] Get the challenge $\chz \in \FF_p$, $\chz = \ro(\zkproof[0..3])$.
   Output evaluations
 	\begin{align*}
     & \ev{a} = \p{a}(\chz), \ev{b} = \p{b}(\chz), \ev{c} = \p{c}(\chz),
-    \ev{S_{\sigma, 1}}= \p{S_{\sigma 1}}(\chz), \ev{S_{\sigma 2}} = \p{S_{\sigma 2}}(\chz),  \\
-    & \ev{z} = \p{z}(\chz), \ev{z_\omega} = \p{z}(\chz \omega),
-    \ev{t_1} = \p{t_1}(\chz), \ev{t_2} = \p{t_2}(\chz), \ev{t_3} = \p{t_3}(\chz)
+    \ev{S}_{\sigma, 1}= \p{S_{\sigma 1}}(\chz), \ev{S}_{\sigma 2} = \p{S_{\sigma 2}}(\chz),  \\
+    & \ev{z} = \p{z}(\chz), \ev{z}_\omega = \p{z}(\chz \omega),
+    \ev{t}_1 = \p{t_1}(\chz), \ev{t}_2 = \p{t_2}(\chz), \ev{t}_3 = \p{t_3}(\chz)
 	\end{align*}
 	
 	\item[Round 5]
 	Compute the opening challenge $v \in \FF_p$, $v = \ro(\zkproof[0..4])$.
 	Compute the openings for the polynomial commitment scheme
-  \michals{11.08}{Need to add that commitment scheme is additively homomorphic}
+        \michals{11.08}{Need to add that commitment scheme is additively homomorphic}
+        \markulf{25.08}{Challenge $\nu$ doesn't seem to be used by simplified protocol}
   \begin{align*}
     & \p{W_\chz^{t_1}} = \PCOM.\open(\srs, \cp{t_{1}}, \p{t_1}(\chz)) \\
     & \p{W_\chz^{t_2}} = \PCOM.\open(\srs, \cp{t_{2}}, \p{t_2}(\chz)), \\
@@ -1120,7 +1121,7 @@ The \plonk{} verifier works as follows
              + \beta \omega^{2 \noofc} \chz + \gamma)\ev{z} \frac{1}{\p{Z_H}(\chz)} \\
            & - (\ev{a} + \beta \ev{S_{\sigma 1}} + \gamma)(\ev{b} + \beta 
              \ev{S_{\sigma 2}} + \gamma)(\ev{c} + \beta \ev{S_{\sigma 3}} + 
-             \gamma)\ev{z_{\omega}}(\chz \omega))  \frac{1}{\p{Z_H}(\chz)} \\
+             \gamma)\ev{z_{\omega}}  \frac{1}{\p{Z_H}(\chz)} \\
 	\ev{t_3} & =  (\ev{z} - 1) \lag_1(\chz) \frac{1}{\p{Z_H}(\chz)}
 \end{align*}
 \item[Step 9] Verify all polynomial commitment openings.
@@ -1198,7 +1199,8 @@ polynomial commitment scheme.
         random oracle evaluations at partial transcripts.
       \item Ask $\oraclespcom$ to evaluate all the polynomials at $\chz$ and get
         openings $W^{\p{f}}_\chz$, for
-        $\p{f} \in \smallset{\p{a}, \p{b}, \p{c}, \p{z}}$.
+              $\p{f} \in \smallset{\p{a}, \p{b}, \p{c}, \p{z}}$.
+              \markulf{24.08}{We don't actually know the random polynomials, so we cannot compute their evaluations, but just simulating opening proofs for random $\ev{a},\dots$ should work.}
       \item Ask $\oraclespcom$ to evaluate $\p{z}$ at $\omega \chz$ and get
         openings $W^{\p{z}}_{\omega \chz}$.
       \item Compute evaluations $\p{S_{\sigma 1}}(\chz)$,
