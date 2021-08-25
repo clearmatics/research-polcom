@@ -563,25 +563,7 @@ of these don't require any secret knowledge)}
    \end{definition}
 
 \subsection{Polynomial IOP}
- \begin{definition}[$\eps$-sufficiently simulatable PCOM]
-   Let $\PCOM$ be a SE polynomial commitment scheme and
-   $\PS = (\kgen, \prover, \verifier, \simulator)$ a polynomial zero-knowledge proof system
-   for relation $\REL$. We call $\PCOM$ \emph{$\eps$-sufficiently simulatable for
-     $\PS$} if there exist a $\ppt$ algorithm $\adv$ such that for
-   $\srs \sample \kgen$, all $(\inp, \wit) \in \REL$ holds
-   \[
-     \SD_{\srs \sample \kgen(\secparam)}(\prover(\srs, \inp, \wit),
-     \adv^{\oracles}(\srs, \inp)) \leq \eps(\secpar).
-   \]
- \end{definition}
- Intuitively, we call $\PCOM$ sufficiently simulatable for $\PS$ if a $\ppt$
- $\adv$ given access to $\PCOM$'s simulator oracle $\oraclespcom$ can produce a
- simulated proof for $\PS$.
-	\antonio{29.07}{If I understood correctly, $\PS$ should the ``compiled'' proof system,
-		namely the PS obtained using polycommitment and an information-theoretic proof system
-		(like a PHP),right? I don't really understand why you need this def.}
-
- \begin{definition}[Polynomial Holomorphic Proof System (PHP)]
+\begin{definition}[Polynomial Holomorphic Proof System (PHP)]
   \label{def:php}
   Let $\REL$ be an indexed relation with a corresponding language $\LANG$, $\FF$
   some finite field, $\maxdeg$ a degree bound, $\vereq_{\cdot}(X) \in \FF[X]$ a
@@ -608,94 +590,22 @@ PHPs. \michals{28.04}{Check!}
 	%
 \begin{definition}[PHPs with straight-line extractor]
 \label{def:knownsound_wc_poly}
-A $\PS$ is $\epsilon$-knowledge-sound with straight-line extractor if there exists an
-extractor $\WitExtract$ such that for any prover $\Pphp^*$, every field $\FF \in \Fam$,
-relation $\ind$, and instance $\inp$: 
-\[ \Prob{ (\ind, \inp, \WitExtract(\tuple\pora{\nprv})) \in \relfam}
-	\geq \Prob{ \braket{ \Pphp^*,\Vphp^{\Iphp(\FF,\ind)}(\FF,\inp) } = 1} - \epsilon
+A $\PS$ is $\eps$-knowledge-sound with straight-line extractor if there exists an
+extractor $\ext$ such that for any prover $\prover^*$, every field $\FF \in \Fam$,
+relation $\REL$, and instance $\inp$: 
+\[ \Prob{ (\REL, \inp, \ext(\tuple\pora{\nprv})) \in \RELGEN}
+	\geq \Prob{ \brak{ \prover^*,\verifier^{\indexer(\FF, \REL)}(\FF, \inp) } = 1} - \eps
 \]
-where $\tuple\pora{\nprv}$ are the polynomials output by $\Pphp^*$ in an execution of
-$\braket{\Pphp^*, \Vphp^{\Iphp(\FF,\ind)}(\FF,\inp)}$.
+where $\tuple\pora{\nprv}$ are the polynomials output by $\prover^*$ in an execution of
+$\brak{\prover^*, \verifier^{\indexer(\FF, \REL)}(\FF, \inp)}$.
 \end{definition}
 
 
-
-\begin{definition}[Somehow deterministic WEPHP]
-  \label{def:sdwephp}
-  Let $\PS$ be a WEPHP for $\REL$. For each polynomial $f_i$ sent by the prover
-  denote by $A_i$ the set of challenges sent by the verifier and by $F_i$ the
-  set of polynomials sent by the prover \emph{before} the prover sends
-  $f_i$. Let $\encset$ be an encoding set. We say that $\PS$ is \emph{somehow
-    deterministic} (SD) if for any $(\inp, \wit) \in \REL$, polynomials
-  $\smallset{f_i}_{i \in [\noofp]}$ send by the prover, and encoding set
-  $\encset \neq [\noofp]$ each polynomial
-  $f_j \in \smallset{f_i}_{i \in [\noofp] \setminus \encset}$ is determined by
-  \begin{itemize}
-    \item polynomials $F_j$, and
-    \item the verifier's challenges $A_i$, and
-    \item the witness $\wit$.
-  \end{itemize}
-\end{definition}
-Intuitively, we say that WEPHP is somehow deterministic if the only
-non-deterministic messages send by the prover are polynomials encoding the
-witness, and all other messages are determined by the previous one, witness, and
-verifier's challenges.
-\antonio{29.07}{Why do we need this definition?}
-\michals{18.08}{I though we may need it to show simulation extractability, but I
-am not sure anymore.}
-
-\section{PHP-to-NIZK compiler}
-
-\subsection{From PHP to zkPHP}
-\michals{24.06}{Need to show how to get a ZK PHP from PHP}
-
-\begin{theorem}[From WEPHP to ZK WEPHP]
-  Let $\PHP = (\prover, \verifier)$ be a WEPHP and $E$ its encoding set,
-  $\maxdeg$ be a maximal degree of polynomials sent by the prover; and
-  let $\PHP = (\prover', \verifier')$ be a WEPHP such that
-  \begin{itemize}
-  \item Both parties get as input a set of $\FF$ elements $H$, such that
-    $\abs{H} = \maxdeg + 1$. Denote the vanishing polynomial for $H$ by $\van{H}$.
-  \item $\prover'$ acts as $\prover$ except for $f_i(X) \in E$. Let $k_i$ be a
-    number of queries $\verifier$ makes to the oracle $\oracleo_{f_i}$ and
-    $d_i = \deg(f_i)$, then $\prover'$ computes
-      \[
-        g_i(X) = f_i(X) + \van{H}\left(X^{d_i + 1} b_1 + \ldots
-        X^{d_i + k_i + 1} b_{k_i + 1}\right)
-      \]
-      for random $b_1, \ldots, b_{k + 1}$ and sets oracle $\oracleo_{g_i}$.
-    \item $\verifier'$ acts as $\verifier$. \michals{28.06}{We don't want to
-        change the verifier and its equations -- that's why we have $\van{H}$.}
-  \end{itemize}
-\end{theorem}
-\antonio{29.07}{How can we choose the set $H$? In other words, how do we select an $H$ that
-does not mess with the completeness or the soundness of the PHP?
-Can we just say that if the original PHP checks $G(X,h_1(v_1(X)),...)=0$ then the new PHP
-checks $G(X,h'_1(v_1(X)),\dots)$ where $h'_i(X)=h'_i(X)+V_H(X)r_i(X)$ for some randomly
-chosen $r_i$? ($V_H$ is the vanishing poly at $H$) I guess completeness would hold for any
-$H$ but not sure about soundness, right?}
-\michals{18.08}{$H$ is given. Need to think about the second part of your question.}
-\begin{proof}
-  \ncase{Completeness} 
-
-  \ncase{Soundness} 
-
-  \ncase{Zero-knowledge} To show the property we construct a simulator
-  $\simulator$ and argue that it produces proofs indistinguishable from proofs
-  of a real prover. The simulator behaves as real prover, except for
-  witness-encoding polynomials in $\smallset{f_i}_{i \in E}$. For
-  $f_j \in \smallset{f_i}_{i \in E}$, where it
-  \begin{itemize}
-  \item Picks randomizers $b_1, \ldots, b_{\noofq_j}$ and computes polynomial
-    $g_i(X) =  \van{H}(b_1 X + \ldots b_{\noofq_j} X^{\noofq_j})$. 
-  \item \michals{28.06}{The simulator can open the commitment to any value, but
-      he need to know *which* value}
-  \end{itemize}
-  
-\end{proof}
 
 \subsection{Simulation extractable NIZKs from simulation extractable polynomial
   commitments}
+\michals{25.08}{this section is old. Probably need to rewrite it after we are
+  sure that a similar result for Plonk holds.}
 
 \begin{theorem}
   Let $\PHP = (\PHP.\prover, \PHP.\verifier, \PHP.\simulator)$ be a ZK PHP
@@ -895,6 +805,76 @@ This definition is equivalen to definition of independent polynomials from
   by the prover. 
 \end{definition}
 
+\section{Additional definitions and results we may need at some point}
+
+\begin{definition}[Somehow deterministic WEPHP]
+  \label{def:sdwephp}
+  Let $\PS$ be a WEPHP for $\REL$. For each polynomial $f_i$ sent by the prover
+  denote by $A_i$ the set of challenges sent by the verifier and by $F_i$ the
+  set of polynomials sent by the prover \emph{before} the prover sends
+  $f_i$. Let $\encset$ be an encoding set. We say that $\PS$ is \emph{somehow
+    deterministic} (SD) if for any $(\inp, \wit) \in \REL$, polynomials
+  $\smallset{f_i}_{i \in [\noofp]}$ send by the prover, and encoding set
+  $\encset \neq [\noofp]$ each polynomial
+  $f_j \in \smallset{f_i}_{i \in [\noofp] \setminus \encset}$ is determined by
+  \begin{itemize}
+    \item polynomials $F_j$, and
+    \item the verifier's challenges $A_i$, and
+    \item the witness $\wit$.
+  \end{itemize}
+\end{definition}
+Intuitively, we say that WEPHP is somehow deterministic if the only
+non-deterministic messages send by the prover are polynomials encoding the
+witness, and all other messages are determined by the previous one, witness, and
+verifier's challenges.
+
+\subsection{From PHP to zkPHP}
+\michals{24.06}{Need to show how to get a ZK PHP from PHP}
+
+\begin{theorem}[From WEPHP to ZK WEPHP]
+  Let $\PHP = (\prover, \verifier)$ be a WEPHP and $E$ its encoding set,
+  $\maxdeg$ be a maximal degree of polynomials sent by the prover; and
+  let $\PHP = (\prover', \verifier')$ be a WEPHP such that
+  \begin{itemize}
+  \item Both parties get as input a set of $\FF$ elements $H$, such that
+    $\abs{H} = \maxdeg + 1$. Denote the vanishing polynomial for $H$ by $\van{H}$.
+  \item $\prover'$ acts as $\prover$ except for $f_i(X) \in E$. Let $k_i$ be a
+    number of queries $\verifier$ makes to the oracle $\oracleo_{f_i}$ and
+    $d_i = \deg(f_i)$, then $\prover'$ computes
+      \[
+        g_i(X) = f_i(X) + \van{H}\left(X^{d_i + 1} b_1 + \ldots
+        X^{d_i + k_i + 1} b_{k_i + 1}\right)
+      \]
+      for random $b_1, \ldots, b_{k + 1}$ and sets oracle $\oracleo_{g_i}$.
+    \item $\verifier'$ acts as $\verifier$. \michals{28.06}{We don't want to
+        change the verifier and its equations -- that's why we have $\van{H}$.}
+  \end{itemize}
+\end{theorem}
+\antonio{29.07}{How can we choose the set $H$? In other words, how do we select an $H$ that
+does not mess with the completeness or the soundness of the PHP?
+Can we just say that if the original PHP checks $G(X,h_1(v_1(X)),...)=0$ then the new PHP
+checks $G(X,h'_1(v_1(X)),\dots)$ where $h'_i(X)=h'_i(X)+V_H(X)r_i(X)$ for some randomly
+chosen $r_i$? ($V_H$ is the vanishing poly at $H$) I guess completeness would hold for any
+$H$ but not sure about soundness, right?}
+\michals{18.08}{$H$ is given. Need to think about the second part of your question.}
+\begin{proof}
+  \ncase{Completeness} 
+
+  \ncase{Soundness} 
+
+  \ncase{Zero-knowledge} To show the property we construct a simulator
+  $\simulator$ and argue that it produces proofs indistinguishable from proofs
+  of a real prover. The simulator behaves as real prover, except for
+  witness-encoding polynomials in $\smallset{f_i}_{i \in E}$. For
+  $f_j \in \smallset{f_i}_{i \in E}$, where it
+  \begin{itemize}
+  \item Picks randomizers $b_1, \ldots, b_{\noofq_j}$ and computes polynomial
+    $g_i(X) =  \van{H}(b_1 X + \ldots b_{\noofq_j} X^{\noofq_j})$. 
+  \item \michals{28.06}{The simulator can open the commitment to any value, but
+      he need to know *which* value}
+  \end{itemize}
+  
+\end{proof}
 
  \section{Unoptimized $\plonk$ with arbitrary polynomial commitment $\PCOM$}
  In the following we assume either
