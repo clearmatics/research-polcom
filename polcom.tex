@@ -869,6 +869,8 @@ For a family of polynomials $F = \smallset{f_1, \ldots, f_k}$ where each $f_i
   \end{multline}
 \end{definition}
 
+\michals{25.08}{Focus on a single ver eq, work later on multi ver eq case.}
+
 \begin{lemma}[Simulatability of $2$-independent proof systems]
   Let $\PHP$ \michals{25.08}{$\PHP$ or $\PS$?} be a $2$-independent proof system
   \hl{...}  Let $\pf_1(X), \ldots, \pf_k(X)$ be the polynomials that the prover
@@ -881,14 +883,14 @@ For a family of polynomials $F = \smallset{f_1, \ldots, f_k}$ where each $f_i
   polynomial in $\p{F}_i$ send by the prover. Set
   $L = \smallset{\pf_{j_1}, \ldots, \pf_{j_m}}$. \michals{25.08}{Need to adjust
     in case some polynomial is ``last'' for more than one verification equation}
-  If $\pf_{j_i} = \pf_{j_{i'}}$, that is some polynomial is the last polynomial
-  for more than one verification equation, then pick the last polynomial
-  from $\p{F}_{i} \setminus \smallset{\pf_{j_i}}$ and add it to $L$. Continue
-  till there is no  
-  The simulator proceeds as
-  follows: If $\pf_i \not\in L$ then $\simulator$ picks a random polynomial
-  $\pf'_i(X)$ ans sends it as $\pf_i$. Alternatively, if $\pf_{j_i} \in L$, then
-  the simulator computes
+  Assume $\pf_{j_i} = \pf_{j_{i'}}$, that is, there is some polynomial that is
+  the last polynomial for more than one verification equation. Assume
+  $\pf_{j_i}$ is sent by the prover no later than $\pf_{j_{i'}}$ then pick the
+  last polynomial from $\p{F}_{i} \setminus \smallset{\pf_{j_i}}$ and add it to
+  $L$. Continue till there is no The simulator proceeds as follows: If
+  $\pf_i \not\in L$ then $\simulator$ picks a random polynomial $\pf'_i(X)$ ans
+  sends it as $\pf_i$. Alternatively, if $\pf_{j_i} \in L$, then the simulator
+  computes
   \[
     \vereq_i(X) 
   \]
