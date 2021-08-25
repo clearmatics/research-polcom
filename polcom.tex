@@ -1183,8 +1183,8 @@ The \plonk{} simulator proceeds as an honest prover would, except:
   and commits to them.
 \end{enumerate}
  
-We write $\PS^{\PCOM}$ to denote a proof system compiled from a PHP $\PHP$ using
-polynomial commitment $\PCOM$. E.g., we denote non-interactive version of
+We write $\PHP^{\PCOM}$ to denote a interactive proof system compiled from a PHP $\PHP$ using
+polynomial commitment $\PCOM$. We denote its non-interactie variant compiled using Fiat-Shamir by $\PHP^{\PCOM}_{\mathsf{fs}}$. E.g., we denote the above rolled out non-interactive version of the
 $\plonk$ proof system by $\plonkprotfs^{\kzg}$, where $\kzg$ denotes the KZG
 polynomial commitment scheme.
 
@@ -1198,29 +1198,43 @@ polynomial commitment scheme.
     extracted, $1 - \eps$ is probability of extractor's success, aux -- see how
     we compute the challenge}
 \end{theorem}
-\begin{proof}
-  \ncase{Game 0} Let $\adv^{\oraclesps}(\srs, \srss, \radv)$ be a SE adversary
-  for $\plonkprotfs^{\PCOM}$
-  \michals{20.08}{Continue -- that's a standard SE game here.}
-  The game return $1$ iff extractor $\ext_\adv(\srs, \srss, \qadv,
-  \qroadv{\adv})$ fails to output witness $\wit$ such that for $\adv$'s output
-  $(\inp, \zkproof)$ holds $\REL(\inp, \wit)$.
-  
-  \ncase{Game 1} Let $\bdv^{\oraclespcom}(\srs_{\PCOM}, \rbdv)$ be a SE-PCOM
-  adversary. We show how to use extractor
-  $\ext_\bdv(\srs_{\PCOM}, \qbdv, \rbdv)$, where $\qbdv$ is a list of all
-  queries to $\oraclespcom$ and their responses, to build extractor
-  $\ext_\adv(\srs, \srss, \qadv, \radv)$, where $\qadv$ is a list of all queries
-  to $\oraclesps$ and their responses, outputs witness $\wit$ such that
-  $\REL(\inp, \wit) = 1$.
+\begin{proof} \ \\
 
-  We may equip adversary $\bdv$ with $\adv$'s code and its randomness
-  $\radv$. More precisely, we hardcode $\adv$'s code into $\bdv$ and set
-  $\rbdv = \radv$. (Importantly $\bdv$ does not use any randomness on its
-  own). Such $\bdv$ proceeds as follows
+\noindent
+  \textbf{Building simulator for SNARK from simulator for PC}
+We describe $\oraclesps$ in terms of calls to $\oraclespcom$.
+      \begin{itemize}
+      \item Ask $\oraclespcom$ for 7 random commitments,
+        $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t'_1}, \cp{t'_2}, \cp{t'_3}$, using the $(\msg{commit})$ query.
+      \item Compute random elements $\beta, \gamma, \chz$ as
+        random oracle evaluations at partial transcripts.
+      \item Pick random evaluations $\ev{a}, \ev{b}, \ev{c}, \ev{z}$ and ask $\oraclespcom$ to simulate openings of the corresponding commitments at $\chz$ to get
+        openings $W^{\p{f}}_\chz$, for
+        $\p{f} \in \smallset{\p{a}, \p{b}, \p{c}, \p{z}}$.
+      \item Pick random evaluation $\ev{z}_{\omega}$ and ask $\oraclespcom$ to simulate opening of commitment $\cp{z}$ at $\omega \chz$ using the query $(\msg{open}, \cp{z}, \chz, \ev{z}_{\omega})$ to get
+        openings $W^{\p{z}}_{\omega \chz}$.
+      \item Compute evaluations $\p{S_{\sigma 1}}(\chz)$,
+        $\p{S_{\sigma 2}}(\chz)$ and simulate openings $W^{\p{S_{\sigma 1}}}_\chz$,
+        $W^{\p{S_{\sigma 2}}}_\chz$ for commitments in $\srss$.
+      \item For $i \in \range{1}{3}$, compute values of $\ev{t}_i$ as
+        defined by the verification equation.
+      \item For $i \in \range{1}{3}$, ask $\oraclespcom$ to simulate opening of $\cp{t'_i}$
+        to $\ev{t}_i$ at $\chz$.
+      \item From the obtained commitments, evaluations, openings, and random
+        elements compute a simulated proof $\zkproof$ for $\inp$.
+      \end{itemize}
+
+\noindent
+\textbf{Building an adversary for PC from adversary for SNARK}
+Given an SE adversary $\adv^{\oraclesps}(\srs, \srss, \radv)$ for $\plonkprotfs^{\PCOM}$
+we build an adversary $\bdv^{\oraclespcom}(\srs_{\PCOM}, \rbdv)$ for the a SE-PCOM.
+
+We equip adversary $\bdv$ with $\adv$'s code and randomness
+  $\radv$. (Importantly $\bdv$ does not use any randomness on its
+  own). $\bdv$ proceeds as follows
   \begin{enumerate}
   \item Given $\PCOM$ reference string $\srs_{\PCOM}$, prepare $\PS$'s master
-    SRS $\srs$ and specialized SRS $\srss$.
+    SRS $\srs$ and specialized SRS $\srss$ for relation $\REL$.
   \item Start $\adv(\srs, \srss, \radv)$.
   \item On each $\adv$'s query $(\inp, \wit)$ to $\oraclesps$:
     \begin{enumerate}
@@ -1287,6 +1301,15 @@ polynomial commitment scheme.
   extractable, then there exists an extractor
   $\ext_{\bdv}(\srs_{\PCOM}, \qbdv, \rbdv)$ that outputs $\p{a}, \p{b}, \p{c}$.
 
+
+  We show how to use extractor
+  $\ext_\bdv(\srs_{\PCOM}, \qbdv, \rbdv)$, where $\qbdv$ is a list of all
+  queries to $\oraclespcom$ and their responses, to build extractor
+  $\ext_\adv(\srs, \srss, \qadv, \radv)$, where $\qadv$ is a list of all queries
+  to $\oraclesps$ and their responses, outputs witness $\wit$ such that
+  $\REL(\inp, \wit) = 1$.
+
+
   We now describe the extractor $\ext_\adv$ which makes a single call to
   $\ext_{\bdv}$: It gets as input $\srs, \srss$ from which it can compute
   $\srs_{{\PCOM}}$. The list $\qadv$ is constructed as above by $\bdv$ from the
@@ -1308,6 +1331,16 @@ polynomial commitment scheme.
     which case we break the soundness of the polynomial commitment scheme or
     (ii), $\adv'$ breaks knowledge soundness.  }
 
+
+
+  \ncase{Game 0} Let $\adv^{\oraclesps}(\srs, \srss, \radv)$ be a SE adversary
+  for $\plonkprotfs^{\PCOM}$
+  \michals{20.08}{Continue -- that's a standard SE game here.}
+  The game return $1$ iff extractor $\ext_\adv(\srs, \srss, \qadv,
+  \qroadv{\adv})$ fails to output witness $\wit$ such that for $\adv$'s output
+  $(\inp, \zkproof)$ holds $\REL(\inp, \wit)$.
+  
+  \ncase{Game 1}
   We now show that the extracted polynomials indeed encode witness $\wit'$ (this
   witness may differ from the witness $\wit$ provided by the prover) such that
   $\REL(\inp, \wit') = 1$. For that end, we introduce the following games.
