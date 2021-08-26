@@ -1223,23 +1223,25 @@ $\plonk$ proof system by $\plonkprotfs^{\kzg}$, where $\kzg$ denotes the KZG
 polynomial commitment scheme.
 
 \begin{theorem}
-  Let $\PCOM$ be a $(3, \eps)$-aux-simulation-extractable and
-  $\epsext$-extractable \michals{25.08}{Add definition for the latter. $\epsext$
-  is the probability that an extractor fails to extract the committed
-  polynomial. Note -- no simulated commitments here.} polynomial commitment scheme,
-  then $\plonkprotfs^{\PCOM}$ is $()$-simulation extractable.
-  \michals{16.08}{$(3, \eps)$-aux-simulation-extractable -- $3$ polynomials are
-    extracted, $1 - \eps$ is probability of extractor's success, aux -- see how
-    we compute the challenge}
+  Let $\PCOM$ be a polynomial commitment scheme that is binding, simulation-extractable, and a commitment of knowledge,
+  then $\plonkprotfs^{\PCOM}$ is simulation extractable.
+%  \michals{16.08}{$(3, \eps)$-aux-simulation-extractable -- $3$ polynomials are
+%    extracted, $1 - \eps$ is probability of extractor's success, aux -- see how
+%    we compute the challenge}
 \end{theorem}
 \begin{proof} \ \\
 
 \noindent
   \textbf{Building simulator for SNARK from simulator for PC}
 We describe $\oraclesps,\ro$ in terms of calls to $\oraclespcom,\ro_{\aux}$.
+
+\noindent
+We simulate $\ro(x_{1}\|x_{2})$ via calls to $\ro_{aux}(x_{1},x_{2})$, where $x_{1}$ has the length of 3 commitments.
+
+\noindent
+Queries to $(\inp, \wit)$ to $\oraclesps$ are answered as follows:
 \begin{itemize}
-      \item Simulate $\ro(x_{1}\|x_{2})$ via calls to $\ro_{aux}(x_{1},x_{2})$, where $x_{1}$ has length of 3 commitments.
-      \item For a query $(\inp, \wit)$ to $\oraclesps$, ask $\oraclespcom$ for 7 random commitments,
+      \item Ask $\oraclespcom$ for 7 random commitments,
         $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t'_1}, \cp{t'_2}, \cp{t'_3}$, using the $(\msg{commit})$ query.
       \item Compute random elements $\beta, \gamma, \chz$ as
         random oracle evaluations of $\ro_{aux}$ at partial transcripts.
@@ -1328,30 +1330,23 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
       \end{itemize}
     \end{enumerate}
   \end{enumerate}
-  \michals{16.08}{Open questions: (1) How to use adversary $\bdv$ that is tasked
-    to output only 1 commitent and its opening? (2) Can we state SE of PCOM as
-    above? I.e. with an adversary $\bdv$ who provides $\aux$ which determines
-    PCOM challenge $z = \ro(\aux)$? Sounds fine -- no adversary should be able
-    to efficiently find a $z$ that would fit it that way, but a formal reasoning
-    is needed.}
 
-  Now, since the polynomial commitment scheme is $(3, \eps)$-aux-simulation
+  Now, since the polynomial commitment scheme is simulation
   extractable, then there exists an extractor
-  $\ext_{\bdv}(\srs_{\PCOM}, \qbdv, \rbdv)$ that outputs $\p{a}, \p{b}, \p{c}$.
+  $\ext_{\bdv}(\srs_{\PCOM}, \qbdv, \rbdv)$ that outputs $\p{a}, \p{b}, \p{c}$.\smallskip
 
-
-  We show how to use extractor
+\noindent\textbf{Building an extractor for SNARK from an extractor for PC}
+  We show how to use the extractor
   $\ext_\bdv(\srs_{\PCOM}, \qbdv, \rbdv)$, where $\qbdv$ is a list of all
-  queries to $\oraclespcom$ and their responses, to build extractor
+  queries to $\oraclespcom$ and their responses, to build an extractor
   $\ext_\adv(\srs, \srss, \qadv, \radv)$, where $\qadv$ is a list of all queries
-  to $\oraclesps$ and their responses, outputs witness $\wit$ such that
+  to $\oraclesps$ and their responses, that outputs witness $\wit$ such that
   $\REL(\inp, \wit) = 1$.
 
 
-  We now describe the extractor $\ext_\adv$ which makes a single call to
-  $\ext_{\bdv}$: It gets as input $\srs, \srss$ from which it can compute
-  $\srs_{{\PCOM}}$. The list $\qadv$ is constructed as above by $\bdv$ from the
-  queries to its oracles, consequently, it allows to derive $\qbdv$.  The
+  The extractor $\ext_\adv$ makes a single call to
+  $\ext_{\bdv}$: It gets as input $\srs, \srss$ from which it computes
+  $\srs_{{\PCOM}}$. As the simulator for the SNARK can be obtained from the simulator for PC, $\qadv$ allows to derive $\qbdv$.  The
   randomness $\radv$ is reused unchanged as $\rbdv$.
   $\ext_{\bdv}(\srs_{\PCOM}, \qbdv, \rbdv)$ outputs $\p{a}, \p{b}, \p{c}$ from
   which we decode the witness.
@@ -1371,32 +1366,38 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
 
 
 
-  \ncase{Game 0} Let $\adv^{\oraclesps}(\srs, \srss, \radv)$ be a SE adversary
+  \ncase{Game 1} Let $\adv^{\oraclesps}(\srs, \srss, \radv)$ be a SE adversary
   for $\plonkprotfs^{\PCOM}$
   \michals{20.08}{Continue -- that's a standard SE game here.}
   The game return $1$ iff extractor $\ext_\adv(\srs, \srss, \qadv,
   \qroadv{\adv})$ fails to output witness $\wit$ such that for $\adv$'s output
   $(\inp, \zkproof)$ holds $\REL(\inp, \wit)$.
   
-  \ncase{Game 1}
+  %\ncase{Game 1}
   We now show that the extracted polynomials indeed encode witness $\wit'$ (this
   witness may differ from the witness $\wit$ provided by the prover) such that
   $\REL(\inp, \wit') = 1$. For that end, we introduce the following games.
 
-  \ncase{$\game{0} \mapsto \game{1}$} Probability that $\game{0}$ and $\game{1}$
-  return different values is \hl{zero} as the adversary $\adv$ gets the same
-  input and oracle $\oraclesps$ and $\bdv$ composed with $\oraclespcom$ provide
-  answers from the same distribution.
+ % \ncase{$\game{0} \mapsto \game{1}$} Probability that $\game{0}$ and $\game{1}$
+ % return different values is \hl{zero} as the adversary $\adv$ gets the same
+ % input and oracle $\oraclesps$ and $\bdv$ composed with $\oraclespcom$ provide
+ % answers from the same distribution.
  
-  \ncase{Game 2} In this game we define adversary $\cdv$ that interacts with
-  $\adv$ playing the role of the $\oraclesps$ -- as $\bdv$ did in the game above
-  -- but provides it with real proofs instead of simulated ones. That is,
-  \michals{20.08}{Here comes description how $\cdv$ creates real
-    proofs.}\michals{23.08}{Can $\cdv$ use randomness here?}\michals{25.08}{Yes.}
-  \michals{23.08}{Does $\cdv$ use the pcom simulator here?}\michals{25.08}{No.}
+  \ncase{Game 2} Is the same as Game 1 except that we replace $\oraclesps$ with the real prover algorithm.
 
- \ncase{$\game{1} \mapsto \game{2}$} Probability that $\game{1}$ and $\game{2}$
-  return different values is $\epszk$. This comes since in $\game{1}$ the
+
+%  In this game we define adversary $\cdv$ that interacts with
+%  $\adv$ playing the role of the $\oraclesps$ -- as $\bdv$ did in the game above
+%  -- but provides it with real proofs instead of simulated ones. That is,
+%  \michals{20.08}{Here comes description how $\cdv$ creates real
+%    proofs.}\michals{23.08}{Can $\cdv$ use randomness here?}\michals{25.08}{Yes.}
+%  \michals{23.08}{Does $\cdv$ use the pcom simulator here?}\michals{25.08}{No.}
+
+  \ncase{$\game{1} \mapsto \game{2}$} The difference in the winning probabilities between $\game{1}$ and $\game{2}$ is negligible by the zero-knowledge property of the prove system.
+
+  %Probability that $\game{1}$ and $\game{2}$
+  %return different values is $\epszk$.
+  This comes since in $\game{1}$ the
   adversary $\adv$ sees proofs from the same distribution as simulated
   proofs. In $\game{2}$ adversary $\adv$ gets real proofs.  \hl{continue}
 
