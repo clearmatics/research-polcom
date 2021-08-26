@@ -98,17 +98,18 @@
 \begin{definition}[Whitebox Simulation extractable NIZK]
   \label{def:sepcom}
   Let $NIZK = (\kgen, \prove, \verify)$ be a NIZK proof system
-  with a simulator $(\mathsf{SimGen}, \mathsf{SimProve})$.
-  Let $\oracles(\srs,td,\phi,w)$ be an oracle that when $(\phi,w)\in \REL$, runs $\pi \gets \mathsf{SimProve(\srs,\tau,\phi)}$ internally, records $(\pi,\phi)$ in $Q$, and returns $\pi$.
+  with a simulator $(\simgen, \simprove)$.
+  Let $\oracles(\srs, \td, \inp, \wit)$ be an oracle that when $(\inp, \wit)\in
+  \REL$, runs $\pi \gets \simprove(\srs, \tau, \inp)$ internally, records $(\pi,\inp)$ in $Q$, and returns $\pi$.
   We say that $NIZK$ is \emph{simulation extractable} if for any $\ppt$
   adversary $\adv$ with oracle access to $\oracles$ and $\ro$ there exists extractor
   $\ext_{\adv}$ such that
 \[
   \Pr \left[
     \begin{aligned}
-      & \verify(\srs, \phi, \pi) = 1, \\
-      & \;(\phi,w) \neq \REL\\
-      & (\pi,\phi) \notin Q
+      & \verify(\srs, \inp, \pi) = 1, \\
+      & \;(\inp, \wit) \neq \REL\\
+      & (\pi,\inp) \notin Q
     \end{aligned}
     \,\left|\,
       \vphantom{
@@ -120,8 +121,8 @@
         \end{aligned}
         }
     \begin{aligned}
-      & (\srs, td) \gets \mathsf{SimGen}(\secparam, \REL),\\
-      & (\phi, \pi) \gets \adv^{\oracles,\ro}(\srs; r), \\
+      & (\srs, \td) \gets \simgen(\secparam, \REL),\\
+      & (\inp, \pi) \gets \adv^{\oracles,\ro}(\srs; r), \\
       & \wit \gets \ext_\adv(\srs, Q_{sim}, Q_{\ro}; r)
       % & z \sample \FF,\\
       % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
@@ -211,28 +212,12 @@ adversary produces a (valid) commitment $c$, which it can open, then it also
 knows the underlying polynomial $\p{f}$ which commits to that value.
 
 \markulf{23/08}{Wondering if the $\verify$ condition is really needed for extraction. In the AGM, if the adversary only sees the $\srs$ it has to output group element that is a linear combination of it.}
+\michals{25.08}{You may be right that it is not necessary}
 
-\newcommand{\Kzg}{\mathsf{KZG}}
-%\newcommand{\kzg}{\mathsf{kzg}}
 
-\def\cgen{{\sf ComGen}}
-\def\commit{{\sf Com}}
-%\def\comopen{{\sf ComOpen}}
-%\def\openver{{\sf OpenVer}}
-% \newcommand{\comkg}{\mathsf{KG}}
-%\newcommand{\PC}{\mathsf{PC}}
-\newcommand{\CM}{\commit}
-
-%\def\open{{\sf Open}}
-% \def\check{{\sf Check}}
-%\def\witness{{\sf wit}}
-\def\gk{{\sf gk}}
-
-\def\ck{{\sf ck}}
-\newcommand{\secp}{\lambda}
 
 \paragraph{KZG commitments}
-We recall the Kate, Zaverucha, Goldberg polynomial commitment scheme $\Kzg$, which we use to instantiate our approach.
+We recall the Kate, Zaverucha, Goldberg polynomial commitment scheme $\Kzg$ \cite{AC:KatZavGol10}, which we use to instantiate our approach.
 
 $\Kzg.\PC = (\Kzg.\kgen, \Kzg.\com, \Kzg.\open, \Kzg.\verify)$ is defined over bilinear groups $\gk=(p,\GG_1,\allowbreak \GG_2, \allowbreak \GG_T )$ with $\GG_1 =\langle g\rangle, \GG_2 =\langle h \rangle$ as follows:
 \begin{description}%[topsep=5pt]
@@ -250,22 +235,20 @@ $\srs = \{g^{\xi^i}\}_{i=0}^{n-1}, h^\xi$.
 \end{description}
 
 
-
-
-
 \section{Simulation extractability of polynomial commitments}
 
 \begin{definition}[Simulation extractable polynomial commitment]
   \label{def:sepcom}
   Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
-  scheme with a simulator $(\mathsf{SimGen}, \mathsf{SimSample}, \mathsf{SimOpen})$. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
   committed.
   Let $\oracles$ be an oracle which on input
   \begin{description}
 %   \item [$(\msg{commit}, f)$:] returns commitment $c = \com(f)$ and adds $(f,
 % c)$ to list $Q$.
-\item[$(\msg{commit})$:] Run $c \gets \mathsf{SimSample}(\secparam)$, add $c$ to $Q_{com}$, return $c$.
-  \item[$(\msg{open}, c, x', y)$:] If $c\in Q_{{com}}$ and $x'\neq x$, run $o\gets \mathsf{SimOpen}(td,c,x,y)$, add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
+\item[$(\msg{commit})$:] Run $c \gets \simsample(\secparam)$, add $c$ to $Q_{com}$, return $c$.
+  \item[$(\msg{open}, c, x', y)$:] If $c\in Q_{{com}}$ and $x'\neq x$, run
+    $o\gets \simopen(\td,c,x,y)$, \michals{25.08}{$x'$ instead of $x$?} add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
   \end{description}
   $Q_{sim}= (Q_{com},Q_{op})$. Let $\oraclec(c)$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(c,x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
@@ -287,7 +270,7 @@ $\srs = \{g^{\xi^i}\}_{i=0}^{n-1}, h^\xi$.
         \end{aligned}
         }
     \begin{aligned}
-      & (\srs, td) \gets \mathsf{SimGen}(\secparam, \maxdeg),\\
+      & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
       & (y, o) \gets \adv^{\oracles,\oraclec}(\srs; r), \\
       & \p{f} \gets \ext_\adv(\srs, Q_{sim}, Q_{chal}; r)
       % & z \sample \FF,\\
@@ -296,6 +279,7 @@ $\srs = \{g^{\xi^i}\}_{i=0}^{n-1}, h^\xi$.
   \right.\right]
   \leq \negl.
 \]
+\michals{25.08}{minor thing -- we should allow the commitment scheme to be randomizable}
 % \[
 %   \Pr \left[
 %     \begin{aligned}
@@ -326,7 +310,7 @@ Note that when $\oraclec(c)$ has not been queried, $c$ and $x$ equal $\bot$ and 
 
 \paragraph{KZG is simulation extractable}
 
-We consider an algebraic adversary $\adv$ that outputs a matrix $K$ with coefficients $\{C_{{1i}}\},\{C_{{2i}}\}, \{C_{{3ij}}\}$ for the commitment $c$ and $\{O_{{1i}}\},\{O_{{2i}}\}, \{O_{{3ij}}\}$ for the opening proof $o$. The matrix $K$ reconstructs $c,o$ as linear combination of the group elements in $\srs$ and $Q_{sim}$. We consider a representation of the group elements in $(\srs,Q_{{sim}})$ in terms of a function $\mathsf{Tr}_{\{x_{ij},y_{ij}\}}(\tau)$ of its underlying secret discrete logarithms $\tau=(\xi,\alpha_{i})$. Where $\xi$ is the traptor of the $\srs$ and the $\alpha_{i}$ are the randomness of simulated proofs.
+We consider an algebraic adversary $\adv$ that outputs a matrix $K$ with coefficients $\{C_{{1i}}\},\{C_{{2i}}\}, \{C_{{3ij}}\}$ for the commitment $c$ and $\{O_{{1i}}\},\{O_{{2i}}\}, \{O_{{3ij}}\}$ for the opening proof $o$. The matrix $K$ reconstructs $c,o$ as linear combination of the group elements in $\srs$ and $Q_{sim}$. We consider a representation of the group elements in $(\srs,Q_{{sim}})$ in terms of a function $\mathsf{Tr}_{\{x_{ij},y_{ij}\}}(\tau)$ of its underlying secret discrete logarithms $\tau=(\xi,\alpha_{i})$. Where $\xi$ is the trapdoor of the $\srs$ and the $\alpha_{i}$ are the randomness of simulated proofs.
 
 We move toward considering a verification equation $V'$ expressed in terms of $K$ and $\mathsf{Tr}_{\{x_{ij},y_{ij}\}}$ for which we have:
 $\verify(\srs,c,x,y,o) =  e(c \cdot  g^{-y}, h) - e(\pi , h^{\alpha}\cdot h^{-x}) = 0$ iff $\verify'_{{\xi,x,y}}(K \cdot \mathsf{Tr}_{\{x_{ij},y_{ij}\}} (\tau)) = 0$.
@@ -381,7 +365,7 @@ If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value fo
 \begin{definition}[Vectored simulation extractable polynomial commitment]
   \label{def:sepcom}
   Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
-  scheme with a simulator $(\mathsf{SimGen}, \mathsf{SimSample}, \mathsf{SimOpen})$. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
   committed.
   We consider the same $\oracles$ and $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments and openings $\vec{c}, \vec{y}, \vec{o}$.
    Let $\oraclec(\vec{c})$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(\vec{c},x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$
@@ -404,7 +388,7 @@ If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value fo
         \end{aligned}
         }
     \begin{aligned}
-      & (\srs, td) \gets \mathsf{SimGen}(\secparam, \maxdeg),\\
+      & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
       & (\vec{y}, \vec{o}) \gets \adv^{\oracles,\oraclec}(\srs; r), \\
       & \vec{\p{f}} \gets \ext_\adv(\srs, Q_{sim}, Q_{chal}; r)
       % & z \sample \FF,\\
@@ -425,7 +409,7 @@ We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{chal}; r)$ by parsing $Q_{chal}$ as $((c
 \begin{definition}[Vectored $\ro_{aux}$ simulation extractable polynomial commitment]
   \label{def:sepcom}
   Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
-  scheme with a simulator $(\mathsf{SimGen}, \mathsf{SimSample}, \mathsf{SimOpen})$. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
   committed.
   We consider the same $\oracles$ and $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments and openings $\vec{c}, \vec{y}, \vec{o}$.
    Let $\ro_{aux}(aux,\vec{c})$ be an oracle that when $Q_{\ro}[aux,\vec{c}] = \bot$, samples $x$, sets $Q_{\ro}[aux,\vec{c}]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns $Q_{\ro}[aux,\vec{c}]$.
@@ -449,7 +433,7 @@ We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{chal}; r)$ by parsing $Q_{chal}$ as $((c
         \end{aligned}
         }
     \begin{aligned}
-      & (\srs, td) \gets \mathsf{SimGen}(\secparam, \maxdeg),\\
+      & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
       & (aux,\vec{c},\vec{y}, \vec{o}) \gets \adv^{\oracles,\ro_{aux}}(\srs; r), \\
       & \vec{\p{f}} \gets \ext_\adv(\srs, Q_{sim}, Q_{\ro}; r)
       % & z \sample \FF,\\
@@ -465,7 +449,15 @@ From $(aux, \vec{c}, \vec{y}, \vec{o}) \gets \adv^{\oracles,\ro_{aux}}(\srs; r)$
 
 On the same $r$ and $x$, whenever $\adv$ passes verification using $aux,\vec{c}$ that were passed in the $i$th query to $\ro_{aux}$, then $\adv_{i}$ passes verification.  Thus by Definition 2 there exist extractors $\Ext_{\adv_{i}}$ that succeeds to extract for most $r$, $x$ and $\oracles$ randomness under that condition.
 
-We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{\ro}; r)$ by running both $\adv$ internally by simulating $\oracles$ and $\ro_{aux}$ using $Q_{sim}$ and $Q_{\ro}$, and by running all $\Ext_{\adv_{i}}$ as $\p{f}_{i}\gets \Ext_{\adv_{i}}(\srs,Q_{sim},Q_{chal_{i}}; r\|(Q_{\ro}\setminus x_{i}))$ by splitting $Q_{\ro}$ into $Q_{chal_{i}}$ and $Q_{\ro}\setminus x_{i}$ to return $\p{f}_{i}$ whenever $\adv$ passed $aux,\vec{c}$ in the $i$th query to $\ro_{aux}$.
+We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{\ro}; r)$ by running both $\adv$
+internally by simulating $\oracles$ and $\ro_{aux}$ using $Q_{sim}$ and
+$Q_{\ro}$, and by running all $\Ext_{\adv_{i}}$ as $\p{f}_{i}\gets
+\Ext_{\adv_{i}}(\srs,Q_{sim},Q_{chal_{i}}; r\|(Q_{\ro}\setminus x_{i}))$ by
+splitting $Q_{\ro}$ into $Q_{chal_{i}}$ and $Q_{\ro}\setminus x_{i}$ to return
+$\p{f}_{i}$ whenever $\adv$ passed $aux,\vec{c}$ in the $i$th query to
+$\ro_{aux}$.
+
+\michals{25.08}{Don't we need implication in another direction as well?}
 
 \iffalse
 \begin{definition}[Simulation extractable polynomial commitment]
@@ -983,12 +975,6 @@ $H$ but not sure about soundness, right?}
  following prope
  \subsection{$\plonk$ protocol rolled out}
 \label{sec:plonk_explained}
-\newcommand{\vql}{\vec{q_{L}}}
-\newcommand{\vqr}{\vec{q_{R}}}
-\newcommand{\vqm}{\vec{q_{M}}}
-\newcommand{\vqo}{\vec{q_{O}}}
-\newcommand{\vx}{\vec{x}}
-\newcommand{\vqc}{\vec{q_{C}}}
 \subsubsection{The constrain system}
 Assume $\CRKT$ is a fan-in two arithmetic circuit,
 which fan-out is unlimited and has $\numberofconstrains$ gates and $\noofw$ wires
@@ -1218,7 +1204,7 @@ The \plonk{} simulator proceeds as an honest prover would, except:
 \end{enumerate}
  
 We write $\PHP^{\PCOM}$ to denote a interactive proof system compiled from a PHP $\PHP$ using
-polynomial commitment $\PCOM$. We denote its non-interactie variant compiled using Fiat-Shamir by $\PHP^{\PCOM}_{\mathsf{fs}}$. E.g., we denote the above rolled out non-interactive version of the
+polynomial commitment $\PCOM$. We denote its non-interactie variant compiled using Fiat-Shamir by $\PHP^{\PCOM}_{\fs}$. E.g., we denote the above rolled out non-interactive version of the
 $\plonk$ proof system by $\plonkprotfs^{\kzg}$, where $\kzg$ denotes the KZG
 polynomial commitment scheme.
 
