@@ -1225,7 +1225,9 @@ polynomial commitment scheme.
 We describe $\oraclesps,\ro$ in terms of calls to $\oraclespcom,\ro_{\aux}$.
 
 \noindent
-We simulate $\ro(x_{1}\|x_{2})$ via calls to $\ro_{aux}(x_{1},x_{2})$, where $x_{1}$ has the length of 3 commitments.
+We simulate $\ro(x_{1}\|x_{2})$ via calls to $\ro_{aux}(x_{1},x_{2})$, where
+$x_{1}$ has the length of 3 commitments. \michals{30.08}{sometimes more than
+  just 3}
 
 \noindent
 Queries to $(\inp, \wit)$ to $\oraclesps$ are answered as follows:
@@ -1369,15 +1371,50 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
   $\REL(\inp, \wit') = 1$. For that end, we introduce the following games.
 
  
-  \ncase{Game 2} Is the same as Game 1 except that we replace $\oraclesps$ with the real prover algorithm.
+  \ncase{Game 2} Is the same as Game 1 except that $\oraclesps$ returns now real
+  proofs instead of simulated ones.
 
+  \ncase{$\game{1} \mapsto \game{2}$} The difference in the winning
+  probabilities between $\game{1}$ and $\game{2}$ is negligible by the
+  zero-knowledge property of the prove system.
 
-  \ncase{$\game{1} \mapsto \game{2}$} The difference in the winning probabilities between $\game{1}$ and $\game{2}$ is negligible by the zero-knowledge property of the prove system.
+  This comes since in $\game{1}$ the adversary $\adv$ sees proofs from the same
+  distribution as simulated proofs. In $\game{2}$ adversary $\adv$ gets real
+  proofs.  \hl{continue}
 
-  This comes since in $\game{1}$ the
-  adversary $\adv$ sees proofs from the same distribution as simulated
-  proofs. In $\game{2}$ adversary $\adv$ gets real proofs.  \hl{continue}
+  \ncase{Game 3} We combine randomness of
+  $\adv, \oracles, \ro$.\michals{30.08}{What does it mean?} That is, we consider
+  adversary $\bdv$ that internally run $\adv$, provides it with $\oracles$ and
+  $\ro$ answers. Let $h$ be the upper bound on the number of random oracle
+  queries. Let $\bdv_i^{\pc{f}}$, for
+  $\pf \in \pF = \smallset{\p{a}, \p{b}, \p{c}, \p{z}, \p{t_1}, \p{t_2},
+    \p{t_3}}$, be adversaries such that when $\adv$ makes $i$-th random oracle
+  query to $\ro$ and the query's argument is
+  \begin{itemize}
+  \item $(\inp, \cp{a}, \cp{b}, \cp{c})$ \michals{30.08}{Added instance
+      $\inp$}, then $\bdv^{\cp{a}}_i, \bdv^{\cp{b}}_i, \bdv^{\cp{c}}_i$ return
+    $\cp{a}$, $\cp{b}$, and $\cp{c}$ respectively.
+  \item $(\inp, \cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}, \cp{t_1},
+    \cp{t_2}, \cp{t_3})$, then $\bdv^{\cp{z}}_i, \bdv^{\cp{t_1}}_i,
+    \bdv^{\cp{t_2}}_i, \bdv^{\cp{t_3}}_i$ return
+    $\cp{z}$, $\cp{t_1}$, $\cp{t_2}$ and $\cp{t_3}$ respectively.
+  \end{itemize}
 
+  Since $\PCOM$ is a commitment of knowledge, there exist extractors
+  $\ext_{\bdv^{\cp{f}}_i}$, for
+  $(i, \p{f}) \in {\range{1}{h}} \times \p{F}$ that given randomness of
+  $\bdv^{\cp{f}}_i$ return $\p{f}$.
+
+  The game returns $1$ if some of the extractors fails. Denote by
+  $\eps^{\p{f}}_i$ (negligible) probability that $\ext_{\bdv^{\cp{f}}_i}$
+  fails. Probability that the game returns $1$ is then upperbounded by $\sum_{i
+    = 1}^h \sum_{\pf \in \p{F}} \eps^{\pf}_i$, which remains negligible.
+
+  \ncase{Game 4}
+  
+  
+  { \Huge{Old proof}}
+  
   \ncase{Game 3} Let $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t_1}, \cp{t_2}, \cp{t_3}$ be
   commitments sent by the prover in a proof $\zkproof$, and
   $\p{a}, \p{b}, \p{c}, \p{z}, \p{t_1}, \p{t_2}, \p{t_3}$ the corresponding
