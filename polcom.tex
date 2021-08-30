@@ -234,6 +234,27 @@ $\srs = \{g^{\xi^i}\}_{i=0}^{n-1}, h^\xi$.
   $e(c \cdot g^{-y}, h)=e(o , h^{\xi}\cdot h^{-x})$.
 \end{description}
 
+We also define new property for a polynomial commitment scheme,
+\emph{binding}. Intuitively, a polynomial commitment scheme is binding if no
+$\ppt$ adversary $\adv$ can produce a commitment $c$ and later show a pair
+$(f, x, y, o)$, $(f', x, y', o')$ such that $f \neq f'$, $y = f(x)$ and $y' =
+f'(x)$ and $o$, $o'$ are valid openings. That is, for all $\ppt$ adversaries
+$\adv$
+\[
+  \Pr\left[
+    \begin{aligned}
+      & \deg(f), \deg(f') \leq \maxdeg \\
+      &\land f(x) = y \land f'(x) = y' \land f
+      \neq f' \\
+      & \land \verify(\srs, c, x, y, o) = \verify(\srs, c, x, y', o') = 1
+      \end{aligned}
+      \,\left|\,
+        \begin{aligned}
+        &  \srs \sample \kgen(\secparam), \\
+        &  ((c, f, x, y, o), (c, f', x, y', o')) \gets \adv^{\oraclec}
+          \end{aligned}
+        \right.\right] \leq \negl
+\]
 
 \section{Simulation extractability of polynomial commitments}
 
@@ -1467,7 +1488,7 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
   witness.
 
   \ncase{$\game{5} \mapsto \game{6}$}
-  \michals{30.08}{{Reduction to a php adversary}
+  \michals{30.08}{Reduction to a php adversary}
   
   { \Huge{Old proof}}
   
