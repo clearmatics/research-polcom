@@ -1384,9 +1384,12 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
 
   \ncase{Game 3} We combine randomness of
   $\adv, \oracles, \ro$.\michals{30.08}{What does it mean?} That is, we consider
-  adversary $\bdv$ that internally run $\adv$, provides it with $\oracles$ and
-  $\ro$ answers. Let $h$ be the upper bound on the number of random oracle
-  queries. Let $\bdv_i^{\pc{f}}$, for
+  adversary $\bdv$ that has access to a random oracle $\ro$ and internally run
+  $\adv$ and provides it with $\oracles$. $\adv$'s queries to $\ro$, are passed
+  by $\bdv$ to the oracle.
+  \michals{30.08}{I don't let $\bdv$ control $\ro$ to be able to use $\bdv$ to
+    break polynomial comittment binding proeprty} Let $h$ be the upper bound on the number of random
+  oracle queries. Let $\bdv_i^{\cp{f}}$, for
   $\pf \in \pF = \smallset{\p{a}, \p{b}, \p{c}, \p{z}, \p{t_1}, \p{t_2},
     \p{t_3}}$, be adversaries such that when $\adv$ makes $i$-th random oracle
   query to $\ro$ and the query's argument is
@@ -1410,8 +1413,61 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
   fails. Probability that the game returns $1$ is then upperbounded by $\sum_{i
     = 1}^h \sum_{\pf \in \p{F}} \eps^{\pf}_i$, which remains negligible.
 
+  \ncase{$\game{2} \mapsto \game{3}$}
+
   \ncase{Game 4}
+  This game aborts if $\adv$ never queried $\ro$ on $(\inp, \cp{a}, \cp{b},
+  \cp{c})$.
+
+  \ncase{$\game{3} \mapsto \game{4}$}
+
+  \ncase{Game 5}
+  This game aborts if polynomials $\p{a'}, \p{b'}, \p{c'}$ extracted by 
+  $\ext_{\bdv^{\cp{a}}_i}, \ext_{\bdv^{\cp{b}}_j}, \ext_{\bdv^{\cp{c}}_k}$, for
+  some $i, j, k \in \range{1}{h}$ differ from polynomials $\p{a}, \p{b}, \p{c}$
+  extracted by $\ext_\adv$. W.l.o.g.~assume that $\p{a'} \neq \p{a}$.
+
+  \ncase{$\game{4} \mapsto \game{5}$} \michals{30.08}{Here comes binding}
+  We
+  build a polynomial commitment scheme binding adversary $\rdv$ that succeeds
+  if game $\game{5}$ aborts.
+  \michals{30.08}{Definie polynomial commitmetn binding property -- note we need
+    random entry}
+
+  Adversary $\rdv(\srs_{\PCOM})$ proceeds as follows
+  \michals{30.08}{In the following we may remove all occurences of $\p{b},
+    \p{c}$ and corresponding algorithms as we assumed that $\p{a'} \neq \p{a}$
+    -- that's the only polynomials we need}
+  \begin{itemize}
+  \item Compute $\srs, \srss$ out of $\srs_{\PCOM}$ and give it to adversaries
+    $\adv$, $\bdv$, $\bdv^{\cp{f}}_i$,
+    $(i, \pf) \in \range{1}{h} \times \smallset{\p{a}, \p{b}, \p{c}}$ and their
+    extractors.
+  \item Run $\adv$, $\bdv$,
+    $\bdv_{\cp{a}}^{i}, \bdv_{\cp{b}}^{j}, \bdv_{\cp{c}}^{k}$ till commitents
+    $\cp{a}, \cp{b}, \cp{c}$ are produced. 
+  \item Run $\ext_{\bdv^{\cp{a}}_i}, \ext_{\bdv^{\cp{b}}_i},
+    \ext_{\bdv^{\cp{c}}_i}$ to get $\p{a'}, \p{b'}, \p{c'}$.
+  \item When $\adv$ and $\bdv$ ask for a challenge $\chz$, send to challenger
+    $\challenger$ $\cp{a}$ as a commitment. When it returns $z$ as the
+    evaluation point, pass it to $\adv$ and $\bdv$ as the random oracle
+    challenge $\chz$.
+  \item When $\adv$ is done with its proof, run $\ext_{\adv}$ to reveal
+    polynomials $\p{a}$, ${\p{b}}$, $\p{c}$. 
+  \item Parse $\adv$'s proof for evaluation $\p{a}(\chz)$ and opening
+    $W_{\chz}^{\p{a}}$.
+  \item Evaluate $\bdv$'s proof for evaluation $\p{a'}(\chz)$ and opening
+    $W_{\chz}^{\p{a'}}$.
+  \item Output $(\p{a}, \p{a}(\chz), W^{\p{a}}_\chz)$ and $(\p{a'},
+    \p{a'}(\chz), W^{\p{a'}}_\chz)$. \michals{30.08}{This breaks binding}
+  \end{itemize}
   
+  \ncase{Game 6}
+  This game aborts also if the extracted polynomials do not encode the correct
+  witness.
+
+  \ncase{$\game{5} \mapsto \game{6}$}
+  \michals{30.08}{{Reduction to a php adversary}
   
   { \Huge{Old proof}}
   
