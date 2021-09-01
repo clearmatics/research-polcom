@@ -1,15 +1,16 @@
 % !TeX spellcheck = en_UK
-% \let\accentvec\vec              
+ \let\accentvec\vec              
 \documentclass[runningheads,11pt]{llncs}
-%\let\spvec\vec \let\vec\accentvec
+\let\spvec\vec \let\vec\accentvec
 \newcommand\hmmax{0}
 \newcommand\bmmax{0}
 
 \usepackage{amssymb,amsmath}
-%\let\vec\spvec
+\let\vec\spvec
 %\usepackage{lmodern}
 \usepackage{newtxmath,newtxtext}
-\usepackage[T1]{fontenc}
+%\usepackage{fouriernc}
+%\usepackage[T1]{fontenc}
 % \def\vec#1{\mathchoice{\mbox{\mathbf$\displaystyle#1$}}
 % {\mbox{\mathbf$\textstyle#1$}} {\mbox{\mathbf$\scriptstyle#1$}}
 % {\mbox{\mathbf$\scriptscriptstyle#1$}}}
@@ -18,6 +19,8 @@
 \DeclareFontShape{U}{mathx}{m}{n}{<-> mathx10}{}
 \DeclareSymbolFont{mathx}{U}{mathx}{m}{n}
 \DeclareMathAccent{\widebar}{0}{mathx}{"73}
+
+\usepackage{bm}
 
 \usepackage{soulutf8} \soulregister\cite7 \soulregister\ref7
 \soulregister\pageref7 \usepackage{hyperref}
@@ -91,35 +94,73 @@
 \end{abstract}
 
 \section{Preliminaries}
+
+\begin{definition}[Whitebox Simulation extractable NIZK]
+  \label{def:sepcom}
+  Let $NIZK = (\kgen, \prove, \verify)$ be a NIZK proof system
+  with a simulator $(\simgen, \simprove)$.
+  Let $\oracles(\srs, \td, \inp, \wit)$ be an oracle that when $(\inp, \wit)\in
+  \REL$, runs $\pi \gets \simprove(\srs, \tau, \inp)$ internally, records $(\pi,\inp)$ in $Q$, and returns $\pi$.
+  We say that $NIZK$ is \emph{simulation extractable} if for any $\ppt$
+  adversary $\adv$ with oracle access to $\oracles$ and $\ro$ there exists extractor
+  $\ext_{\adv}$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & \verify(\srs, \inp, \pi) = 1, \\
+      & \;(\inp, \wit) \neq \REL\\
+      & (\pi,\inp) \notin Q
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & (\srs, \td) \gets \simgen(\secparam, \REL),\\
+      & (\inp, \pi) \gets \adv^{\oracles,\ro}(\srs; r), \\
+      & \wit \gets \ext_\adv(\srs, Q_{sim}, Q_{\ro}; r)
+      % & z \sample \FF,\\
+      % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
+    \end{aligned}
+  \right.\right]
+  \leq \negl.
+\]
+\end{definition}
+
 \paragraph{Polynomial commitment scheme.}
 \label{sec:poly_com}
-In the polynomial commitment scheme $\PCOM = (\kgen, \com, \open, \verify)$ the
-prover $\prover$ convinces the verifier $\verifier$ that some polynomial $\p{f}$
-which $\prover$ committed to evaluates to $s$ at some point $z$ chosen by
-$\verifier$.  The key generation algorithm $\kgen$ takes as input a security
+In a polynomial commitment scheme $\PCOM = (\kgen, \com, \open, \verify)$ a
+prover $\prover$ convinces a verifier $\verifier$ that some polynomial $\p{f}$
+that $\prover$ committed to earlier evaluates to $y$ at some point $x$ chosen by
+$\verifier$. The key generation algorithm $\kgen$ takes security
 parameter $\secparam$ and a parameter $\maxdeg$ which determines the maximal
-degree of the committed polynomial. We assume that $\maxdeg$ can be read from
-the output SRS.
+degree of the committed polynomial as input and produces a (structured) reference string $\srs$ as output. We assume that $\maxdeg$ can be read from
+the $\srs$.
   
 We emphasize the following properties of a secure polynomial commitment
 $\PCOM$:
 \begin{description}
 \item[Evaluation binding:] A $\ppt$ adversary $\adv$ which outputs a commitment
-  $\vec{c}$ and evaluation points $\vec{z}$ has at most negligible chances to
-  open the commitment to two different evaluations $\vec{s}, \vec{s'}$. That is,
+  $\vec{c}$ and evaluation points $\vec{x}$ has at most negligible chances to
+  open the commitment to two different evaluations $\vec{y}, \vec{y'}$. That is,
   let $k \in \NN$ be the number of committed polynomials, $l \in \NN$ number of
   evaluation points, $\vec{c} \in \GRP^k$ be the commitments,
-  $\vec{z} \in \FF_p^l$ be the arguments the polynomials are evaluated at,
-  $\vec{s},\vec{s}' \in \FF_p^k$ the evaluations, and
+  $\vec{x} \in \FF_p^l$ be the arguments the polynomials are evaluated at,
+  $\vec{y},\vec{y}' \in \FF_p^{kl}$ the evaluations, and
   $\vec{o},\vec{o}' \in \FF_p^l$ be the commitment openings. Then for every
   $\ppt$ adversary $\adv$
 	\[
 		\Pr
 			\left[
 			\begin{aligned}
-				& \verify(\srs, \vec{c}, \vec{z}, \vec{s}, \vec{o}) = 1,  \\ 
-				& \verify(\srs, \vec{c}, \vec{z}, \vec{s}', \vec{o}') = 1, \\
-				& \vec{s} \neq \vec{s}'
+				& \verify(\srs, \vec{c}, \vec{x}, \vec{y}, \vec{o}) = 1,  \\
+				& \verify(\srs, \vec{c}, \vec{x}, \vec{y}', \vec{o}') = 1, \\
+				& \vec{y} \neq \vec{y}'
 			\end{aligned}
 			\,\left|\,\vphantom{\begin{aligned}
                   & \\
@@ -128,7 +169,7 @@ $\PCOM$:
                 \end{aligned}}
 			\begin{aligned}
 				& \srs \gets \kgen(\secparam, \maxdeg),\\
-				& (\vec{c}, \vec{z}, \vec{s}, \vec{s}', \vec{o}, \vec{o}') \gets \adv(\srs)
+				& (\vec{c}, \vec{x}, \vec{y}, \vec{y}', \vec{o}, \vec{o}') \gets \adv(\srs)
 			\end{aligned}
 			\right.\right] \leq \negl\,.
 	\]
@@ -139,14 +180,14 @@ $\PCOM$:
 \begin{description}
 \item[Commitment of knowledge] For every $\ppt$ adversary
   $\adv = (\adv_1, \adv_2)$ who produces commitment $c$, gets random evaluation
-  point $z$, and outputs evaluation $s$ with an opening $o$ there exists a
+  point $x$, and outputs evaluation $y$ with an opening $o$ there exists a
   $\ppt$ extractor $\ext$ such that
 \[
   \Pr \left[
     \begin{aligned}
+      & \verify(\srs, c, x, y, o) = 1, \\
       & \p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
-      & c = \com(\srs, \p{f}),\\
-      & \verify(\srs, c, z, s, o) = 1
+      & c \neq \com(\srs, \p{f}) \\
     \end{aligned}
     \,\left|\,
       \vphantom{
@@ -159,44 +200,86 @@ $\PCOM$:
     \begin{aligned}
       & \srs \gets \kgen(\secparam, \maxdeg),\\
       & (c, \aux) \gets \adv_1(\srs; r_1), z \sample \FF, \\
-      &  (s, o) \gets \adv_2(\srs, \aux, c, z; r_2)
+      &  (y, o) \gets \adv_2(\srs, \aux, c, x; r_2)
     \end{aligned}
   \right.\right]
-  \geq 1 - \epsk(\secpar).
+  \leq \negl.
 \]
-In that case we say that $\PCOM$ is $\epsk$-knowledge.
+In that case we say that $\PCOM$ is a commitment of knowledge.
 \end{description}
 Intuitively when a commitment scheme is a commitment of knowledge then if an
 adversary produces a (valid) commitment $c$, which it can open, then it also
 knows the underlying polynomial $\p{f}$ which commits to that value.
 
-\section{New definitions and primitives}
-\subsection{Polynomial commitment schemes}
+\markulf{23/08}{Wondering if the $\verify$ condition is really needed for extraction. In the AGM, if the adversary only sees the $\srs$ it has to output group element that is a linear combination of it.}
+\michals{25.08}{You may be right that it is not necessary}
+
+
+
+\paragraph{KZG commitments}
+We recall the Kate, Zaverucha, Goldberg polynomial commitment scheme $\Kzg$ \cite{AC:KatZavGol10}, which we use to instantiate our approach.
+
+$\Kzg.\PC = (\Kzg.\kgen, \Kzg.\com, \Kzg.\open, \Kzg.\verify)$ is defined over bilinear groups $\gk=(p,\GG_1,\allowbreak \GG_2, \allowbreak \GG_T )$ with $\GG_1 =\langle g\rangle, \GG_2 =\langle h \rangle$ as follows:
+\begin{description}%[topsep=5pt]
+\item[$\Kzg.\kgen(1^\secpar, n) \to \srs$:] Set keys
+$\srs = \{g^{\xi^i}\}_{i=0}^{n-1}, h^\xi$.
+\item[$\Kzg.\CM(\srs; f(X)) \to c$:] For
+  $f(X) = \sum_{i=0}^{n-1} f_i X^i$, computes
+  $c=\prod _{i=0}^{n-1} g^{f_i \xi^i} = g^{f(\xi)} $.
+\item[$\Kzg.\open(\srs; c, x, y; f(X)) \to o$:] For an evaluation point
+  $x$, a value $y$, compute the quotient polynomial
+  $q(X) = \displaystyle\frac{f(X) -y }{X-x}$ and output a proof
+  $o = \Kzg.\CM(\srs; q(X)) $.
+\item[$\Kzg.\verify(\srs, c, x, y, o) \to 1/0$:] Check if
+  $e(c \cdot g^{-y}, h)=e(o , h^{\xi}\cdot h^{-x})$.
+\end{description}
+
+We also define new property for a polynomial commitment scheme,
+\emph{binding}. Intuitively, a polynomial commitment scheme is binding if no
+$\ppt$ adversary $\adv$ can produce a commitment $c$ and later show a pair
+$(f, x, y, o)$, $(f', x, y', o')$ such that $f \neq f'$, $y = f(x)$ and $y' =
+f'(x)$ and $o$, $o'$ are valid openings. That is, for all $\ppt$ adversaries
+$\adv$
+\[
+  \Pr\left[
+    \begin{aligned}
+      & \deg(f), \deg(f') \leq \maxdeg \\
+      &\land f(x) = y \land f'(x) = y' \land f
+      \neq f' \\
+      & \land \verify(\srs, c, x, y, o) = \verify(\srs, c, x, y', o') = 1
+      \end{aligned}
+      \,\left|\,
+        \begin{aligned}
+        &  \srs \sample \kgen(\secparam), \\
+        &  ((c, f, x, y, o), (c, f', x, y', o')) \gets \adv^{\oraclec}
+          \end{aligned}
+        \right.\right] \leq \negl
+\]
+
+\section{Simulation extractability of polynomial commitments}
 
 \begin{definition}[Simulation extractable polynomial commitment]
   \label{def:sepcom}
   Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
-  scheme with a simulator $\mathsf{SimSample}, \mathsf{SimOpen}$. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
   committed.
   Let $\oracles$ be an oracle which on input
   \begin{description}
 %   \item [$(\msg{commit}, f)$:] returns commitment $c = \com(f)$ and adds $(f,
 % c)$ to list $Q$.
-\item[$(\msg{commit})$:] Run $C_{i} \gets \mathsf{SimSample}(\secparam)$
-  \item[$(\msg{open}, c, x, y)$:] returns an opening $o$ for commitment $c$
-    assuring that for some polynomial $f$, such that $c \in \image(\com(f))$,
-    holds $f(x) = y$.
+\item[$(\msg{commit})$:] Run $c \gets \simsample(\secparam)$, add $c$ to $Q_{com}$, return $c$.
+  \item[$(\msg{open}, c, x', y)$:] If $c\in Q_{{com}}$ and $x'\neq x$, run
+    $o\gets \simopen(\td,c,x,y)$, \michals{25.08}{$x'$ instead of $x$?} add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
   \end{description}
+  $Q_{sim}= (Q_{com},Q_{op})$. Let $\oraclec(c)$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(c,x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
-  adversary $\adv$ with oracle access to $\oracles$ there exists extractor
-  $\ext$ such that
+  adversary $\adv$ with oracle access to $\oracles$ and $\oraclec$ there exists extractor
+  $\ext_{\adv}$ such that
 \[
   \Pr \left[
     \begin{aligned}
-      & \p{f} = \ext_\adv(\srs, c; r),\\
-      & c = \com(\srs, \p{f}),\\
-      & \verify(\srs, c, z, s, o) = 1,\\
-      & z \not\in \Qev
+      & \verify(\srs, c, x, y, o) = 1, \\
+      & \;c \neq \com(\srs, \p{f})\\
     \end{aligned}
     \,\left|\,
       \vphantom{
@@ -208,18 +291,196 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
         \end{aligned}
         }
     \begin{aligned}
-      & \srs \gets \kgen(\secparam, \maxdeg),\\
-      & (c, z, s, o) \gets \adv^{\oracles}(\srs; r), \\
+      & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+      & (y, o) \gets \adv^{\oracles,\oraclec}(\srs; r), \\
+      & \p{f} \gets \ext_\adv(\srs, Q_{sim}, Q_{chal}; r)
       % & z \sample \FF,\\
       % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
     \end{aligned}
   \right.\right]
-  \geq 1 - \epsk(\secpar).
+  \leq \negl.
+\]
+\michals{25.08}{minor thing -- we should allow the commitment scheme to be randomizable}
+% \[
+%   \Pr \left[
+%     \begin{aligned}
+%       & (\p{f} = \ext_\adv(\srs, Q_{sim}, Q_{chal}; r),\\
+%       & \;c = \com(\srs, \p{f}))\\
+%       & \lor \verify(\srs, c, x, y, o) = 0
+%     \end{aligned}
+%     \,\left|\,
+%       \vphantom{
+%         \begin{aligned}
+%           & \\
+%           & \\
+%           & \\
+%           &
+%         \end{aligned}
+%         }
+%     \begin{aligned}
+%       & (\srs, td) \gets \mathsf{SimGen}(\secparam, \maxdeg),\\
+%       & (y, o) \gets \adv^{\oracles,\oraclec}(\srs; r), \\
+%       % & z \sample \FF,\\
+%       % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
+%     \end{aligned}
+%   \right.\right]
+%   \geq 1 - \epsk(\secpar).
+% \]
+\end{definition}
+Note that when $\oraclec(c)$ has not been queried, $c$ and $x$ equal $\bot$ and $\verify$ returns $0$.
+
+\paragraph{KZG is simulation extractable}
+
+We consider an algebraic adversary $\adv$ that outputs a matrix $K$ with coefficients $\{C_{{1i}}\},\{C_{{2i}}\}, \{C_{{3ij}}\}$ for the commitment $c$ and $\{O_{{1i}}\},\{O_{{2i}}\}, \{O_{{3ij}}\}$ for the opening proof $o$. The matrix $K$ reconstructs $c,o$ as linear combination of the group elements in $\srs$ and $Q_{sim}$. We consider a representation of the group elements in $(\srs,Q_{{sim}})$ in terms of a function $\mathsf{Tr}_{\{x_{ij},y_{ij}\}}(\tau)$ of its underlying secret discrete logarithms $\tau=(\xi,\alpha_{i})$. Where $\xi$ is the trapdoor of the $\srs$ and the $\alpha_{i}$ are the randomness of simulated proofs.
+
+We move toward considering a verification equation $V'$ expressed in terms of $K$ and $\mathsf{Tr}_{\{x_{ij},y_{ij}\}}$ for which we have:
+$\verify(\srs,c,x,y,o) =  e(c \cdot  g^{-y}, h) - e(\pi , h^{\alpha}\cdot h^{-x}) = 0$ iff $\verify'_{{\xi,x,y}}(K \cdot \mathsf{Tr}_{\{x_{ij},y_{ij}\}} (\tau)) = 0$.
+
+We say that $\verify'_{{X,x,y}}$ is satisfied symbolically, if $\verify'_{{X,x,y}}(K \cdot \mathsf{Tr}_{\{x_{ij},y_{ij}\}} (T)) = 0$ for symbolic variables $T=(X, \{A_{i}\})$.
+
+The symbolic transcript consists of the SRS $\{[X^{i}]_{1}\}, [X]_{2}$, simulated commitments $\{[A_{i}]_{1}$, and simulated opening proofs $ [\frac{A_{ij}-y_{{ij}}}{X-x_{ij}}]\}$.
+
+The honest verification equation is
+$[f(X) - y]_1 \circ [h]_{2} - [q(X)]_1 \circ [X-x]_{2}=0$ while an adversary can
+provide rational functions
+$f(X, \{A_{i}\}) = \sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3ij}
+\frac{A_{i}-y_{ij}}{X-x_{ij}}$ and
+$q(X, \{A_{i}\}) = \sum O_{1i} X^{i} + \sum O_{2i} A_{i} + \sum O_{3ij}
+\frac{A_{i}- y_{ij}}{X-x_{ij}}$ computed as linear combinations of elements in the
+transcript.
+The security game gives us that $x$ is sampled independently from $x_{ij}$ for $j\leq q^{i}_{chal}$ and $x \neq x_{ij}$ otherwise. Here $q^{i}_{chal}$ are the number of simulated opening queries made for commitment $c_{i}$ before the challenge query.
+
+We inline to get the following equation which we then analyze in detail,
+\begin{align*}
+  \left[\sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - y\right]_{1} \!\!\!\circ\! [1]_{2} - \left[\sum O_{1i} X^{i} + \sum O_{2i} A_{i} + \sum O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}\right]_{1} \!\!\!\circ\! [X-x]_{2} = 0
+  \end{align*}
+
+We now look at different (rational) monomials in $T$ of this equation to derive constraints on $C_{1i}, C_{{2i}},C_{{3ij}}$ and $O_{1i},O_{2i},O_{3ij}$ imposed by the verification equation:
+\begin{itemize}
+  \item[$A_{i}X$:] We have that for all $i$, $O_{2i}=0$ as $O_{2i} A_{i} X = 0$.
+  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}, j>q^{i}_{chal}$:] $C_{3ij}=0$ as $\adv$ did not yet see them when it computes the commitment.
+\end{itemize}
+
+To obtain a simplified verificaton equation, we express the equation in the exponent and write $C_{1}(X)$ for $\sum C_{1i} X^{i}$ and  $O_{1}(X)$ for $\sum O_{1i} X^{i}$.
+Furthermore, we let $x_{ij}= x+\delta_{ij}$ and replace $x$ with $x_{ij}-\delta_{ij}$
+\begin{align*}
+C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}+\delta_{ij}) = 0\\
+C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}) - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} \delta_{ij} = 0
+       \end{align*}
+
+\begin{itemize}
+  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}$:] $C_{3i} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{{3i}}\delta_{ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}=0$. As
+    $C_{3ij}=0$ for $j>q^{i}_{chal}$, it follows that $O_{{3ij}}=0$ for $j>q^{i}_{chal}$. Otherwise, we have $O_{3ij}= C_{3ij}/\delta_{ij}$.
+  \item[$A_{i}$:] $C_{2i} A_{i} - \sum O_{3ij} A_{i}=0$.
+\end{itemize}
+
+Informal step. $C_{2i}- \sum \frac{C_{3ij}}{x_{ij}-x} =0$ is a rational equation system in $x$. If $x_{ij}\neq x_{ij'}$, then the probability of randomly picking a solution $x$ is small unless all the $C_{2i}$, $C_{3ij}$ are $0$. Thus we also have $O_{{3ij}}=0$.
+If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value for the same commitment (potentially for different $y_{ij}$) multiple times. This is something we want to exclude.
+
+\begin{itemize}
+        \item[$X^{i}, i\geq 0$:] $C_{1}(X) - y - O_{1}(X)(X-x) + \sum \sum O_{3ij} y_{ij} = 0$, as $O_{3ij}=0$ we are back to the honest verification equation.
+\end{itemize}
+
+
+
+\begin{definition}[Vectored simulation extractable polynomial commitment]
+  \label{def:sepcom}
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
+  scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  committed.
+  We consider the same $\oracles$ and $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments and openings $\vec{c}, \vec{y}, \vec{o}$.
+   Let $\oraclec(\vec{c})$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(\vec{c},x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$
+  We say that $\PCOM$ is \emph{vector simulation extractable} if for any $\ppt$
+  adversary $\adv$ with oracle access to $\oracles$ and $\oraclec$ there exists extractor
+  $\ext_{\adv}$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
+      & \;\vec{c} \neq \com(\srs, \vec{\p{f}})\\
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+      & (\vec{y}, \vec{o}) \gets \adv^{\oracles,\oraclec}(\srs; r), \\
+      & \vec{\p{f}} \gets \ext_\adv(\srs, Q_{sim}, Q_{chal}; r)
+      % & z \sample \FF,\\
+      % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
+    \end{aligned}
+  \right.\right]
+  \leq \negl.
 \]
 \end{definition}
 
+\paragraph{A simulation extractable polynomial commitment is also vectored SE.}
+From $(\vec{y}, \vec{o}) \gets \adv^{\oracles,\oraclec}(\srs; r)$ we build $(y_{i}, o_{i}) \gets \adv_{i}^{\oracles,\oraclec'}(\srs; r)$ that output only the $i$th opening evaluation and opening proof.
 
+On the same $r$ and $x$, whenever $\adv$ passes verification, $\adv_{i}$ passes verification.  Thus by Definition 1 there exist extractors $\Ext_{\adv_{i}}$ that succeeds to extract for most $r$, $x$ and $\oracles$ randomness.
 
+We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{chal}; r)$ by parsing $Q_{chal}$ as $((c_{1},\dots, c_{k}), x)$ and running all $\Ext_{\adv_{i}}$ as $\p{f}_{i}\gets \Ext_{\adv_{i}}(\srs,Q_{sim},(c_{i},x); r)$ to return $(\p{f}_{1},\dots,\p{f}_{k})$.
+
+\begin{definition}[Vectored $\ro_{aux}$ simulation extractable polynomial commitment]
+  \label{def:sepcom}
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
+  scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  committed.
+  We consider the same $\oracles$ and $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments and openings $\vec{c}, \vec{y}, \vec{o}$.
+   Let $\ro_{aux}(aux,\vec{c})$ be an oracle that when $Q_{\ro}[aux,\vec{c}] = \bot$, samples $x$, sets $Q_{\ro}[aux,\vec{c}]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns $Q_{\ro}[aux,\vec{c}]$.
+  We say that $\PCOM$ is \emph{vector $\ro_{aux}$ simulation extractable} if for any $\ppt$
+  adversary $\adv$ with oracle access to $\oracles$ and $\ro_{aux}$ there exists extractor
+  $\ext_{\adv}$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & x \gets \ro_{aux}(aux,\vec{c}), \\
+      & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
+      & \;\vec{c} \neq \com(\srs, \vec{\p{f}})\\
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+      & (aux,\vec{c},\vec{y}, \vec{o}) \gets \adv^{\oracles,\ro_{aux}}(\srs; r), \\
+      & \vec{\p{f}} \gets \ext_\adv(\srs, Q_{sim}, Q_{\ro}; r)
+      % & z \sample \FF,\\
+      % & (s, o) \gets \adv^{\oracles}(\srs, z; r)
+    \end{aligned}
+  \right.\right]
+  \leq \negl.
+\]
+\end{definition}
+
+\paragraph{A vectored simulation extractable polynomial commitment is also vectored $\ro_{aux}$ SE.}
+From $(aux, \vec{c}, \vec{y}, \vec{o}) \gets \adv^{\oracles,\ro_{aux}}(\srs; r)$ we build $(\vec{y},\vec{o}) \gets \adv_{i}^{\oracles,\oraclec}(\srs; r\|(Q_{\ro}\setminus x_{i}))$ that simulates $\ro_{aux}$ on the $i$th query using the value $x_{i}$ returned by $\oraclec$ and using its extended random tape otherwise.
+
+On the same $r$ and $x$, whenever $\adv$ passes verification using $aux,\vec{c}$ that were passed in the $i$th query to $\ro_{aux}$, then $\adv_{i}$ passes verification.  Thus by Definition 2 there exist extractors $\Ext_{\adv_{i}}$ that succeeds to extract for most $r$, $x$ and $\oracles$ randomness under that condition.
+
+We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{\ro}; r)$ by running both $\adv$
+internally by simulating $\oracles$ and $\ro_{aux}$ using $Q_{sim}$ and
+$Q_{\ro}$, and by running all $\Ext_{\adv_{i}}$ as $\p{f}_{i}\gets
+\Ext_{\adv_{i}}(\srs,Q_{sim},Q_{chal_{i}}; r\|(Q_{\ro}\setminus x_{i}))$ by
+splitting $Q_{\ro}$ into $Q_{chal_{i}}$ and $Q_{\ro}\setminus x_{i}$ to return
+$\p{f}_{i}$ whenever $\adv$ passed $aux,\vec{c}$ in the $i$th query to
+$\ro_{aux}$.
+
+\michals{25.08}{Don't we need implication in another direction as well?}
+
+\iffalse
 \begin{definition}[Simulation extractable polynomial commitment]
   \label{def:sepcom}
   Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
@@ -247,7 +508,7 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 \[
   \Pr \left[
     \begin{aligned}
-      & \p{f} = \ext_\adv(\srs, c, (r_1, r_2)),\\
+      & \p{f} = \ext_\adv(\srs, Q_{\adv}, (r_1, z, r_2)),\\
       & c = \com(\srs, \p{f}),\\
       & \verify(\srs, c, z, s, o) = 1,
     \end{aligned}
@@ -262,9 +523,9 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
         }
     \begin{aligned}
       & \srs \gets \kgen(\secparam, \maxdeg),\\
-      & (c, \aux) \gets \adv_1^{\oracles}(\srs; r_1), \\
+      & (c, \state) \gets \adv_1^{\oracles}(\srs; r_1), \\
       & z \sample \FF, \\
-      & (s, o) \gets \adv_2^{\oracles}(\srs, c, z, \aux; r_2)
+      & (s, o) \gets \adv_2^{\oracles}(\srs, c, z; \state, r_2)
     \end{aligned}
   \right.\right]
   \geq 1 - \epsk(\secpar).
@@ -273,6 +534,64 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
     polynomial? That is how $\ext$ in a proof system works -- it evaluates
     polynomials submitted by the adversary on multiple challenges.}
 \end{definition}
+
+\markulf{17.08}{We can represent $\adv_{1}$ and $\adv_{2}$ using a single adversary $\adv_{\mathsf{chal}}$ with an additional oracle $\oraclec$ that on input $c$ returns $z$ on its single allowed call. The winning condition takes $c,z$ directly from that oracle call.}
+
+\begin{definition}[$(k, \eps)$-aux-simulation extractable polynomial commitment]
+  \label{def:sepcom}
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
+  scheme. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  committed, $H$ be a set of $\maxdeg + 1$ elements in $\FF$ and
+  $\van{H}$ is a vanishing polynomial for $H$.
+  
+  Let $\oracles$ be an oracle which on input
+  \begin{description}
+\item[$(\msg{commit}, f, d)$:] for $\deg(f) = d'$, $d' \leq d \leq \maxdeg$,
+  picks $d - d'$ random elements $r_1, \ldots, r_{d - d'}$, sets 
+  polynomial $g(X) = f(X) + \van{H}(r_1 X^{d' + 1} + \ldots + r_{d - d'} X^{d})$, returns
+  commitment $c = \com(g)$ and adds $(g, c)$ to list $\Qcom$.
+\item[$(\msg{commit}, rand, d)$:] picks a random polynomial $f$ of degree $d$ and
+  outputs commitment $c = \com(f)$ and adds $(f, c)$ to the list $\Qcom$.
+  \item[$(\msg{evaluate}, c, z)$:] returns $f(z)$ where $f$ is a polynomial
+    which commitment is $c$ and $(f, c) \in \Qcom$; add $z$ to $\Qev$.
+  \item[$(\msg{open}, c, z, y)$:] returns an opening $o$ for commitment $c$
+    assuring that for some polynomial $f$, such that $c \in \image(\com(f))$,
+    holds $f(z) = y$.
+  \end{description}
+  We say that $\PCOM$ is \emph{$(k, \eps)$-aux-simulation extractable} if for
+  any $\ppt$ adversary $\adv$ with oracle access to
+  $\oracles$ and random oracle $\ro$ there exists extractor $\ext$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & \p{f_1}, \ldots, \p{f_k} = \ext_\adv(\srs, Q_{\adv}, Q_{\ro}, r),\\
+      & c_i = \com(\srs, \p{f_i}),\\
+      & \verify(\srs, c_i, z_i, s_i o_i) = 1, \text{ for } i \in \range{1}{k}\\
+      & z = \ro((c_1,\dots, c_{k}),\aux)
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & \srs \gets \kgen(\secparam, \maxdeg),\\
+      & ((c_1, \ldots, c_k), \aux, z, (s_1, \ldots, s_k),\\
+      & \qquad \qquad (o_1, \ldots, o_k)) \gets \adv^{\oracles, \ro}(\srs, r), \\
+    \end{aligned}
+  \right.\right]
+  \geq 1 - \eps(\secpar).
+\]
+\end{definition}
+
+\markulf{17.08}{
+  We show how to construct $ \ext_\adv$ from $|Q_{H}|$ extractors $\ext_{\bdv_{i}}$ obtained from adversaries $\bdv_{i}$ that run $\adv$ by simulating the random oracle internally using its random tape. Only for the $i$th $\ro$ query, does $\bdv_{i}$ submit the challenge $c$ to $\oraclec$ to learn $z$. As $\bdv_{i}$ is a valid $\adv_{\mathsf{chal}}$ adversary, by $k$ simulation extractability of the polynomial commitment scheme $\ext_{\bdv_{i}}$ exists. $\ext_{\adv}$ runs all $\ext_{\bdv_{i}}$ and thus does not occure an extraction loss for guessing $i$.
+}
+\fi
 
  \begin{definition}[One-to-many openable\hl{Good name needed}]
    We call a commitment scheme $\PCOM$ one-to-many openable \hl{good name
@@ -298,25 +617,7 @@ of these don't require any secret knowledge)}
    \end{definition}
 
 \subsection{Polynomial IOP}
- \begin{definition}[$\eps$-sufficiently simulatable PCOM]
-   Let $\PCOM$ be a SE polynomial commitment scheme and
-   $\PS = (\kgen, \prover, \verifier, \simulator)$ a polynomial zero-knowledge proof system
-   for relation $\REL$. We call $\PCOM$ \emph{$\eps$-sufficiently simulatable for
-     $\PS$} if there exist a $\ppt$ algorithm $\adv$ such that for
-   $\srs \sample \kgen$, all $(\inp, \wit) \in \REL$ holds
-   \[
-     \SD_{\srs \sample \kgen(\secparam)}(\prover(\srs, \inp, \wit),
-     \adv^{\oracles}(\srs, \inp)) \leq \eps(\secpar).
-   \]
- \end{definition}
- Intuitively, we call $\PCOM$ sufficiently simulatable for $\PS$ if a $\ppt$
- $\adv$ given access to $\PCOM$'s simulator oracle $\oraclespcom$ can produce a
- simulated proof for $\PS$.
-	\antonio{29.07}{If I understood correctly, $\PS$ should the ``compiled'' proof system,
-		namely the PS obtained using polycommitment and an information-theoretic proof system
-		(like a PHP),right? I don't really understand why you need this def.}
-
- \begin{definition}[Polynomial Holomorphic Proof System (PHP)]
+\begin{definition}[Polynomial Holomorphic Proof System (PHP)]
   \label{def:php}
   Let $\REL$ be an indexed relation with a corresponding language $\LANG$, $\FF$
   some finite field, $\maxdeg$ a degree bound, $\vereq_{\cdot}(X) \in \FF[X]$ a
@@ -343,92 +644,22 @@ PHPs. \michals{28.04}{Check!}
 	%
 \begin{definition}[PHPs with straight-line extractor]
 \label{def:knownsound_wc_poly}
-A $\PS$ is $\epsilon$-knowledge-sound with straight-line extractor if there exists an
-extractor $\WitExtract$ such that for any prover $\Pphp^*$, every field $\FF \in \Fam$,
-relation $\ind$, and instance $\inp$: 
-\[ \Prob{ (\ind, \inp, \WitExtract(\tuple\pora{\nprv})) \in \relfam}
-	\geq \Prob{ \braket{ \Pphp^*,\Vphp^{\Iphp(\FF,\ind)}(\FF,\inp) } = 1} - \epsilon
+A $\PS$ is $\eps$-knowledge-sound with straight-line extractor if there exists an
+extractor $\ext$ such that for any prover $\prover^*$, every field $\FF \in \Fam$,
+relation $\REL$, and instance $\inp$: 
+\[ \Prob{ (\REL, \inp, \ext(\tuple\pora{\nprv})) \in \RELGEN}
+	\geq \Prob{ \brak{ \prover^*,\verifier^{\indexer(\FF, \REL)}(\FF, \inp) } = 1} - \eps
 \]
-where $\tuple\pora{\nprv}$ are the polynomials output by $\Pphp^*$ in an execution of
-$\braket{\Pphp^*, \Vphp^{\Iphp(\FF,\ind)}(\FF,\inp)}$.
+where $\tuple\pora{\nprv}$ are the polynomials output by $\prover^*$ in an execution of
+$\brak{\prover^*, \verifier^{\indexer(\FF, \REL)}(\FF, \inp)}$.
 \end{definition}
 
 
-
-\begin{definition}[Somehow deterministic WEPHP]
-  \label{def:sdwephp}
-  Let $\PS$ be a WEPHP for $\REL$. For each polynomial $f_i$ sent by the prover
-  denote by $A_i$ the set of challenges sent by the verifier and by $F_i$ the
-  set of polynomials sent by the prover \emph{before} the prover sends
-  $f_i$. Let $\encset$ be an encoding set. We say that $\PS$ is \emph{somehow
-    deterministic} (SD) if for any $(\inp, \wit) \in \REL$, polynomials
-  $\smallset{f_i}_{i \in [\noofp]}$ send by the prover, and encoding set
-  $\encset \neq [\noofp]$ each polynomial
-  $f_j \in \smallset{f_i}_{i \in [\noofp] \setminus \encset}$ is determined by
-  \begin{itemize}
-    \item polynomials $F_j$, and
-    \item the verifier's challenges $A_i$, and
-    \item the witness $\wit$.
-  \end{itemize}
-\end{definition}
-Intuitively, we say that WEPHP is somehow deterministic if the only
-non-deterministic messages send by the prover are polynomials encoding the
-witness, and all other messages are determined by the previous one, witness, and
-verifier's challenges.
-\antonio{29.07}{Why do we need this definition?}
-
-\section{PHP-to-NIZK compiler}
-
-\subsection{From PHP to zkPHP}
-\michals{24.06}{Need to show how to get a ZK PHP from PHP}
-
-\begin{theorem}[From WEPHP to ZK WEPHP]
-  Let $\PHP = (\prover, \verifier)$ be a WEPHP and $E$ its encoding set,
-  $\maxdeg$ be a maximal degree of polynomials sent by the prover; and
-  let $\PHP = (\prover', \verifier')$ be a WEPHP such that
-  \begin{itemize}
-  \item Both parties get as input a set of $\FF$ elements $H$, such that
-    $\abs{H} = \maxdeg + 1$. Denote the vanishing polynomial for $H$ by $\van{H}$.
-  \item $\prover'$ acts as $\prover$ except for $f_i(X) \in E$. Let $k_i$ be a
-    number of queries $\verifier$ makes to the oracle $\oracleo_{f_i}$ and
-    $d_i = \deg(f_i)$, then $\prover'$ computes
-      \[
-        g_i(X) = f_i(X) + \van{H}\left(X^{d_i + 1} b_1 + \ldots
-        X^{d_i + k_i + 1} b_{k_i + 1}\right)
-      \]
-      for random $b_1, \ldots, b_{k + 1}$ and sets oracle $\oracleo_{g_i}$.
-    \item $\verifier'$ acts as $\verifier$. \michals{28.06}{We don't want to
-        change the verifier and its equations -- that's why we have $\van{H}$.}
-  \end{itemize}
-\end{theorem}
-\antonio{29.07}{How can we choose the set $H$? In other words, how do we select an $H$ that
-does not mess with the completeness or the soundness of the PHP?
-Can we just say that if the original PHP checks $G(X,h_1(v_1(X)),...)=0$ then the new PHP
-checks $G(X,h'_1(v_1(X)),\dots)$ where $h'_i(X)=h'_i(X)+V_H(X)r_i(X)$ for some randomly
-chosen $r_i$? ($V_H$ is the vanishing poly at $H$) I guess completeness would hold for any
-$H$ but not sure about soundness, right?
-}
-\begin{proof}
-  \ncase{Completeness} 
-
-  \ncase{Soundness} 
-
-  \ncase{Zero-knowledge} To show the property we construct a simulator
-  $\simulator$ and argue that it produces proofs indistinguishable from proofs
-  of a real prover. The simulator behaves as real prover, except for
-  witness-encoding polynomials in $\smallset{f_i}_{i \in E}$. For
-  $f_j \in \smallset{f_i}_{i \in E}$, where it
-  \begin{itemize}
-  \item Picks randomizers $b_1, \ldots, b_{\noofq_j}$ and computes polynomial
-    $g_i(X) =  \van{H}(b_1 X + \ldots b_{\noofq_j} X^{\noofq_j})$. 
-  \item \michals{28.06}{The simulator can open the commitment to any value, but
-      he need to know *which* value}
-  \end{itemize}
-  
-\end{proof}
 
 \subsection{Simulation extractable NIZKs from simulation extractable polynomial
   commitments}
+\michals{25.08}{this section is old. Probably need to rewrite it after we are
+  sure that a similar result for Plonk holds.}
 
 \begin{theorem}
   Let $\PHP = (\PHP.\prover, \PHP.\verifier, \PHP.\simulator)$ be a ZK PHP
@@ -497,71 +728,6 @@ $H$ but not sure about soundness, right?
   open every single commitment.}
   
 \end{proof}
-\newcommand{\Kzg}{\mathsf{KZG}} \newcommand{\kzg}{\mathsf{kzg}}
-
-\def\cgen{{\sf ComGen}}
-\def\commit{{\sf Com}}
-%\def\comopen{{\sf ComOpen}}
-%\def\openver{{\sf OpenVer}}
-% \newcommand{\comkg}{\mathsf{KG}}
-\newcommand{\PC}{\mathsf{PC}}
-\newcommand{\CM}{\commit}
-
-\def\open{{\sf Open}}
-\def\check{{\sf Check}}
-%\def\witness{{\sf wit}}
-\def\gk{{\sf gk}}
-
-\def\ck{{\sf ck}}
-\newcommand{\secp}{\lambda}
-
-\section{KZG commitments are simulation extractable}
-$\Kzg.\PC = (\Kzg.\cgen,\Kzg.\CM,\allowbreak  \Kzg.\open,\allowbreak \Kzg.\check)$ is defined over bilinear groups $\gk=(p,\GG_1,\allowbreak \GG_2, \allowbreak \GG_T )$ with $\GG_1 =\langle g\rangle, \GG_2 =\langle h \rangle$ as follows:
-\begin{description}%[topsep=5pt]
-\item[$\Kzg.\cgen(1^\secpar, n) \to (\ck_\kzg, \vk_\kzg)$:] Set keys
-$\ck_\kzg = \{g^{\alpha^i}\}_{i=0}^{n-1}, \allowbreak\vk_\kzg = h^\alpha$.
-\item[$\Kzg.\CM(\ck_\kzg; f(X)) \to C_f$:]  For $f(X) = \sum_{i=0}^{n-1} f_i X^i$, computes  $C_f=\prod _{i=0}^{n-1} g^{f_i \alpha^i} = g^{f(\alpha)} $.
-\item[$\Kzg.\open(\ck_\kzg; C_f, x, y; f(X)) \to \pi$:] For an evaluation point $x$, a value $y$, compute the quotient  polynomial $q(X) = \displaystyle\frac{f(X) -y }{X-x}$ and output a proof $\pi = C_q = \Kzg.\CM(\ck_\kzg; q(X)) $.
-\item[$\Kzg.\check(\vk_\kzg = h^\alpha, C_f, x, y, \pi) \to 1/0$:] Check if $e(C_f \cdot  g^{-y}, h)=e(C_q , h^{\alpha}\cdot h^{-x})$.
-\end{description}
-
-We move toward considering a symbolic verification equation $V'$ for which we have:
-$V(C_{f},x,y,\pi) =  e(C_f \cdot  g^{-y}, h) - e(C_q , h^{\alpha}\cdot h^{-x}) = 0$ iff $V'(K * Transcript (T)) = 0$.
-
-The trapdoors variables $T$ consist of the trapdoor variable $X$ of the setup and the randomness variables $A_{i}$ of simulated proofs:
-$T=(X, \{A_{i}\})$
-
-The transcript consists of the setup $\{[X^{i}]_{1}\}, [X]_{2}$ and simulated proofs $\{[A_{i} + y_{i}]_{1}, [\frac{A_{i}}{X-x_{i}}]\}$.
-
-The honest verification equation is
-$[f(X) - y]_1 \circ [h]_{2} - [q(X)]_1 \circ [X-x]_{2}=0$ while an adversary can
-provide rational functions
-$f(X, \{A_{i}\}) = \sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3i}
-\frac{A_{i}}{X-x_{i}}$ and
-$q(X, \{A_{i}\}) = \sum Q_{1i} X^{i} + \sum Q_{2i} A_{i} + \sum Q_{3i}
-\frac{A_{i}}{X-x_{i}}$ computed as linear combinations of elements in the
-transcript. Note that we performed a simplification here as the $y_{i}$ are
-picked and known by the adversary.
-
-The security game gives us that $x \neq x_{i}$.
-
-We inline to get the following equation which we then analyze in detail,
-\begin{align*}
-  \left[\sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3i} \frac{A_{i}}{X-x_{i}} - y\right]_{1} \circ [1]_{2} - \left[\sum Q_{1i} X^{i} + \sum Q_{2i} A_{i} + \sum Q_{3i} \frac{A_{i}}{X-x_{i}}\right]_{1} \circ [X-x]_{2} = 0
-  \end{align*}
-
-We now look at diferent monomials in $T$ of this equation to derive constraints on $C_{ji}$ and $Q_{ji}$ imposed by the verification equation:
-\begin{itemize}
-  \item[$A_{i}X$:] $Q_{2i} A_{i} X = 0$
-  \item[$A_{i}$:] $C_{2i} A_{i} = - Q_{2i}A_{i} x$. As $Q_{2i}=0$, it follows
-    that $C_{{2i}}=0$. This step relies on $x \neq x_{i}$ and thus
-    $\frac{A_{i} (X-x)}{X-x_{i}}$ cannot cancel out its denominator.
-  \item[$\frac{A_{i}X}{X-x_{i}}$:] $Q_{3i} \frac{A_{i} X}{X-x_{i}} = 0$.
-  \item[$\frac{A_{i}}{X-x_{i}}$:]
-    $C_{3i} \frac{A_{i}}{X-x_{i}} = Q_{{3i}} \frac{A_{i}}{X-x_{i}} $. As
-    $Q_{3i}=0$, it follows that $C_{{3i}}=0$.
-  \end{itemize}
-We are thus back to the honest verification equation.
 
 \section{Simulation extractable NIZK from a simulation extractable polynomial
   commitment and polynomial protocol}
@@ -654,18 +820,182 @@ out of them.
 \end{proof}
 
 
-
+\bibliographystyle{alpha}
+\bibliography{cryptobib/abbrev1,cryptobib/crypto}
 
 \appendix
-\section{Unoptimzed $\plonk$}
-\subsection{$\plonk$ protocol rolled out}
+\section{Additional assumptions}
+\subsection{On uber assumption}
+% \begin{definition}[$(F^1, \ldots, F^m)$-independent polynomial]
+%   Let $F^i = \smallset{f^i_1, \ldots, f^i_{k_i}}$, $i \in \range{1}{m}$, be
+%   families of polynomials. We say that $g$ is \emph{$2$-independent from
+%     $(F^1, \ldots, F^m)$} if
+%   \[
+%     a_g g(X) = \sum_{i = 1}^{m} \sum_{j_i = 1}^{k_i} a_{j_i} f_{j_i} + %
+%     \sum_{i = 1}^{m} \sum_{j_i, i_2}^{k_i, k_j} a_{i_1, i_2} f_{i_1} f_{i_2} +
+%     \ldots \sum_{i_1, \ldots, i_m}^{k, \ldots, k} a_{i_1, \ldots, i_m} f_{i_1}
+%     \ldots f_{i_m},
+%   \]
+%   only iff all coefficients $a_h$, $a_{i_1}$, $a_{i_1, i_2}$, \ldots, $a_{i_1},
+%   \ldots, a_{i_m}$ are zero. 
+% \end{definition}
+
+% In this paper we consider only case of $m = 2$. For that case we ``fine tune''
+% the definition above and allow two different families of polynomials that $h$ is
+% independent from. That is,
+
+\begin{definition}[$(F, G)$-independent polynomial]
+  Let $F = \smallset{f_1, \ldots, f_k}$, $G = \smallset{g_1, \ldots, g_l}$ be
+  families of polynomials. We say that $h$ is \emph{$(2, F, G)$-independent} if
+  \[
+    a_h h(X) = \sum_{i = 1}^{k} a_{i} f_{i} + \sum_{i}^l b_{i} g_i + \sum_{i, j}^{k, l} c_{i, j}
+    f_{i} g_{j},
+  \]
+  only iff all coefficients $a_h$, $a_{i}$, $b_i$, $c_{i, j}$ are zero. 
+\end{definition}
+This definition is equivalen to definition of independent polynomials from
+\cite{PAIRING:Boyen08}.
+
+\begin{definition}[$2$-independent proof system]
+  Let $\PHP$ be a PHP proof system, and $F = \brak{f_1, \ldots, f_l}$
+  polynomials sent by the prover. Denote by
+  $F_{\neg i} = \brak{f_1, \ldots, f_{i - 1}, f_{i + 1}, \ldots, f_l}$.  We say
+  that $\PHP$ is \emph{2-independent} \michals{25.08}{good name needed} if for all
+  $f_i \in F$, $f_i$ is $(F_{\neg i}, F_{\neg i})$-independent.
+\end{definition}
+
+For a family of polynomials $F = \smallset{f_1, \ldots, f_k}$ where each $f_i
+\in \FF[X]$ we write $F(x)$ to denote $\smallset{f_1(x), \ldots, f_k(x)}$. 
+
+\begin{definition}[$(F, G)$-uber assumption, \cite{PAIRING:Boyen08}]
+  Let $h(X)$ be an
+  $(F = \smallset{f_1, \ldots, f_k}, G = \smallset{g_1, \ldots,
+    g_l})$-independent polynomial of degree $d$, and $r$ be a random polynomial
+  from $\FF^d[X]$. Then for any $\ppt$ adversary $\adv$
+  \begin{multline}
+%    \begin{split}
+    \Pr\left[ \adv(F(x), G(x), F \otimes G (x), r(x)) = 1 \,\left|\, x \sample \FF
+      \right.\right] \approx 
+    \Pr\left[ \adv(F(x), G(x), F \otimes G (x), h(x)) = 1 \,\left|\, x \sample \FF
+      \right.\right].
+ % \end{split}
+  \end{multline}
+\end{definition}
+
+\michals{25.08}{Focus on a single ver eq, work later on multi ver eq case.}
+
+\begin{lemma}[Simulatability of $2$-independent proof systems]
+  Let $\PHP$ \michals{25.08}{$\PHP$ or $\PS$?} be a $2$-independent proof system
+  \hl{...}  Let $\pf_1(X), \ldots, \pf_k(X)$ be the polynomials that the prover
+  sends and $\vereq_i(X) = G_i(X, h_1(v_1(X)), \ldots, h_\ell (v_\ell(X)))$, for
+  $i \in \range{1}{m}$, be the set of verification equations \hl{...}
+\end{lemma}
+\begin{proof}
+  For a verification equation $\vereq_i(X)$ denote by $\p{F}_i$ all polynomials
+  that are required to compute $\vereq_i(X)$ and by $\pf_{j_i}$ the last
+  polynomial in $\p{F}_i$ send by the prover. Set
+  $L = \smallset{\pf_{j_1}, \ldots, \pf_{j_m}}$. \michals{25.08}{Need to adjust
+    in case some polynomial is ``last'' for more than one verification equation}
+  Assume $\pf_{j_i} = \pf_{j_{i'}}$, that is, there is some polynomial that is
+  the last polynomial for more than one verification equation. Assume
+  $\pf_{j_i}$ is sent by the prover no later than $\pf_{j_{i'}}$ then pick the
+  last polynomial from $\p{F}_{i} \setminus \smallset{\pf_{j_i}}$ and add it to
+  $L$. Continue till there is no The simulator proceeds as follows: If
+  $\pf_i \not\in L$ then $\simulator$ picks a random polynomial $\pf'_i(X)$ ans
+  sends it as $\pf_i$. Alternatively, if $\pf_{j_i} \in L$, then the simulator
+  computes
+  \[
+    \vereq_i(X) 
+  \]
+\end{proof}
+
+\section{Additional definitions and results we may need at some point}
+
+\begin{definition}[Somehow deterministic WEPHP]
+  \label{def:sdwephp}
+  Let $\PS$ be a WEPHP for $\REL$. For each polynomial $f_i$ sent by the prover
+  denote by $A_i$ the set of challenges sent by the verifier and by $F_i$ the
+  set of polynomials sent by the prover \emph{before} the prover sends
+  $f_i$. Let $\encset$ be an encoding set. We say that $\PS$ is \emph{somehow
+    deterministic} (SD) if for any $(\inp, \wit) \in \REL$, polynomials
+  $\smallset{f_i}_{i \in [\noofp]}$ send by the prover, and encoding set
+  $\encset \neq [\noofp]$ each polynomial
+  $f_j \in \smallset{f_i}_{i \in [\noofp] \setminus \encset}$ is determined by
+  \begin{itemize}
+    \item polynomials $F_j$, and
+    \item the verifier's challenges $A_i$, and
+    \item the witness $\wit$.
+  \end{itemize}
+\end{definition}
+Intuitively, we say that WEPHP is somehow deterministic if the only
+non-deterministic messages send by the prover are polynomials encoding the
+witness, and all other messages are determined by the previous one, witness, and
+verifier's challenges.
+
+\subsection{From PHP to zkPHP}
+\michals{24.06}{Need to show how to get a ZK PHP from PHP}
+
+\begin{theorem}[From WEPHP to ZK WEPHP]
+  Let $\PHP = (\prover, \verifier)$ be a WEPHP and $E$ its encoding set,
+  $\maxdeg$ be a maximal degree of polynomials sent by the prover; and
+  let $\PHP = (\prover', \verifier')$ be a WEPHP such that
+  \begin{itemize}
+  \item Both parties get as input a set of $\FF$ elements $H$, such that
+    $\abs{H} = \maxdeg + 1$. Denote the vanishing polynomial for $H$ by $\van{H}$.
+  \item $\prover'$ acts as $\prover$ except for $f_i(X) \in E$. Let $k_i$ be a
+    number of queries $\verifier$ makes to the oracle $\oracleo_{f_i}$ and
+    $d_i = \deg(f_i)$, then $\prover'$ computes
+      \[
+        g_i(X) = f_i(X) + \van{H}\left(X^{d_i + 1} b_1 + \ldots
+        X^{d_i + k_i + 1} b_{k_i + 1}\right)
+      \]
+      for random $b_1, \ldots, b_{k + 1}$ and sets oracle $\oracleo_{g_i}$.
+    \item $\verifier'$ acts as $\verifier$. \michals{28.06}{We don't want to
+        change the verifier and its equations -- that's why we have $\van{H}$.}
+  \end{itemize}
+\end{theorem}
+\antonio{29.07}{How can we choose the set $H$? In other words, how do we select an $H$ that
+does not mess with the completeness or the soundness of the PHP?
+Can we just say that if the original PHP checks $G(X,h_1(v_1(X)),...)=0$ then the new PHP
+checks $G(X,h'_1(v_1(X)),\dots)$ where $h'_i(X)=h'_i(X)+V_H(X)r_i(X)$ for some randomly
+chosen $r_i$? ($V_H$ is the vanishing poly at $H$) I guess completeness would hold for any
+$H$ but not sure about soundness, right?}
+\michals{18.08}{$H$ is given. Need to think about the second part of your question.}
+\begin{proof}
+  \ncase{Completeness} 
+
+  \ncase{Soundness} 
+
+  \ncase{Zero-knowledge} To show the property we construct a simulator
+  $\simulator$ and argue that it produces proofs indistinguishable from proofs
+  of a real prover. The simulator behaves as real prover, except for
+  witness-encoding polynomials in $\smallset{f_i}_{i \in E}$. For
+  $f_j \in \smallset{f_i}_{i \in E}$, where it
+  \begin{itemize}
+  \item Picks randomizers $b_1, \ldots, b_{\noofq_j}$ and computes polynomial
+    $g_i(X) =  \van{H}(b_1 X + \ldots b_{\noofq_j} X^{\noofq_j})$. 
+  \item \michals{28.06}{The simulator can open the commitment to any value, but
+      he need to know *which* value}
+  \end{itemize}
+  
+\end{proof}
+
+\section{Unoptimized $\plonk$ with arbitrary polynomial commitment $\PCOM$}
+\michals{25.08}{This part is unfinished.}
+ In the following we assume either
+ \begin{enumerate}
+ \item the polynomial commitments $\PCOM$ is $l$-hiding, or \michals{16.08}{$l$
+    -hiding -- impossible to tell commitments to two polynomials given up to $l$
+  evaluations}
+ \item \hl{...} uber assumption holds \michals{16.08}{the distinguisher cannot
+     tell a commitment to a random polynomial (case of simulated proof) from a
+     commitment to a specific polynomial (that is not in the span of SRS
+     polynomials, case of a real proof)}
+ \end{enumerate}
+ that the polynomial commitment has one of the
+ following prope
+ \subsection{$\plonk$ protocol rolled out}
 \label{sec:plonk_explained}
-\newcommand{\vql}{\vec{q_{L}}}
-\newcommand{\vqr}{\vec{q_{R}}}
-\newcommand{\vqm}{\vec{q_{M}}}
-\newcommand{\vqo}{\vec{q_{O}}}
-\newcommand{\vx}{\vec{x}}
-\newcommand{\vqc}{\vec{q_{C}}}
 \subsubsection{The constrain system}
 Assume $\CRKT$ is a fan-in two arithmetic circuit,
 which fan-out is unlimited and has $\numberofconstrains$ gates and $\noofw$ wires
@@ -708,11 +1038,10 @@ be computed using these SRS elements thus we leave them to be computed by the
 prover, verifier, and simulator.
 
 \paragraph{$\plonk$ SRS generating algorithm $\kgen(\REL)$:}
-The SRS generating algorithm picks at random $\chi \sample \FF_p$, computes
+The SRS generating algorithm picks at random $\xi \sample \FF_p$, computes
 and outputs
 \[
-	\srs = \left(\gone{\smallset{\chi^i}_{i = 0}^{\numberofconstrains + 2}},
-	\gtwo{\chi} \right).
+	\srs \gets \PCOM.\kgen(\secparam).
 \]
 
 \paragraph{Preprocessing:}
@@ -768,13 +1097,22 @@ such that
 		\p{b}(X) &= (b_3 X + b_4)\p{Z_H}(X) + \sum_{i = 1}^{\noofc} \wit_{\noofc + i} \lag_i(X) \\
 		\p{c}(X) &= (b_5 X + b_6)\p{Z_H}(X) + \sum_{i = 1}^{\noofc} \wit_{2 \cdot \noofc + i} \lag_i(X) 
 	\end{align*}
-	Output polynomial commitments $\gone{\p{a}(\chi), \p{b}(\chi), \p{c}(\chi)}$.
+	Output polynomial commitments $\PCOM.\com(\p{a}(X)), \PCOM.\com(\p{b}(X)), \PCOM.\com(\p{c}(X))$.
 	
 	\item[Round 2]
 	Get challenges $\beta, \gamma \in \FF_p$
 	\[
 		\beta = \ro(\zkproof[0..1], 0)\,, \qquad \gamma = \ro(\zkproof[0..1], 1)\,.
-	\]
+        \]
+        Compute
+        \begin{align*}
+          \p{f_{a}}(X) & = a(X) + \beta X + \gamma \\
+          \p{f_{b}}(X) & = b(X) + \beta \omega^{n} X + \gamma \\
+          \p{f_{c}}(X) & = c(X) + \beta \omega^{2n} X + \gamma \\
+          \p{g_{a}}(X) & = a(X) + \beta \p{S_{\sigma 1}}(X) + \gamma \\
+          \p{g_{b}}(X) & = b(X) + \beta \p{S_{\sigma 2}}(X) + \gamma \\
+          \p{g_{c}}(X) & = c(X) + \beta \p{S_{\sigma 3}}(X) + \gamma \\
+        \end{align*}
 	Compute permutation polynomial $\p{z}(X)$
 	\begin{multline*}
 		\p{z}(X) = (b_7 X^2 + b_8 X + b_9)\p{Z_H}(X) + \lag_1(X) + \\
@@ -786,57 +1124,62 @@ such that
         \noofc + j- 1} + \gamma)}
 			{(\wit_j+\sigma(j) \beta + \gamma)(\wit_{\noofc + j} + \sigma(\noofc + j)\beta + \gamma)(\wit_{2 \noofc + j} + \sigma(2 \noofc + j)\beta + \gamma)}\right)
 	\end{multline*}
-	Output polynomial commitment $\gone{\p{z}(\chi)}$
+  Note that $\p{z}\in \FF_{p}^{\leq 3n}[X]$ satisfies the property that
+  $\p{z}(\omega)=1$ and for $i > 1$,
+  $\p{z}(\omega^{i}) = \prod_{j=1}^{i} \p{f}(\omega^{i})/\p{g}(\omega^{i})$
+  where $\p{f} = \p{f_{a}}\p{f_{b}}\p{f_{c}}$ and
+  $\p{g} = \p{g_{a}}\p{g_{b}}\p{g_{c}}$.
+
+	Output polynomial commitment $\PCOM.\com(\p{z}(X))$
 		
 	\item[Round 3]
-	Get the challenge $\alpha = \ro(\zkproof[0..2])$, compute the quotient polynomials 
+    %	Get the challenge $\alpha = \ro(\zkproof[0..2])$,
+    Compute the quotient polynomials 
 \begin{align*}
 	\p{t_1}(X) & = (\p{a}(X) \p{b}(X) \selmulti(X) + \p{a}(X) \selleft(X) + 
                \p{b}(X)\selright(X) + \p{c}(X)\seloutput(X) + \pubinppoly(X) + \selconst(X)) 
                \frac{1}{\p{Z_H}(X)} \\
-	\p{t_2}(X) & = ((\p{a}(X) + \beta X + \gamma) (\p{b}(X) + \beta \omega^{\noofc} X + \gamma)(\p{c}(X) 
+  \p{t_2}(X) & = (\p{f}(X) \p{z}(X) - \p{g}(X) \p{z}(X\omega)) \frac{1}{\p{Z_H}(X)} =\\
+             &  ((\p{a}(X) + \beta X + \gamma) (\p{b}(X) + \beta \omega^{\noofc} X + \gamma)(\p{c}(X)
                + \beta \omega^{2 \noofc} X + \gamma)\p{z}(X)) \frac{1}{\p{Z_H}(X)} \\
              & - (\p{a}(X) + \beta \p{S_{\sigma 1}}(X) + \gamma)(\p{b}(X) + \beta 
                \p{S_{\sigma 2}}(X) + \gamma)(\p{c}(X) + \beta \p{S_{\sigma 3}}(X) + 
                \gamma)\p{z}(X \omega))  \frac{1}{\p{Z_H}(X)} \\
 	\p{t_3}(X) & =  (\p{z}(X) - 1) \lag_1(X) \frac{1}{\p{Z_H}(X)}
 \end{align*}
-Output $\gone{\p{t_{lo, i}}(\chi), \p{t_{mid, i}}(\chi), \p{t_{hi, i}}(\chi)}$, such that
-$\p{t_i}(X) = \p{t_{lo, i}}(X) + \p{t_{mid, i}}(X) X^\noofc + \p{t_{hi ,i}}(X)
-X^{2\noofc}$, for $i \in \range{1}{3}$.
+Output $\cp{t_i} = \gone{\p{t_i}(\xi)}$, for $i \in \range{1}{3}$. \markulf{24/08}{Why isn't this: 	Output polynomial commitment $\PCOM.\com(\p{z}(X))$?}\michals{30.08}{Fixed}
 	
-	\item[Round 4]
-	Get the challenge $\chz \in \FF_p$, $\chz = \ro(\zkproof[0..3])$.
-	Output evaluations
+\item[Round 4] Get the challenge $\chz \in \FF_p$, $\chz = \ro(\zkproof[0..3])$.
+  Output evaluations
 	\begin{align*}
-    \p{a}(\chz), \p{b}(\chz), \p{c}(\chz), \p{S_{\sigma 1}}(\chz),
-    \p{S_{\sigma 2}}(\chz), \p{t}(\chz), \p{z}(\chz), \p{z}(\chz \omega),
-    \p{t_1}(\chz), \p{t_2}(\chz), \p{t_3}(\chz)
+    & \ev{a} = \p{a}(\chz), \ev{b} = \p{b}(\chz), \ev{c} = \p{c}(\chz),
+    \ev{S}_{\sigma, 1}= \p{S_{\sigma 1}}(\chz), \ev{S}_{\sigma 2} = \p{S_{\sigma 2}}(\chz),  \\
+    & \ev{z} = \p{z}(\chz), \ev{z}_\omega = \p{z}(\chz \omega),
+    \ev{t}_1 = \p{t_1}(\chz), \ev{t}_2 = \p{t_2}(\chz), \ev{t}_3 = \p{t_3}(\chz)
 	\end{align*}
 	
 	\item[Round 5]
-	Compute the opening challenge $v \in \FF_p$, $v = \ro(\zkproof[0..4])$.
-	Compute the openings for the polynomial commitment scheme 
-	\begin{align*}
-	& \p{W_\chz}(X) = \frac{1}{X - \chz} \left(
-	\begin{aligned}
-		& \p{t_{lo, 1}}(X) + \chz^\noofc \p{t_{mid, 1}}(X) + \chz^{2 \noofc}
-    \p{t_{hi, 1}}(X) - \p{t_1}(\chz)\\
-    & v(\p{t_{lo, 2}}(X) + \chz^\noofc \p{t_{mid, 2}}(X) + \chz^{2 \noofc}
-    \p{t_{hi, 2}}(X) - \p{t_2}(\chz))\\
-    & v^2(\p{t_{lo, 3}}(X) + \chz^\noofc \p{t_{mid, 3}}(X) + \chz^{2 \noofc}
-    \p{t_{hi, 3}}(X) - \p{t_3}(\chz))\\
-		& + v^3(\p{r}(X) - \p{r}(\chz)) \\
-		& + v^4 (\p{a}(X) - \p{a}(\chz))\\
-		& + v^5 (\p{b}(X) - \p{b}(\chz))\\
-		& + v^6 (\p{c}(X) - \p{c}(\chz))\\
-		& + v^7 (\p{S_{\sigma 1}}(X) - \p{S_{\sigma 1}}(\chz))\\
-		& + v^8 (\p{S_{\sigma 2}}(X) - \p{S_{\sigma 2}}(\chz))
-	\end{aligned}
-	\right)\\
-	& \p{W_{\chz \omega}}(X) = \frac{\p{z}(X) - \p{z}(\chz \omega)}{X - \chz \omega}
-\end{align*}
-	Output $\gone{\p{W_{\chz}}(\chi), \p{W_{\chz \omega}}(\chi)}$.
+	%Compute the opening challenge $v \in \FF_p$, $v = \ro(\zkproof[0..4])$.
+	Compute the openings for the polynomial commitment scheme
+        \michals{11.08}{Need to add that commitment scheme is additively homomorphic}
+        \markulf{25.08}{Challenge $\nu$ doesn't seem to be used by simplified
+          protocol}
+        \michals{30.08}{Fixed}
+  \begin{align*}
+    & \p{W_\chz^{t_1}} = \PCOM.\open(\srs, \cp{t_{1}}, \p{t_1}(\chz)) \\
+    & \p{W_\chz^{t_2}} = \PCOM.\open(\srs, \cp{t_{2}}, \p{t_2}(\chz)), \\
+    & \p{W_\chz^{t_3}} = \PCOM.\open(\srs, \cp{t_{3}}, \p{t_3}(\chz)), \\
+ %  & \p{W_\chz^{\p{r}}} = \PCOM.\open(\srs, \cp{r}, \p{r}(\chz)), \\
+    & \p{W_\chz^{\p{a}}} = \PCOM.\open(\srs, \cp{a}, \p{a}(\chz)), \\
+    & \p{W_\chz^{\p{b}}} = \PCOM.\open(\srs, \cp{b}, \p{b}(\chz)), \\
+    & \p{W_\chz^{\p{c}}} = \PCOM.\open(\srs, \cp{c}, \p{c}(\chz)), \\
+    & \p{W_\chz^{\p{S_{\sigma 1}}}} = \PCOM.\open(\srs, \cp{S_{\sigma 1}}, \p{S_{\sigma 1}}(\chz)), \\
+    & \p{W_\chz^{\p{S_{\sigma 2}}}} = \PCOM.\open(\srs, \cp{S_{\sigma 2}}, 
+      \p{S_{\sigma 2}}(\chz)), \\
+    & \p{W_{\chz}^{\p{z}}} = \PCOM.\open(\srs, \cp{z}, \p{z}(\chz)) \\
+    & \p{W_{\chz \omega}^{\p{z}}} = \PCOM.\open(\srs, \cp{z}, \p{z}(\chz \omega))
+ \end{align*}
+ Output the computed polynomial commitment openings.
 \end{description}
 
 \ncase{$\plonk$ verifier $\verifier(\REL, \srs, \inp, \zkproof)$}\ \newline
@@ -844,96 +1187,430 @@ The \plonk{} verifier works as follows
 \begin{description}
 	\item[Step 1] Validate all obtained group elements.
 	\item[Step 2] Validate all obtained field elements.
-	\item[Step 3] Validate the instance
-      $\inp = \smallset{\wit_i}_{i = 1}^\instsize$.
+	\item[Step 3] Validate the instance $\inp = \smallset{\wit_i}_{i =
+      1}^\ell$.%instsize.
 	\item[Step 4] Compute challenges $\beta, \gamma, \alpha, \chz, v,
-      u$ from the transcript.
+    u$ from the transcript.
 	\item[Step 5] Compute zero polynomial evaluation
       $\p{Z_H} (\chz) =\chz^\noofc - 1$.
 	\item[Step 6] Compute Lagrange polynomial evaluation
       $\lag_1 (\chz) = \frac{\chz^\noofc -1}{\noofc (\chz - 1)}$.
-	\item[Step 7] Compute public input polynomial evaluation
-      $\pubinppoly (\chz) = \sum_{i \in \range{1}{\instsize}} \wit_i
-      \lag_i(\chz)$.
-	\item[Step 8] Compute constraint polynomial evaluations
-    \begin{multline*}
-      \p{f}(\chz) = 
-    \p{t} (\chz) = \frac{1}{\p{Z_H}(\chz)} \Big(
-    \p{r} (\chz) + \pubinppoly(\chz) - (\p{a}(\chz) + \beta \p{S_{\sigma 1}}(\chz) + \gamma) (\p{b}(\chz) + \beta \p{S_{\sigma 2}}(\chz) + \gamma)
-    (\p{c}(\chz) + \gamma)\p{z}(\chz \omega) \alpha - \lag_1 (\chz) \alpha^2
-    \Big) \,.
-	\end{multline*}
-	\item[Step 9] Compute batched polynomial commitment
-	$\gone{D} = v \gone{r} + u \gone {z}$ that is
-	\begin{align*}
-		\gone{D} & = v
-		\left(
-		\begin{aligned}
-          & \p{a}(\chz)\p{b}(\chz) \cdot \gone{\selmulti} + \p{a}(\chz)  \gone{\selleft} + \p{b}  \gone{\selright} + \p{c}  \gone{\seloutput} + \\
-          & + (	(\p{a}(\chz) + \beta \chz + \gamma) (\p{b}(\chz) + \beta k_1 \chz + \gamma) (\p{c} + \beta k_2 \chz + \gamma) \alpha  + \lag_1(\chz) \alpha^2)  + \\
-			% &   \\
-          & - (\p{a}(\chz) + \beta \p{S_{\sigma 1}}(\chz) + \gamma) (\p{b}(\chz)
-          + \beta \p{S_{\sigma 2}}(\chz) + \gamma) \alpha \beta \p{z}(\chz
-          \omega) \gone{\p{S_{\sigma 3}}(\chi)})
-		\end{aligned}
-		\right) + \\
-		& + u \gone{\p{z}(\chi)}\,.
-	\end{align*}
-	\item[Step 10] Computes full batched polynomial commitment $\gone{F}$:
-	\begin{align*}
-      \gone{F} & = \left(\gone{\p{t_{lo}}(\chi)} + \chz^\noofc \gone{\p{t_{mid}}(\chi)} + \chz^{2 \noofc} \gone{\p{t_{hi}}(\chi)}\right) + u \gone{\p{z}(\chi)} + \\
-               & + v
-                 \left(
-		\begin{aligned}
-			& \p{a}(\chz)\p{b}(\chz) \cdot \gone{\selmulti} + \p{a}(\chz)  \gone{\selleft} + \p{b}(\chz)   \gone{\selright} + \p{c}(\chz)  \gone{\seloutput} + \\
-			& + (	(\p{a}(\chz) + \beta \chz + \gamma) (\p{b}(\chz) + \beta k_1 \chz + \gamma) (\p{c}(\chz)  + \beta k_2 \chz + \gamma) \alpha  + \lag_1(\chz) \alpha^2)  + \\
-			% &   \\
-			& - (\p{a}(\chz) + \beta \p{S_{\sigma 1}}(\chz) + \gamma) (\p{b}(\chz) + \beta \p{S_{\sigma 2}}(\chz) + \gamma) \alpha  \beta \p{z}(\chz \omega) \gone{\p{S_{\sigma 3}}(\chi)})
-		\end{aligned}
-		\right) \\
-		& + v^2 \gone{\p{a}(\chi)} + v^3 \gone{\p{b}(\chi)} + v^4 \gone{\p{c}(\chi)} + v^5 \gone{\p{S_{\sigma 1}(\chi)}} + v^6 \gone{\p{S_{\sigma 2}}(\chi)}\,.
-	\end{align*}
-	\item[Step 11] Compute group-encoded batch evaluation $\gone{E}$
-	\begin{align*}
-		\gone{E}  = \frac{1}{\p{Z_H}(\chz)} & \gone{
-		\begin{aligned}
-			& \p{r}(\chz) + \pubinppoly(\chz) +  \alpha^2  \lag_1 (\chz) + \\
-			& - \alpha \left( (\p{a}(\chz) + \beta \p{S_{\sigma 1}} (\chz) + \gamma) (\p{b}(\chz) + \beta \p{S_{\sigma 2}} (\chz) + \gamma) (\p{c}(\chz) + \gamma) \p{z}(\chz \omega) \right)
-		\end{aligned}
-           }\\
-      + & \gone{v \p{r}(\chz) + v^2 \p{a}(\chz) + v^3 \p{b}(\chz) + v^4 \p{c}(\chz) + v^5 \p{S_{\sigma 1}}(\chz) + v^6 \p{S_{\sigma 2}}(\chz) + u \p{z}(\chz \omega) }\,.
-	\end{align*}
-\item[Step 12] Check whether the verification
- % $\vereq_\zkproof(\chi)$
-  equation holds
-	\begin{multline}
-		\label{eq:ver_eq}
-		\left( \gone{\p{W_{\chz}}(\chi)} + u \cdot \gone{\p{W_{\chz
-                \omega}}(\chi)} \right) \bullet
-		\gtwo{\chi} - %\\
-		\left( \chz \cdot \gone{\p{W_{\chz}}(\chi)} + u \chz \omega \cdot
-          \gone{\p{W_{\chz \omega}}(\chi)} + \gone{F} - \gone{E} \right) \bullet
-        \gtwo{1} = 0\,.
-	\end{multline}
-  The verification equation is a batched version of the verification equation
-  from \cite{AC:KatZavGol10} which allows the verifier to check openings of
-  multiple polynomials in two points (instead of checking an opening of a single
-  polynomial at one point).
+    \item[Step 7] Compute public input polynomial evaluation $\pubinppoly (\chz)
+      = \sum_{i \in \range{1}{\instsize}} \wit_i \lag_i(\chz)$.
+	\item[Step 8] Compute evaluations of constraint polynomial and
+    permutation-argument polynomial
+\begin{align*}
+	\ev{t_1} & = (\ev{a} \ev{b} \selmulti(\chz) + \ev{a}(\chz) \selleft(\chz) + 
+             \ev{b}\selright(\chz) + \ev{c}\seloutput(\chz) + \pubinppoly(\chz) + \selconst(\chz)) 
+             \frac{1}{\p{Z_H}(\chz)} \\
+	\ev{t_2} & = ((\ev{a} + \beta \chz + \gamma) (\ev{b} + \beta \omega^{\noofc} \chz + \gamma)(\ev{c} 
+             + \beta \omega^{2 \noofc} \chz + \gamma)\ev{z} \frac{1}{\p{Z_H}(\chz)} \\
+           & - (\ev{a} + \beta \ev{S_{\sigma 1}} + \gamma)(\ev{b} + \beta 
+             \ev{S_{\sigma 2}} + \gamma)(\ev{c} + \beta \ev{S_{\sigma 3}} + 
+             \gamma)\ev{z_{\omega}}  \frac{1}{\p{Z_H}(\chz)} \\
+	\ev{t_3} & =  (\ev{z} - 1) \lag_1(\chz) \frac{1}{\p{Z_H}(\chz)}
+\end{align*}
+\item[Step 9] Verify all polynomial commitment openings.
 \end{description}
 
-\ncase{$\plonk$ simulator $\simulator_\chi(\REL, \srs, \td= \chi, \inp)$}\ \newline
+
+
+\ncase{$\plonk$ trapdoor-less simulator $\simulator(\REL, \srs, \inp)$}\ \newline
 The \plonk{} simulator proceeds as an honest prover would, except:
 \begin{enumerate}
-  \item In the first round, it sets $\wit = (\wit_i)_{i \in \range{1}{3 \noofc}}
-    = \vec{0}$, and at random picks $b_1, \ldots, b_9$. Then it proceeds with
-    that all-zero witness.
-  \item In Round 3, it computes polynomial $\pt(X)$ honestly, however uses
-    trapdoor $\chi$ to compute commitments
-    $\p{t_{lo}}(\chi), \p{t_{mid}}(\chi), \p{t_{hi}}(\chi)$.
+\item In the first round, it sets
+  $\wit = (\wit_i)_{i \in \range{1}{3 \noofc}} = \vec{0}$, and at random picks
+  $b_1, \ldots, b_9$. Then it proceeds with that all-zero witness.
+\item In Round 3, it picks randomly challenge $\chz$, computes polynomial
+  evaluations $\ev{t_i} = \p{t_i}(\chz)$, for $i \in \range{1}{3}$, and picks
+  random polynomials $\p{t'_i}(X)$ such that $\p{t'_i}(\chz) = \p{t_i}(\chz)$
+  and commits to them.
+\end{enumerate}
+ 
+We write $\PHP^{\PCOM}$ to denote a interactive proof system compiled from a PHP $\PHP$ using
+polynomial commitment $\PCOM$. We denote its non-interactie variant compiled using Fiat-Shamir by $\PHP^{\PCOM}_{\fs}$. E.g., we denote the above rolled out non-interactive version of the
+$\plonk$ proof system by $\plonkprotfs^{\kzg}$, where $\kzg$ denotes the KZG
+polynomial commitment scheme.
+
+\begin{theorem}
+  Let $\PCOM$ be a polynomial commitment scheme that is binding, simulation-extractable, and a commitment of knowledge,
+  then $\plonkprotfs^{\PCOM}$ is simulation extractable.
+%  \michals{16.08}{$(3, \eps)$-aux-simulation-extractable -- $3$ polynomials are
+%    extracted, $1 - \eps$ is probability of extractor's success, aux -- see how
+%    we compute the challenge}
+\end{theorem}
+\begin{proof} \ \\
+
+\noindent
+  \textbf{Building simulator for SNARK from simulator for PC}
+We describe $\oraclesps,\ro$ in terms of calls to $\oraclespcom,\ro_{\aux}$.
+
+\noindent
+We simulate $\ro(x_{1}\|x_{2})$ via calls to $\ro_{aux}(x_{1},x_{2})$, where
+$x_{1}$ has the length of 3 commitments. \michals{30.08}{sometimes more than
+  just 3}
+
+\noindent
+Queries to $(\inp, \wit)$ to $\oraclesps$ are answered as follows:
+\begin{itemize}
+      \item Ask $\oraclespcom$ for 7 random commitments,
+        $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t'_1}, \cp{t'_2}, \cp{t'_3}$, using the $(\msg{commit})$ query.
+      \item Compute random elements $\beta, \gamma, \chz$ as
+        random oracle evaluations of $\ro_{aux}$ at partial transcripts.
+      \item Pick random evaluations $\ev{a}, \ev{b}, \ev{c}, \ev{z}$ and ask $\oraclespcom$ to simulate openings of the corresponding commitments at $\chz$ to get
+        openings $W^{\p{f}}_\chz$, for
+        $\p{f} \in \smallset{\p{a}, \p{b}, \p{c}, \p{z}}$.
+      \item Pick random evaluation $\ev{z}_{\omega}$ and ask $\oraclespcom$ to simulate opening of commitment $\cp{z}$ at $\omega \chz$ using the query $(\msg{open}, \cp{z}, \chz, \ev{z}_{\omega})$ to get
+        openings $W^{\p{z}}_{\omega \chz}$.
+      \item Compute evaluations $\p{S_{\sigma 1}}(\chz)$,
+        $\p{S_{\sigma 2}}(\chz)$ and simulate openings $W^{\p{S_{\sigma 1}}}_\chz$,
+        $W^{\p{S_{\sigma 2}}}_\chz$ for commitments in $\srss$.
+        \michals{30.08}{Why not computing them honestly?}
+      \item For $i \in \range{1}{3}$, compute values of $\ev{t}_i$ as
+        defined by the verification equation.
+      \item For $i \in \range{1}{3}$, ask $\oraclespcom$ to simulate opening of $\cp{t'_i}$
+        to $\ev{t}_i$ at $\chz$.
+      \item From the obtained commitments, evaluations, openings, and random
+        elements compute a simulated proof $\zkproof$ for $\inp$.
+      \end{itemize}
+
+\noindent
+\textbf{Building an adversary for PC from adversary for SNARK}
+Given an SE adversary $\adv^{\oraclesps}(\srs, \srss, \radv)$ for $\PS_\fs^{\PCOM}$
+we build an adversary $\bdv^{\oraclespcom}(\srs_{\PCOM}, \rbdv)$ for the SE-PCOM.
+
+We equip adversary $\bdv$ with $\adv$'s code and randomness
+  $\radv$. (Importantly $\bdv$ does not use any randomness on its
+  own). $\bdv$ proceeds as follows
+  \begin{enumerate}
+  \item Given $\PCOM$ reference string $\srs_{\PCOM}$, prepare $\PS$'s master
+    SRS $\srs$ and specialized SRS $\srss$ for relation $\REL$.
+  \item Start $\adv(\srs, \srss, \radv)$.
+    \item On each $\adv$'s query $(\inp, \wit)$ to $\oraclesps$:
+    \begin{enumerate}
+    \item Check $\REL(\inp, \wit) = 1$ and ignore if that's not the case.
+      \item Prepare a simulated proof $\zkproof$ for $\adv$ using $\oraclespcom$ and $\ro_{aux}$ as described above.
+
+            \iffalse
+            , that is
+      \begin{itemize}
+      \item Ask $\oraclespcom$ for 7 commitments to random polynomials, denote
+        the commitments by
+        $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t'_1}, \cp{t'_2}, \cp{t'_3}$.
+      \item Compute random elements $\alpha, \beta, \gamma, \delta, \chz$ as
+        random oracle evaluations at partial transcripts.
+      \item Ask $\oraclespcom$ to evaluate all the polynomials at $\chz$ and get
+        openings $W^{\p{f}}_\chz$, for
+        $\p{f} \in \smallset{\p{a}, \p{b}, \p{c}, \p{z}}$.  \markulf{24.08}{We
+          don't actually know the random polynomials, so we cannot compute their
+          evaluations, but just simulating opening proofs for random
+          $\ev{a},\dots$ should work.}
+        \michals{25.08}{Here we ask the simulator oracle for evaluation. Do you
+          think it is also not allowed?}
+      \item Ask $\oraclespcom$ to evaluate $\p{z}$ at $\omega \chz$ and get
+        openings $W^{\p{z}}_{\omega \chz}$.
+      \item Compute evaluations $\p{S_{\sigma 1}}(\chz)$,
+        $\p{S_{\sigma 2}}(\chz)$ and openings $W^{\p{S_{\sigma 1}}}_\chz$,
+        $W^{\p{S_{\sigma 2}}}_\chz$.
+      \item For $i \in \range{1}{3}$, compute values of $\p{t_i}(\chz)$ as
+        defined by the proof.
+      \item For $i \in \range{1}{3}$, ask $\oraclespcom$ to evaluate $\cp{t'_i}$
+        to open $\p{t'_i}(\chz)$ to $\p{t_i}(\chz)$.
+      \item From the obtained commitments, evaluations, openings, and random
+        elements compute a simulated proof $\zkproof$ for $\inp$.
+      \end{itemize}
+            \fi
+    \item Add $(\inp, \zkproof)$ to $\qadv$.
+    \end{enumerate}
+  \item On $\adv$'s challenge instance $\inp$ and proof $\zkproof$.
+    \begin{enumerate}
+    \item Parse $\zkproof$ to obtain
+      \begin{itemize}
+      \item commitments
+        $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t_1}, \cp{t_2}, \cp{t_3}$,
+      \item random elements $\beta, \gamma$,
+      \item openings $W_\chz^{\p{a}}, W_\chz^{\p{b}}, W_\chz^{\p{c}}$.
+      \end{itemize}
+    \item Compute
+      $\aux = (\beta, \gamma, \cp{z}, \cp{t_1},
+      \cp{t_2}, \cp{t_3})$. \michals{30.08}{aux independent on the instance,
+        does it matter?}
+    \item Output
+      \begin{itemize}
+      \item commitments $\cp{a}$, $\cp{b}$, $\cp{c}$,
+      \item auxiliary input $\aux$,
+    %  \item challenge $z = \ro(\aux)$,
+      \item openings $o = (W_\chz^{\p{a}}, W_\chz^{\p{a}},  W_\chz^{\p{c}})$.
+      \end{itemize}
+    \end{enumerate}
   \end{enumerate}
 
+  Now, since the polynomial commitment scheme is simulation
+  extractable, then there exists an extractor
+  $\ext_{\bdv}(\srs_{\PCOM}, \qbdv, \rbdv)$ that outputs $\p{a}, \p{b}, \p{c}$.\smallskip
+
+\noindent\textbf{Building an extractor for SNARK from an extractor for PC}
+  We show how to use the extractor
+  $\ext_\bdv(\srs_{\PCOM}, \qbdv, \rbdv)$, where $\qbdv$ is a list of all
+  queries to $\oraclespcom$ and their responses, to build an extractor
+  $\ext_\adv(\srs, \srss, \qadv, \radv)$, where $\qadv$ is a list of all queries
+  to $\oraclesps$ and their responses, that outputs witness $\wit$ such that
+  $\REL(\inp, \wit) = 1$.
 
 
+  The extractor $\ext_\adv$ makes a single call to
+  $\ext_{\bdv}$: It gets as input $\srs, \srss$ from which it computes
+  $\srs_{{\PCOM}}$. As the simulator for the SNARK can be obtained from the simulator for PC, $\qadv$ allows to derive $\qbdv$.  The
+  randomness $\radv$ is reused unchanged as $\rbdv$.
+  $\ext_{\bdv}(\srs_{\PCOM}, \qbdv, \rbdv)$ outputs $\p{a}, \p{b}, \p{c}$ from
+  which we decode the witness.
+
+  % Since for $\plonk$ these are witness-encoding polynomials, one can reveal
+  % $\inp$'s witness $\wit$.
+  \comment{ To show that the extractor succeeds with overwheming probability, we
+    relate the polynomials $\p{a}, \p{b}, \p{c}$ it produces to the coefficients
+    $\p{a}', \p{b}', \p{c}'$ of the corresponding polynomial commitment produced
+    by a related knowledge soundness algebraic adversary $\adv'$. $\adv'$ runs
+    $\adv$ internally and simulates the signing oracle.
+
+    When $\ext_\adv$ fails to extract a valid witness, one of two cases must
+    hold: (i) either $(\p{a}, \p{b}, \p{c}) \neq (\p{a}', \p{b}', \p{c}')$ in
+    which case we break the soundness of the polynomial commitment scheme or
+    (ii), $\adv'$ breaks knowledge soundness.  }
+
+
+
+  \ncase{Game 1} Let $\adv^{\oraclesps}(\srs, \srss, \radv)$ be a (true) SE adversary
+  for $\PS_\fs^{\PCOM}$
+  \michals{20.08}{Continue -- that's a standard SE game here.}
+  The game returns $1$ iff extractor $\ext_\adv(\srs, \srss, \qadv,
+  \qroadv{\adv})$ fails to output witness $\wit$ such that for $\adv$'s output
+  $(\inp, \zkproof)$ holds $\REL(\inp, \wit)$.
+  
+  We now show that the extracted polynomials indeed encode witness $\wit'$ (this
+  witness may differ from the witness $\wit$ provided by the prover) such that
+  $\REL(\inp, \wit') = 1$. For that end, we introduce the following games.
+
+ 
+  \ncase{Game 2} Is the same as Game 1 except that $\oraclesps$ returns now real
+  proofs instead of simulated ones.
+
+  \ncase{$\game{1} \mapsto \game{2}$} The difference in the winning
+  probabilities between $\game{1}$ and $\game{2}$ is negligible by the
+  zero-knowledge property of the prove system.
+
+  This comes since in $\game{1}$ the adversary $\adv$ sees proofs from the same
+  distribution as simulated proofs. In $\game{2}$ adversary $\adv$ gets real
+  proofs.  \hl{continue}
+
+  \ncase{Game 3} We combine randomness of
+  $\adv, \oracles, \ro$.\michals{30.08}{What does it mean?} That is, we consider
+  adversary $\bdv$ that has access to a random oracle $\ro$ and internally run
+  $\adv$ and provides it with $\oracles$. $\adv$'s queries to $\ro$, are passed
+  by $\bdv$ to the oracle.
+  \michals{30.08}{I don't let $\bdv$ control $\ro$ to be able to use $\bdv$ to
+    break polynomial comittment binding proeprty} Let $h$ be the upper bound on the number of random
+  oracle queries. Let $\bdv_i^{\cp{f}}$, for
+  $\pf \in \pF = \smallset{\p{a}, \p{b}, \p{c}, \p{z}, \p{t_1}, \p{t_2},
+    \p{t_3}}$, be adversaries such that when $\adv$ makes $i$-th random oracle
+  query to $\ro$ and the query's argument is
+  \begin{itemize}
+  \item $(\inp, \cp{a}, \cp{b}, \cp{c})$ \michals{30.08}{Added instance
+      $\inp$}, then $\bdv^{\cp{a}}_i, \bdv^{\cp{b}}_i, \bdv^{\cp{c}}_i$ return
+    $\cp{a}$, $\cp{b}$, and $\cp{c}$ respectively.
+  \item $(\inp, \cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}, \cp{t_1},
+    \cp{t_2}, \cp{t_3})$, then $\bdv^{\cp{z}}_i, \bdv^{\cp{t_1}}_i,
+    \bdv^{\cp{t_2}}_i, \bdv^{\cp{t_3}}_i$ return
+    $\cp{z}$, $\cp{t_1}$, $\cp{t_2}$ and $\cp{t_3}$ respectively.
+  \end{itemize}
+
+  Since $\PCOM$ is a commitment of knowledge, there exist extractors
+  $\ext_{\bdv^{\cp{f}}_i}$, for
+  $(i, \p{f}) \in {\range{1}{h}} \times \p{F}$ that given randomness of
+  $\bdv^{\cp{f}}_i$ return $\p{f}$.
+
+  The game returns $1$ if some of the extractors fails. Denote by
+  $\eps^{\p{f}}_i$ (negligible) probability that $\ext_{\bdv^{\cp{f}}_i}$
+  fails. Probability that the game returns $1$ is then upperbounded by $\sum_{i
+    = 1}^h \sum_{\pf \in \p{F}} \eps^{\pf}_i$, which remains negligible.
+
+  \ncase{$\game{2} \mapsto \game{3}$}
+
+  \ncase{Game 4}
+  This game aborts if $\adv$ never queried $\ro$ on $(\inp, \cp{a}, \cp{b},
+  \cp{c})$.
+
+  \ncase{$\game{3} \mapsto \game{4}$}
+
+  \ncase{Game 5}
+  This game aborts if polynomials $\p{a'}, \p{b'}, \p{c'}$ extracted by 
+  $\ext_{\bdv^{\cp{a}}_i}, \ext_{\bdv^{\cp{b}}_j}, \ext_{\bdv^{\cp{c}}_k}$, for
+  some $i, j, k \in \range{1}{h}$ differ from polynomials $\p{a}, \p{b}, \p{c}$
+  extracted by $\ext_\adv$. W.l.o.g.~assume that $\p{a'} \neq \p{a}$.
+
+  \ncase{$\game{4} \mapsto \game{5}$} \michals{30.08}{Here comes binding}
+  We
+  build a polynomial commitment scheme binding adversary $\rdv$ that succeeds
+  if game $\game{5}$ aborts.
+  \michals{30.08}{Definie polynomial commitmetn binding property -- note we need
+    random entry}
+
+  Adversary $\rdv(\srs_{\PCOM})$ proceeds as follows
+  \michals{30.08}{In the following we may remove all occurences of $\p{b},
+    \p{c}$ and corresponding algorithms as we assumed that $\p{a'} \neq \p{a}$
+    -- that's the only polynomials we need}
+  \begin{itemize}
+  \item Compute $\srs, \srss$ out of $\srs_{\PCOM}$ and give it to adversaries
+    $\adv$, $\bdv$, $\bdv^{\cp{f}}_i$,
+    $(i, \pf) \in \range{1}{h} \times \smallset{\p{a}, \p{b}, \p{c}}$ and their
+    extractors.
+  \item Run $\adv$, $\bdv$,
+    $\bdv_{\cp{a}}^{i}, \bdv_{\cp{b}}^{j}, \bdv_{\cp{c}}^{k}$ till commitents
+    $\cp{a}, \cp{b}, \cp{c}$ are produced. 
+  \item Run $\ext_{\bdv^{\cp{a}}_i}, \ext_{\bdv^{\cp{b}}_i},
+    \ext_{\bdv^{\cp{c}}_i}$ to get $\p{a'}, \p{b'}, \p{c'}$.
+  \item When $\adv$ and $\bdv$ ask for a challenge $\chz$, send to challenger
+    $\challenger$ $\cp{a}$ as a commitment. When it returns $z$ as the
+    evaluation point, pass it to $\adv$ and $\bdv$ as the random oracle
+    challenge $\chz$.
+  \item When $\adv$ is done with its proof, run $\ext_{\adv}$ to reveal
+    polynomials $\p{a}$, ${\p{b}}$, $\p{c}$. 
+  \item Parse $\adv$'s proof for evaluation $\p{a}(\chz)$ and opening
+    $W_{\chz}^{\p{a}}$.
+  \item Evaluate $\bdv$'s proof for evaluation $\p{a'}(\chz)$ and opening
+    $W_{\chz}^{\p{a'}}$.
+  \item Output $(\p{a}, \p{a}(\chz), W^{\p{a}}_\chz)$ and $(\p{a'},
+    \p{a'}(\chz), W^{\p{a'}}_\chz)$. \michals{30.08}{This breaks binding}
+  \end{itemize}
+  
+  \ncase{Game 6}
+  This game aborts also if the extracted polynomials do not encode the correct
+  witness.
+
+  \ncase{$\game{5} \mapsto \game{6}$}
+  \michals{30.08}{Reduction to a php adversary}
+  
+  { \Huge{Old proof}}
+  
+  \ncase{Game 3} Let $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t_1}, \cp{t_2}, \cp{t_3}$ be
+  commitments sent by the prover in a proof $\zkproof$, and
+  $\p{a}, \p{b}, \p{c}, \p{z}, \p{t_1}, \p{t_2}, \p{t_3}$ the corresponding
+  polynomials.  Denote the set of commitments by $\p{C}$ and set of polynomials
+  by $\p{F}$.
+
+  In this game we consider a set of algebraic adversary $\ddv_{\p{f}}(\srsPC)$,
+  $\pf \in \p{F}$, that
+  \begin{itemize}
+  \item internally run $\adv$ and $\cdv$,
+  \item have access to the random oracle $\ro$.
+  \end{itemize}
+
+  Let $\inp, \zkproof$ be the challenge instance--proof pair output by the
+  adversary $\adv$ that contain commitments
+  $\cp{a}, \cp{b}, \cp{z}, \cp{t_1}, \cp{t_2}, \cp{t_3}$ to polynomials
+  $\p{a}, \p{b}, \p{z}, \p{t_1}, \p{t_2}, \p{t_3}$. Denote the set of
+  commitments by $\p{C}$ and set of polynomials by $\p{F}$. For
+  $\p{f} \in \p{F}$, adversary $\cdv_{\p{f}}$ outputs $\cp{\p{f}}$.
+
+  Since $\cdv_{\p{f}}$ are algebraic, there exists extractors
+  $\ext_{\cdv_{\p{f}}}(\srsPC, {\qro}_{\p{f}}, r_{\p{f}})$ that output
+  $\p{f}$. Here ${\qro}_{\p{f}}$ is a set of all random oracle queries made by
+  $\cdv_{\pf}$ and responses it got. As usual, $r_\pf$ denotes $\cdv_\pf$'s
+  randomness.
+
+  \michals{24.08}{That's actually a set of games -- for each adversary and
+    extractor separately} The game returns $1$ if some of the extractors fail to
+  output a correct polynomial and $0$ otherwise.
+  
+  \michals{23.08}{In the following we reduce to a state-restoration soundness of
+    the PHP (i.e. the proof system is non interactive, instantiated with a
+    random oracle)}
+
+  \ncase{$\game{2} \mapsto \game{3}$} Here the game $\game{3}$ outputs the same
+  value as $\game{2}$ except when one of the extractors fail. That happens with
+  probability upper-bounded by $(1 - (1 - \epsext(\secpar))^{7})$ which is negligible for
+  negligible $\epsext(\secpar)$.
+
+  \ncase{Game 4} In this game we consider a PHP adversary $\edv$ that internally
+  runs $\ddv_{\pf}$ and $\ext_{\ddv_{\pf}}$, for $\pf \in \p{F}$. We show that
+  if the adversary $\adv$ manages to produce a proof $\zkproof$ for instance
+  $\inp$ that verifies correctly, but the extracted polynomials do not encode a
+  valid witness, then one can break PHP state-restoration soundness of the
+  corresponding $\PHP$. $\edv$ proceeds as follows:
+  \begin{enumerate}
+  \item \label{it:get_a_b_c} Run $\ddv_{\p{a}}, \ddv_{\p{b}}, \ddv_{\p{c}}$ with
+    $\ext_{\ddv_\p{a}}(\srsPC, \qro_{\p{a}}, r_{\p{a}}),
+    \ext_{\ddv_\p{b}}(\srsPC, \qro_{\p{b}}, r_{\p{b}}),
+    \ext_{\ddv_\p{c}}(\srsPC, \qro_{\p{c}}, r_{\p{c}})$ to learn polynomials
+    $\p{a}, \p{b}, \p{c}$. If these polynomials encode witness $\wit'$, such
+    that $\REL(\inp, \wit') = 1$ then the game returns $0$, else the polynomials
+    are sent to $\PHP.\verifier$.
+  \item On $\PHP.\verifier$ challenges $\beta, \gamma$,
+    \begin{enumerate}
+    \item Run $\ddv_{\p{z}}(\srsPC)$ such that on $\ddv_{\p{z}}$'s random oracle
+      call on $(\inp, \cp{a}, \cp{b}, \cp{c})$ answer with $(\beta, \gamma)$;
+    \item Append $((\inp, \cp{a}, \cp{b}, \cp{c}), (\beta, \gamma))$ to lists
+      $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
+    \item If $\ddv_{\p{z}}$ outputs proof for $\inp$ containing $\cp{a}, \cp{b},
+      \cp{c}$ then go to \cref{it:get_z};
+    \item Else, if $\ddv_{\p{z}}$ rewinds the proof and queries the random
+      oracle on $(\inp', \cp{a'}, \cp{b'}, \cp{c'})$, 
+      \begin{enumerate}
+      \item Rewind the verifer $\PHP.\verifier$ and get fresh challenges
+        $\beta', \gamma'$.
+      \item Append $(\inp', \cp{a'}, \cp{b'}, \cp{c'}), (\beta', \gamma')$ to
+        lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
+      \item Go back to \cref{it:get_a_b_c} and run
+        $\ddv_{\p{a'}}, \ddv_{\p{b'}}, \ddv_{\p{c'}}$ along with corresponding
+        extractors to get $\p{a'}, \p{b'}, \p{c'}$.
+      \end{enumerate}
+    \end{enumerate}
+  \item \label{it:get_z} Run $\ext_{\p{z}}$ to learn $\p{z}$, send $\p{z}$ to $\PHP.\verifier$.
+  \item On $\PHP.\verifier$ challenge $\alpha$.
+     \begin{enumerate}
+     \item Run
+       $\ddv_{\p{t_1}}(\srsPC), \ddv_{\p{t_2}}(\srsPC), \ddv_{\p{t_3}}(\srsPC)$
+       such that on $\ddv_{\p{t_i}}$'s, $\p{i} \in \range{1}{3}$, random oracle
+       call on $(\inp, \cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z})$ answer
+       with $\alpha$;
+     \item Append
+       $((\inp, \cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}), \alpha)$ to
+       lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
+     \item If all $\ddv_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ finalizes its proof
+       for $\inp$ with $\cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}$ then go
+       to \cref{it:get_t_i};
+     \item Else, some $\ddv_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ rewinds the
+       proof and queries the random oracle on
+       $(\inp', \cp{a'}, \cp{b'}, \cp{c'})$,
+      \begin{enumerate}
+      \item Rewind the verifer $\PHP.\verifier$ and get fresh challenges
+        $\beta', \gamma'$.
+      \item Append $(\inp', \cp{a'}, \cp{b'}, \cp{c'}), (\beta', \gamma')$ to
+        lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
+      \item Go back to \cref{it:get_a_b_c} and run
+        $\ddv_{\p{a'}}, \ddv_{\p{b'}}, \ddv_{\p{c'}}$ along with corresponding
+        extractors to get $\p{a'}, \p{b'}, \p{c'}$.
+      \end{enumerate}
+    \end{enumerate}
+  \item \label{it:get_t_i} Run $\ext_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ to learn $\p{z}$, send
+    $\p{t_i}$, $\p{i} \in \range{1}{3}$ to $\PHP.\verifier$.
+  \end{enumerate}
+  The game returns $1$ if the PHP verifier $\PHP.\verifier$ accepts the proof
+  yet the sent polynomials $\p{a}, \p{b}, \p{c}$ does not encode a valid
+  witness. This can happen only with probability $\epssr$ as it breaks
+  state restoration soundness of $\PHP$.
+
+  \ncase{$\game{3} \mapsto \game{4}$}
+  \michals{25.08}{I am not sure how to show that this transition changes output
+    of the game with negligible probability only. The problem I have here is
+    that we rewind adversaries unspecified number of times (it shouldn't be that
+    many times as the sr-snd adversary is polynomial). Each rewinding requiers
+    to run an extractor, which may fail. In that case we loose. But with
+    multiple rewindings, probability that some of the extraactors fail increases.}
+  \markulf{25.08}{Number of polynomial submitted to $\ro$ is polynomial, a polynomial sum of negligible probabilities is still negligible?}
+  \qed
+    \end{proof}
+  
 
 
 
@@ -1063,20 +1740,6 @@ $\vec S$.
 More in detail, if 
 $\vec y = (\vec M_0, \vec M_1) \pmtrx{\vec x\\\vec x'}$ and $\vec x' = \vec N \vec x$ then
 easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
-
-
-
-
-
-\bibliographystyle{alpha}
-\bibliography{cryptobib/abbrev1,cryptobib/crypto}
-
-
-
-
-
-
-
 
 
 

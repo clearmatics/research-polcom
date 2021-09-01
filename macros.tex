@@ -34,6 +34,7 @@
 \newcommand{\w}{\omega}
 \newcommand{\const}{\pcpolynomialstyle{const}}
 \newcommand{\p}[1]{\pcpolynomialstyle{#1}}
+\newcommand{\cp}[1]{\pcalgostyle{c}_{\pcpolynomialstyle{#1}}}
 \newcommand{\ptx}{\p{t_{X^0}}}
 \newcommand{\ptxsim}{\p{\tilde{t}_{X^0}}}
 \newcommand{\ev}[1]{\widetilde{\pcpolynomialstyle{#1}}}
@@ -95,6 +96,7 @@
 \newcommand{\oracleo}{\pcalgostyle{O}}
 \newcommand{\crs}{\pcvarstyle{crs}}
 \newcommand{\srs}{\pcvarstyle{srs}}
+\newcommand{\srss}{\pcvarstyle{srs_{spec}}}
 \newcommand{\td}{\pcvarstyle{td}}
 \newcommand{\ip}[2]{\left\langle #1, #2\right\rangle}
 \newcommand{\zkproof}{\pi}
@@ -111,7 +113,7 @@
 \newcommand{\KG} {\mathsf{K}}
 \newcommand{\kcrs} {\KG_{\crs}}
 \renewcommand{\dist}{\ddv}
-\newcommand{\fs}{\pcalgostyle{FS}}
+\newcommand{\fs}{\pcalgostyle{fs}}
 \newcommand{\sigmaprot}{\pcalgostyle{\Sigma}}
 \newcommand{\se}{\pcvarstyle{se}}
 \newcommand{\snd}{\pcvarstyle{snd}}
@@ -132,6 +134,7 @@
 \newcommand{\pcschemestyle}[1]{\bm{\mathsf{#1}}}
 \newcommand{\plonkprot}{\pcschemestyle{P}}
 \newcommand{\plonkprotfs}{\pcschemestyle{P}_\fs}
+\newcommand{\kzg}{\pcschemestyle{kzg}}
 \newcommand{\sonicprot}{\pcschemestyle{S}}
 \newcommand{\sonicprotfs}{\pcschemestyle{S}_\fs}
 \newcommand{\selector}[1]{\pcvarstyle{q_{#1}}}
@@ -164,27 +167,44 @@
 \newcommand{\waccProb}{\event{\widetilde{acc}}}
 \newcommand{\frkProb}{\event{frk}}
 \newcommand{\extProb}{\event{ext}}
-\newcommand{\FS}{\pcalgostyle{FS}} % Fiat-Shamir transform
+\newcommand{\FS}{\pcalgostyle{fs}} % Fiat-Shamir transform
 \newcommand{\aux}{\pcvarstyle{aux}} %auxiliary input
+\renewcommand{\state}{\pcvarstyle{st}} %state
 % \newcommand{\dlog}{\pcvarstyle{dlog}}
 \newcommand{\vereq}{\p{ve}}
 
 \newcommand{\sgen}{\pcalgostyle{SGen}}
 
+
+\newcommand{\prove}{\pcalgostyle{Prove}}
+
+
 %Commitment schemes
 \newcommand{\COM}{\pcschemestyle{C}}
 \newcommand{\PCOM}{\pcschemestyle{PC}}
+\newcommand{\PC}{\PCOM}
+\newcommand{\srsPC}{\srs_{\PCOM}}
 \newcommand{\PCOMp}{\pcschemestyle{PC}_{\plonkprot}}
 \newcommand{\PCOMs}{\pcschemestyle{PC}_{\sonicprot}}
 \newcommand{\com}{\pcalgostyle{Com}}
 \newcommand{\op}{\pcalgostyle{Op}}
 \newcommand{\open}{\op}
 \newcommand{\oracles}{\oracleo_{\simulator}}
+\newcommand{\oraclec}{\oracleo_{\pcalgostyle{chal}}}
 \newcommand{\oraclespcom}{{\oracleo_{\simulator}^{\PCOM}}}
 \newcommand{\oraclesps}{{\oracleo_{\simulator}^{\PS}}}
 \newcommand{\decode}{\pcalgostyle{Decode}}
 \newcommand{\van}[1]{v_{#1}}
 \newcommand{\noofq}{\pcvarstyle{q}}
+
+\newcommand{\radv}{r_{\adv}}
+\newcommand{\rbdv}{r_{\bdv}}
+\newcommand{\qadv}{{Q_\adv}}
+\newcommand{\qbdv}{{Q_\bdv}}
+\newcommand{\qro}{{Q_\ro}}
+\newcommand{\qsim}{Q^{\simulator}}
+\newcommand{\qroadv}[1]{Q^{\ro}_{#1}}
+\renewcommand{\pf}{\p{f}}
 
 \newcommand{\committer}{\pcalgostyle{C}}
 \newcommand{\receiver}{\pcalgostyle{R}}
@@ -210,6 +230,7 @@
 \newcommand{\encset}{E}
 \newcommand{\PSc}{\PS_{com}}
 \newcommand{\PHP}{\ensuremath{\pcschemestyle{\Gamma}}}
+\newcommand{\indexer}{\pcalgostyle{I}}
 
 \newcommand{\dlog}{\pcvarstyle{dlog}}
 \newcommand{\ldlog}{\pcvarstyle{ldlog}}
@@ -223,7 +244,7 @@
 \newcommand{\ks}{\pcvarstyle{ks}}
 \renewcommand{\ss}{\pcvarstyle{ss}}
 \newcommand{\rdvks}{{\rdv_\ks}}
-\newcommand{\rdvs}{{\rdv_\pcvarstyle{s}}}
+\newcommand{\rdvs}{{\rdv_\pcvvarstyli{s}}}
 \newcommand{\rdvdlog}{{\rdv_\dlog}}
 \newcommand{\rdvldlog}{{\rdv_\ldlog}}
 \newcommand{\rdvse}{{\rdv_\se}}
@@ -250,6 +271,7 @@
 \newcommand{\epsuber}{\eps_{\pcvarstyle{uber}}}
 \newcommand{\epszk}{\eps_{\pcvarstyle{zk}}}
 \newcommand{\epsev}{\eps_{\pcvarstyle{ev}}}
+\newcommand{\epssr}{\eps_{\pcvarstyle{sr}}}
 \newcommand{\plen}{\pcvarstyle{n}}
 
 %errors
@@ -262,6 +284,32 @@
 %forking
 \newcommand{\forking}{\pcalgostyle{F}}
 \newcommand{\genforking}{\pcalgostyle{GF}}
+
+% markulf's
+\newcommand{\Kzg}{\pcalgostyle{KZG}}
+
+\def\cgen{{\pcalgostyle{ComGen}}}
+\def\commit{{\pcalgostyle{Com}}}
+\newcommand{\CM}{\commit}
+\def\gk{{\pcvarstyle{gk}}}
+\def\ck{{\pcvarstyle{ck}}}
+
+
+\newcommand{\simgen}{\simulator\pcalgostyle{Gen}}
+\newcommand{\simsample}{\simulator\pcalgostyle{Sample}}
+\newcommand{\simopen}{\simulator\pcalgostyle{Open}}
+\newcommand{\simprove}{\simulator\prover}
+
+\newcommand{\challenger}{\pcalgostyle{Chal}}
+
+% plonk constrains
+\newcommand{\vql}{\vec{q_{L}}}
+\newcommand{\vqr}{\vec{q_{R}}}
+\newcommand{\vqm}{\vec{q_{M}}}
+\newcommand{\vqo}{\vec{q_{O}}}
+\newcommand{\vx}{\vec{x}}
+\newcommand{\vqc}{\vec{q_{C}}}
+
 
 %colors
 \definecolor{darkmagenta}{rgb}{0.5,0,0.5}
