@@ -269,7 +269,8 @@ $\adv$
 % c)$ to list $Q$.
 \item[$(\msg{commit})$:] Run $c \gets \simsample(\secparam)$, add $c$ to $Q_{com}$, return $c$.
   \item[$(\msg{open}, c, x', y)$:] If $c\in Q_{{com}}$ and $x'\neq x$, run
-    $o\gets \simopen(\td,c,x,y)$, \michals{25.08}{$x'$ instead of $x$?} add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
+		$o\gets \simopen(\td,c,x,y)$, \michals{25.08}{$x'$ instead of $x$?}\antonio{02.09}{It's not clear
+		what $x$ should be} add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
   \end{description}
   $Q_{sim}= (Q_{com},Q_{op})$. Let $\oraclec(c)$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(c,x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
@@ -332,6 +333,7 @@ Note that when $\oraclec(c)$ has not been queried, $c$ and $x$ equal $\bot$ and 
 \paragraph{KZG is simulation extractable}
 
 We consider an algebraic adversary $\adv$ that outputs a matrix $K$ with coefficients $\{C_{{1i}}\},\{C_{{2i}}\}, \{C_{{3ij}}\}$ for the commitment $c$ and $\{O_{{1i}}\},\{O_{{2i}}\}, \{O_{{3ij}}\}$ for the opening proof $o$. The matrix $K$ reconstructs $c,o$ as linear combination of the group elements in $\srs$ and $Q_{sim}$. We consider a representation of the group elements in $(\srs,Q_{{sim}})$ in terms of a function $\mathsf{Tr}_{\{x_{ij},y_{ij}\}}(\tau)$ of its underlying secret discrete logarithms $\tau=(\xi,\alpha_{i})$. Where $\xi$ is the trapdoor of the $\srs$ and the $\alpha_{i}$ are the randomness of simulated proofs.
+\antonio{02.09}{Why are the $C_{3ij},O_{3ij}$ labeled with two indexes (both $i$ and $j$?)}
 
 We move toward considering a verification equation $V'$ expressed in terms of $K$ and $\mathsf{Tr}_{\{x_{ij},y_{ij}\}}$ for which we have:
 $\verify(\srs,c,x,y,o) =  e(c \cdot  g^{-y}, h) - e(\pi , h^{\alpha}\cdot h^{-x}) = 0$ iff $\verify'_{{\xi,x,y}}(K \cdot \mathsf{Tr}_{\{x_{ij},y_{ij}\}} (\tau)) = 0$.
@@ -363,6 +365,7 @@ We now look at different (rational) monomials in $T$ of this equation to derive 
 
 To obtain a simplified verificaton equation, we express the equation in the exponent and write $C_{1}(X)$ for $\sum C_{1i} X^{i}$ and  $O_{1}(X)$ for $\sum O_{1i} X^{i}$.
 Furthermore, we let $x_{ij}= x+\delta_{ij}$ and replace $x$ with $x_{ij}-\delta_{ij}$
+\antonio{02.09}{Minor: maybe better say "we let $\delta_{ij}:=x_{ij}-x$".}
 \begin{align*}
 C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}+\delta_{ij}) = 0\\
 C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}) - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} \delta_{ij} = 0
@@ -427,11 +430,12 @@ On the same $r$ and $x$, whenever $\adv$ passes verification, $\adv_{i}$ passes 
 
 We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{chal}; r)$ by parsing $Q_{chal}$ as $((c_{1},\dots, c_{k}), x)$ and running all $\Ext_{\adv_{i}}$ as $\p{f}_{i}\gets \Ext_{\adv_{i}}(\srs,Q_{sim},(c_{i},x); r)$ to return $(\p{f}_{1},\dots,\p{f}_{k})$.
 
+\antonio{02.09}{I failed to understand the definition below :( }
 \begin{definition}[Vectored $\ro_{aux}$ simulation extractable polynomial commitment]
   \label{def:sepcom}
   Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
   scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
-  committed.
+  committed. 
   We consider the same $\oracles$ and $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments and openings $\vec{c}, \vec{y}, \vec{o}$.
    Let $\ro_{aux}(aux,\vec{c})$ be an oracle that when $Q_{\ro}[aux,\vec{c}] = \bot$, samples $x$, sets $Q_{\ro}[aux,\vec{c}]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns $Q_{\ro}[aux,\vec{c}]$.
   We say that $\PCOM$ is \emph{vector $\ro_{aux}$ simulation extractable} if for any $\ppt$
@@ -1266,6 +1270,9 @@ Queries to $(\inp, \wit)$ to $\oraclesps$ are answered as follows:
         $\p{S_{\sigma 2}}(\chz)$ and simulate openings $W^{\p{S_{\sigma 1}}}_\chz$,
         $W^{\p{S_{\sigma 2}}}_\chz$ for commitments in $\srss$.
         \michals{30.08}{Why not computing them honestly?}
+								\antonio{02.09}{Good question. I think that it is better to ask the simulator, the
+								reason is that we could imagine a PolyCom (not KZG, I mean a generic one) that
+							uses randomness to produce valid proofs.}
       \item For $i \in \range{1}{3}$, compute values of $\ev{t}_i$ as
         defined by the verification equation.
       \item For $i \in \range{1}{3}$, ask $\oraclespcom$ to simulate opening of $\cp{t'_i}$
