@@ -100,7 +100,7 @@
   Let $NIZK = (\kgen, \prove, \verify)$ be a NIZK proof system
   with a simulator $(\simgen, \simprove)$.
   Let $\oracles(\srs, \td, \inp, \wit)$ be an oracle that when $(\inp, \wit)\in
-  \REL$, runs $\pi \gets \simprove(\srs, \tau, \inp)$ internally, records $(\pi,\inp)$ in $Q$, and returns $\pi$.
+  \REL$, runs $\pi \gets \simprove(\srs, \td, \inp)$ internally, records $(\pi,\inp)$ in $Q$, and returns $\pi$.
   We say that $NIZK$ is \emph{simulation extractable} if for any $\ppt$
   adversary $\adv$ with oracle access to $\oracles$ and $\ro$ there exists extractor
   $\ext_{\adv}$ such that
@@ -131,6 +131,7 @@
   \leq \negl.
 \]
 \end{definition}
+\antonio{19/10/2021}{The definition mention $\ro$, I guess it is an error.}
 
 \paragraph{Polynomial commitment scheme.}
 \label{sec:poly_com}
@@ -175,6 +176,7 @@ $\PCOM$:
 	\]
 
 \end{description}
+\antonio{19/10/2021}{Why do we need to use vectors to define Evaluation Binding? Does the security notion for $l=1$ imply already the notion for $l>1$?}
 	
 
 \begin{description}
@@ -213,6 +215,8 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 
 \markulf{23/08}{Wondering if the $\verify$ condition is really needed for extraction. In the AGM, if the adversary only sees the $\srs$ it has to output group element that is a linear combination of it.}
 \michals{25.08}{You may be right that it is not necessary}
+\antonio{19/10/2021}{I don't understand this definition. I think something is missing here: what's the rola of
+$\adv_2$? how do we use $y,o$ in the event of the probability above? Is the commitment deterministic?}
 
 
 
@@ -1537,6 +1541,9 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
   value as $\game{2}$ except when one of the extractors fail. That happens with
   probability upper-bounded by $(1 - (1 - \epsext(\secpar))^{7})$ which is negligible for
   negligible $\epsext(\secpar)$.
+
+
+		\newcommand{\edv}{\mathbf{E}}
 
   \ncase{Game 4} In this game we consider a PHP adversary $\edv$ that internally
   runs $\ddv_{\pf}$ and $\ext_{\ddv_{\pf}}$, for $\pf \in \p{F}$. We show that
