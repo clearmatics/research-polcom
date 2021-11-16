@@ -89,6 +89,8 @@
     definitions which would emphasize more the structure of PHP,
     but would not narrow a class of possible (from the practical point of view)
     PHP too much, cf.~\cref{def:wepiop,def:sdwepiop}.
+    \michals{15.11}{Comment re PHP: it doesn't allow to efficiently check statements
+      like ``coefficient of $X^n$ is $0$'' what is used e.g.~in Sonic.}
   \end{compactenum}
   
 \end{abstract}
@@ -273,8 +275,9 @@ $\adv$
 % c)$ to list $Q$.
 \item[$(\msg{commit})$:] Run $c \gets \simsample(\secparam)$, add $c$ to $Q_{com}$, return $c$.
   \item[$(\msg{open}, c, x', y)$:] If $c\in Q_{{com}}$ and $x'\neq x$, run
-		$o\gets \simopen(\td,c,x,y)$, \michals{25.08}{$x'$ instead of $x$?}\antonio{02.09}{It's not clear
-		what $x$ should be} add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
+		$o\gets \simopen(\td,c,x,y)$, \antonio{02.09}{It's not clear
+		what $x$ should be}\michals{16.11}{Explained later} add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise
+  return $\bot$.
   \end{description}
   $Q_{sim}= (Q_{com},Q_{op})$. Let $\oraclec(c)$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(c,x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
@@ -305,7 +308,11 @@ $\adv$
   \right.\right]
   \leq \negl.
 \]
-\michals{25.08}{minor thing -- we should allow the commitment scheme to be randomizable}
+\michals{25.08}{minor thing -- we should allow the commitment scheme to be
+  randomizable}
+\michals{16.11}{On PCOM randomization: should we ask the extractor to extract
+  commitment randomness as well or maybe we just require that the commiment $c$ is in
+  the image $\IM(\com(f))$? I think the former suits better.}
 % \[
 %   \Pr \left[
 %     \begin{aligned}
@@ -1501,160 +1508,6 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
   \ncase{$\game{5} \mapsto \game{6}$}
   \michals{30.08}{Reduction to a php adversary}
   
-  { \Huge{Old proof}}
-  
-  \ncase{Game 3} Let $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t_1}, \cp{t_2}, \cp{t_3}$ be
-  commitments sent by the prover in a proof $\zkproof$, and
-  $\p{a}, \p{b}, \p{c}, \p{z}, \p{t_1}, \p{t_2}, \p{t_3}$ the corresponding
-  polynomials.  Denote the set of commitments by $\p{C}$ and set of polynomials
-  by $\p{F}$.
-
-  In this game we consider a set of algebraic adversary $\ddv_{\p{f}}(\srsPC)$,
-  $\pf \in \p{F}$, that
-  \begin{itemize}
-  \item internally run $\adv$ and $\cdv$,
-  \item have access to the random oracle $\ro$.
-  \end{itemize}
-
-  Let $\inp, \zkproof$ be the challenge instance--proof pair output by the
-  adversary $\adv$ that contain commitments
-  $\cp{a}, \cp{b}, \cp{z}, \cp{t_1}, \cp{t_2}, \cp{t_3}$ to polynomials
-  $\p{a}, \p{b}, \p{z}, \p{t_1}, \p{t_2}, \p{t_3}$. Denote the set of
-  commitments by $\p{C}$ and set of polynomials by $\p{F}$. For
-  $\p{f} \in \p{F}$, adversary $\cdv_{\p{f}}$ outputs $\cp{\p{f}}$.
-
-  Since $\cdv_{\p{f}}$ are algebraic, there exists extractors
-  $\ext_{\cdv_{\p{f}}}(\srsPC, {\qro}_{\p{f}}, r_{\p{f}})$ that output
-  $\p{f}$. Here ${\qro}_{\p{f}}$ is a set of all random oracle queries made by
-  $\cdv_{\pf}$ and responses it got. As usual, $r_\pf$ denotes $\cdv_\pf$'s
-  randomness.
-
-  \michals{24.08}{That's actually a set of games -- for each adversary and
-    extractor separately} The game returns $1$ if some of the extractors fail to
-  output a correct polynomial and $0$ otherwise.
-  
-  \michals{23.08}{In the following we reduce to a state-restoration soundness of
-    the PHP (i.e. the proof system is non interactive, instantiated with a
-    random oracle)}
-
-  \ncase{$\game{2} \mapsto \game{3}$} Here the game $\game{3}$ outputs the same
-  value as $\game{2}$ except when one of the extractors fail. That happens with
-  probability upper-bounded by $(1 - (1 - \epsext(\secpar))^{7})$ which is negligible for
-  negligible $\epsext(\secpar)$.
-
-
-		\newcommand{\edv}{\mathbf{E}}
-
-  \ncase{Game 4} In this game we consider a PHP adversary $\edv$ that internally
-  runs $\ddv_{\pf}$ and $\ext_{\ddv_{\pf}}$, for $\pf \in \p{F}$. We show that
-  if the adversary $\adv$ manages to produce a proof $\zkproof$ for instance
-  $\inp$ that verifies correctly, but the extracted polynomials do not encode a
-  valid witness, then one can break PHP state-restoration soundness of the
-  corresponding $\PHP$. $\edv$ proceeds as follows:
-  \begin{enumerate}
-  \item \label{it:get_a_b_c} Run $\ddv_{\p{a}}, \ddv_{\p{b}}, \ddv_{\p{c}}$ with
-    $\ext_{\ddv_\p{a}}(\srsPC, \qro_{\p{a}}, r_{\p{a}}),
-    \ext_{\ddv_\p{b}}(\srsPC, \qro_{\p{b}}, r_{\p{b}}),
-    \ext_{\ddv_\p{c}}(\srsPC, \qro_{\p{c}}, r_{\p{c}})$ to learn polynomials
-    $\p{a}, \p{b}, \p{c}$. If these polynomials encode witness $\wit'$, such
-    that $\REL(\inp, \wit') = 1$ then the game returns $0$, else the polynomials
-    are sent to $\PHP.\verifier$.
-  \item On $\PHP.\verifier$ challenges $\beta, \gamma$,
-    \begin{enumerate}
-    \item Run $\ddv_{\p{z}}(\srsPC)$ such that on $\ddv_{\p{z}}$'s random oracle
-      call on $(\inp, \cp{a}, \cp{b}, \cp{c})$ answer with $(\beta, \gamma)$;
-    \item Append $((\inp, \cp{a}, \cp{b}, \cp{c}), (\beta, \gamma))$ to lists
-      $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
-    \item If $\ddv_{\p{z}}$ outputs proof for $\inp$ containing $\cp{a}, \cp{b},
-      \cp{c}$ then go to \cref{it:get_z};
-    \item Else, if $\ddv_{\p{z}}$ rewinds the proof and queries the random
-      oracle on $(\inp', \cp{a'}, \cp{b'}, \cp{c'})$, 
-      \begin{enumerate}
-      \item Rewind the verifer $\PHP.\verifier$ and get fresh challenges
-        $\beta', \gamma'$.
-      \item Append $(\inp', \cp{a'}, \cp{b'}, \cp{c'}), (\beta', \gamma')$ to
-        lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
-      \item Go back to \cref{it:get_a_b_c} and run
-        $\ddv_{\p{a'}}, \ddv_{\p{b'}}, \ddv_{\p{c'}}$ along with corresponding
-        extractors to get $\p{a'}, \p{b'}, \p{c'}$.
-      \end{enumerate}
-    \end{enumerate}
-  \item \label{it:get_z} Run $\ext_{\p{z}}$ to learn $\p{z}$, send $\p{z}$ to $\PHP.\verifier$.
-  \item On $\PHP.\verifier$ challenge $\alpha$.
-     \begin{enumerate}
-     \item Run
-       $\ddv_{\p{t_1}}(\srsPC), \ddv_{\p{t_2}}(\srsPC), \ddv_{\p{t_3}}(\srsPC)$
-       such that on $\ddv_{\p{t_i}}$'s, $\p{i} \in \range{1}{3}$, random oracle
-       call on $(\inp, \cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z})$ answer
-       with $\alpha$;
-     \item Append
-       $((\inp, \cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}), \alpha)$ to
-       lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
-     \item If all $\ddv_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ finalizes its proof
-       for $\inp$ with $\cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}$ then go
-       to \cref{it:get_t_i};
-     \item Else, some $\ddv_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ rewinds the
-       proof and queries the random oracle on
-       $(\inp', \cp{a'}, \cp{b'}, \cp{c'})$,
-      \begin{enumerate}
-      \item Rewind the verifer $\PHP.\verifier$ and get fresh challenges
-        $\beta', \gamma'$.
-      \item Append $(\inp', \cp{a'}, \cp{b'}, \cp{c'}), (\beta', \gamma')$ to
-        lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
-      \item Go back to \cref{it:get_a_b_c} and run
-        $\ddv_{\p{a'}}, \ddv_{\p{b'}}, \ddv_{\p{c'}}$ along with corresponding
-        extractors to get $\p{a'}, \p{b'}, \p{c'}$.
-      \end{enumerate}
-    \end{enumerate}
-  \item \label{it:get_t_i} Run $\ext_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ to learn $\p{z}$, send
-    $\p{t_i}$, $\p{i} \in \range{1}{3}$ to $\PHP.\verifier$.
-  \end{enumerate}
-  The game returns $1$ if the PHP verifier $\PHP.\verifier$ accepts the proof
-  yet the sent polynomials $\p{a}, \p{b}, \p{c}$ does not encode a valid
-  witness. This can happen only with probability $\epssr$ as it breaks
-  state restoration soundness of $\PHP$.
-
-  \ncase{$\game{3} \mapsto \game{4}$}
-  \michals{25.08}{I am not sure how to show that this transition changes output
-    of the game with negligible probability only. The problem I have here is
-    that we rewind adversaries unspecified number of times (it shouldn't be that
-    many times as the sr-snd adversary is polynomial). Each rewinding requiers
-    to run an extractor, which may fail. In that case we loose. But with
-    multiple rewindings, probability that some of the extraactors fail increases.}
-  \markulf{25.08}{Number of polynomial submitted to $\ro$ is polynomial, a polynomial sum of negligible probabilities is still negligible?}
-  \qed
-    \end{proof}
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 \section{DRAFT-Notes on transformation to Universal Interactive Arguments}
 
 \antonio{02.08}{Writing this note to convince myself that things aren't so easy as I
@@ -1760,3 +1613,8 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
 
 
 \end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
