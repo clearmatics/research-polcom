@@ -274,7 +274,7 @@ $\adv$
 %   \item [$(\msg{commit}, f)$:] returns commitment $c = \com(f)$ and adds $(f,
 % c)$ to list $Q$.
 \item[$(\msg{commit})$:] Run $c \gets \simsample(\secparam)$, add $c$ to $Q_{com}$, return $c$.
-  \item[$(\msg{open}, c, x', y)$:] If $c\in Q_{{com}}$ and $x'\neq x$, run
+  \item[$(\msg{open}, c, x', y)$:] If $c \in Q_{{com}}$ and $x'\neq x$, run
 		$o\gets \simopen(\td,c,x',y)$, \antonio{02.09}{It's not clear
 		what $x$ should be}\michals{16.11}{Explained later} add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise
   return $\bot$.
@@ -1509,6 +1509,8 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
 
   \ncase{$\game{5} \mapsto \game{6}$}
   \michals{30.08}{Reduction to a php adversary}
+
+  \end{proof}
   
 \section{DRAFT-Notes on transformation to Universal Interactive Arguments}
 
