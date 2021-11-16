@@ -262,16 +262,16 @@ $\adv$
   \label{def:sepcom}
   Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
   scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
-  committed.
+  committed. Let $\oraclec(c)$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(c,x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$.
   Let $\oracles$ be an oracle which on input
   \begin{description}
 %   \item [$(\msg{commit}, f)$:] returns commitment $c = \com(f)$ and adds $(f,
 % c)$ to list $Q$.
 \item[$(\msg{commit})$:] Run $c \gets \simsample(\secparam)$, add $c$ to $Q_{com}$, return $c$.
   \item[$(\msg{open}, c, x', y)$:] If $c\in Q_{{com}}$ and $x'\neq x$, run
-    $o\gets \simopen(\td,c,x,y)$, \michals{25.08}{$x'$ instead of $x$?} add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
+    $o\gets \simopen(\td,c,x',y)$, \michals{25.08}{$x'$ instead of $x$?} add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
   \end{description}
-  $Q_{sim}= (Q_{com},Q_{op})$. Let $\oraclec(c)$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(c,x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$
+  $Q_{sim}= (Q_{com},Q_{op})$.
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
   adversary $\adv$ with oracle access to $\oracles$ and $\oraclec$ there exists extractor
   $\ext_{\adv}$ such that
@@ -301,6 +301,7 @@ $\adv$
   \leq \negl.
 \]
 \michals{25.08}{minor thing -- we should allow the commitment scheme to be randomizable}
+\markulf{2.09}{in that case the extractor would also have to output the randomness}
 % \[
 %   \Pr \left[
 %     \begin{aligned}
@@ -368,8 +369,9 @@ C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{i
 C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}) - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} \delta_{ij} = 0
        \end{align*}
 
+       \markulf{2.09}{We require that $\delta_{ij} \neq 0$}
 \begin{itemize}
-  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}$:] $C_{3i} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{{3i}}\delta_{ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}=0$. As
+  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}$:] $C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{{3ij}}\delta_{ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}=0$. As
     $C_{3ij}=0$ for $j>q^{i}_{chal}$, it follows that $O_{{3ij}}=0$ for $j>q^{i}_{chal}$. Otherwise, we have $O_{3ij}= C_{3ij}/\delta_{ij}$.
   \item[$A_{i}$:] $C_{2i} A_{i} - \sum O_{3ij} A_{i}=0$.
 \end{itemize}
@@ -433,14 +435,14 @@ We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{chal}; r)$ by parsing $Q_{chal}$ as $((c
   scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
   committed.
   We consider the same $\oracles$ and $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments and openings $\vec{c}, \vec{y}, \vec{o}$.
-   Let $\ro_{aux}(aux,\vec{c})$ be an oracle that when $Q_{\ro}[aux,\vec{c}] = \bot$, samples $x$, sets $Q_{\ro}[aux,\vec{c}]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns $Q_{\ro}[aux,\vec{c}]$.
+   Let $\ro_{aux}(\vec{c},aux)$ be an oracle that when $Q_{\ro}[\vec{c},aux] = \bot$, samples $x$, sets $Q_{\ro}[\vec{c},aux]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns $Q_{\ro}[\vec{c},aux]$.
   We say that $\PCOM$ is \emph{vector $\ro_{aux}$ simulation extractable} if for any $\ppt$
   adversary $\adv$ with oracle access to $\oracles$ and $\ro_{aux}$ there exists extractor
   $\ext_{\adv}$ such that
 \[
   \Pr \left[
     \begin{aligned}
-      & x \gets \ro_{aux}(aux,\vec{c}), \\
+      & x \gets \ro_{aux}(\vec{c},aux), \\
       & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
       & \;\vec{c} \neq \com(\srs, \vec{\p{f}})\\
     \end{aligned}
@@ -468,17 +470,18 @@ We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{chal}; r)$ by parsing $Q_{chal}$ as $((c
 \paragraph{A vectored simulation extractable polynomial commitment is also vectored $\ro_{aux}$ SE.}
 From $(aux, \vec{c}, \vec{y}, \vec{o}) \gets \adv^{\oracles,\ro_{aux}}(\srs; r)$ we build $(\vec{y},\vec{o}) \gets \adv_{i}^{\oracles,\oraclec}(\srs; r\|(Q_{\ro}\setminus x_{i}))$ that simulates $\ro_{aux}$ on the $i$th query using the value $x_{i}$ returned by $\oraclec$ and using its extended random tape otherwise.
 
-On the same $r$ and $x$, whenever $\adv$ passes verification using $aux,\vec{c}$ that were passed in the $i$th query to $\ro_{aux}$, then $\adv_{i}$ passes verification.  Thus by Definition 2 there exist extractors $\Ext_{\adv_{i}}$ that succeeds to extract for most $r$, $x$ and $\oracles$ randomness under that condition.
+On the same $r$ and $x$, whenever $\adv$ passes verification using $\vec{c},aux$ that were passed in the $i$th query to $\ro_{aux}$, then $\adv_{i}$ passes verification.  Thus by Definition 2 there exist extractors $\Ext_{\adv_{i}}$ that succeeds to extract for most $r$, $x$ and $\oracles$ randomness under that condition.
 
 We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{\ro}; r)$ by running both $\adv$
 internally by simulating $\oracles$ and $\ro_{aux}$ using $Q_{sim}$ and
 $Q_{\ro}$, and by running all $\Ext_{\adv_{i}}$ as $\p{f}_{i}\gets
 \Ext_{\adv_{i}}(\srs,Q_{sim},Q_{chal_{i}}; r\|(Q_{\ro}\setminus x_{i}))$ by
 splitting $Q_{\ro}$ into $Q_{chal_{i}}$ and $Q_{\ro}\setminus x_{i}$ to return
-$\p{f}_{i}$ whenever $\adv$ passed $aux,\vec{c}$ in the $i$th query to
+$\p{f}_{i}$ whenever $\adv$ passed $\vec{c},aux$ in the $i$th query to
 $\ro_{aux}$.
 
 \michals{25.08}{Don't we need implication in another direction as well?}
+\markulf{0209}{Why? Is there a direction? Do you mean A vectored Haux SE polynomial commitment scheme is vectored SE? I suspect that is the case and easy to prove, but why do we need it?}
 
 \iffalse
 \begin{definition}[Simulation extractable polynomial commitment]
@@ -1147,7 +1150,7 @@ such that
                \gamma)\p{z}(X \omega))  \frac{1}{\p{Z_H}(X)} \\
 	\p{t_3}(X) & =  (\p{z}(X) - 1) \lag_1(X) \frac{1}{\p{Z_H}(X)}
 \end{align*}
-Output $\cp{t_i} = \gone{\p{t_i}(\xi)}$, for $i \in \range{1}{3}$. \markulf{24/08}{Why isn't this: 	Output polynomial commitment $\PCOM.\com(\p{z}(X))$?}\michals{30.08}{Fixed}
+Output $\cp{t_i} = \gone{\p{t_i}(\xi)}$, for $i \in \range{1}{3}$.
 	
 \item[Round 4] Get the challenge $\chz \in \FF_p$, $\chz = \ro(\zkproof[0..3])$.
   Output evaluations
@@ -1162,9 +1165,7 @@ Output $\cp{t_i} = \gone{\p{t_i}(\xi)}$, for $i \in \range{1}{3}$. \markulf{24/0
 	%Compute the opening challenge $v \in \FF_p$, $v = \ro(\zkproof[0..4])$.
 	Compute the openings for the polynomial commitment scheme
         \michals{11.08}{Need to add that commitment scheme is additively homomorphic}
-        \markulf{25.08}{Challenge $\nu$ doesn't seem to be used by simplified
-          protocol}
-        \michals{30.08}{Fixed}
+
   \begin{align*}
     & \p{W_\chz^{t_1}} = \PCOM.\open(\srs, \cp{t_{1}}, \p{t_1}(\chz)) \\
     & \p{W_\chz^{t_2}} = \PCOM.\open(\srs, \cp{t_{2}}, \p{t_2}(\chz)), \\
@@ -1233,7 +1234,7 @@ $\plonk$ proof system by $\plonkprotfs^{\kzg}$, where $\kzg$ denotes the KZG
 polynomial commitment scheme.
 
 \begin{theorem}
-  Let $\PCOM$ be a polynomial commitment scheme that is binding, simulation-extractable, and a commitment of knowledge,
+  Let $\PCOM$ be a polynomial commitment scheme that is evaluation-binding, binding, simulation-extractable, and a commitment of knowledge,
   then $\plonkprotfs^{\PCOM}$ is simulation extractable.
 %  \michals{16.08}{$(3, \eps)$-aux-simulation-extractable -- $3$ polynomials are
 %    extracted, $1 - \eps$ is probability of extractor's success, aux -- see how
@@ -1248,7 +1249,7 @@ We describe $\oraclesps,\ro$ in terms of calls to $\oraclespcom,\ro_{\aux}$.
 \noindent
 We simulate $\ro(x_{1}\|x_{2})$ via calls to $\ro_{aux}(x_{1},x_{2})$, where
 $x_{1}$ has the length of 3 commitments. \michals{30.08}{sometimes more than
-  just 3}
+  just 3}\markulf{02.09}{I switched the order to be $\vec{c},aux$, so it should be 3 no? I think that order is more intuitive, though aux also contains instance $\inp$?.}
 
 \noindent
 Queries to $(\inp, \wit)$ to $\oraclesps$ are answered as follows:
@@ -1265,7 +1266,7 @@ Queries to $(\inp, \wit)$ to $\oraclesps$ are answered as follows:
       \item Compute evaluations $\p{S_{\sigma 1}}(\chz)$,
         $\p{S_{\sigma 2}}(\chz)$ and simulate openings $W^{\p{S_{\sigma 1}}}_\chz$,
         $W^{\p{S_{\sigma 2}}}_\chz$ for commitments in $\srss$.
-        \michals{30.08}{Why not computing them honestly?}
+        \michals{30.08}{Why not computing them honestly?}\markulf{02.09}{Probably a good idea for fixed polynomials. In fact, we probably have to do it this way.}
       \item For $i \in \range{1}{3}$, compute values of $\ev{t}_i$ as
         defined by the verification equation.
       \item For $i \in \range{1}{3}$, ask $\oraclespcom$ to simulate opening of $\cp{t'_i}$
@@ -1334,7 +1335,7 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
     \item Compute
       $\aux = (\beta, \gamma, \cp{z}, \cp{t_1},
       \cp{t_2}, \cp{t_3})$. \michals{30.08}{aux independent on the instance,
-        does it matter?}
+        does it matter?}\markulf{02.09{You are right, we need $\inp$ here.j}}
     \item Output
       \begin{itemize}
       \item commitments $\cp{a}$, $\cp{b}$, $\cp{c}$,
