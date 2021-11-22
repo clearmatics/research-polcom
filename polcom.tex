@@ -1673,10 +1673,9 @@ Let idealised proof system $\PS$ be such that
   \label{def:se_bdv1}
   Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
   simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
-  polynomials that can be committed. $\oraclec$ take as input $c$. If
-  $\Qchal[c] = \bot$, then $\oraclec$ samples $x$, sets $\Qchal[c] \gets x$ and returns $x$; if
-  $\Qchal[c] = x \neq \bot$ it returns $x$. Let $\oracles$ be an oracle which on
-  input
+  polynomials that can be committed. $\oraclec$ take as input $c$ and samples
+  challenge $x$, then it adds the challenge to, initially empty, list
+  $\Qchal[c]$. Let $\oracles$ be an oracle which on input
      \begin{description}
      \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
        $\Qcom$, return $c$.
@@ -1797,7 +1796,7 @@ Let idealised proof system $\PS$ be such that
      \[
        \Pr \left[
          \begin{aligned}
-           & \verify(\srs, \vec{c}, \vec{x}, \vec{y}, \vec{o}) = 1, \\
+           & \forall i \in I \verify(\srs, \vec{c_i}, x_i, \vec{y_i}, \vec{o_i}) = 1, \\
            & c \neq \com(\srs, \p{f})\\
          \end{aligned}
          \,\left|\, \vphantom{
@@ -1810,8 +1809,8 @@ Let idealised proof system $\PS$ be such that
            }
            \begin{aligned}
              & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
-             & (\vec{c}, \vec{x}, \vec{y}, \vec{o}) \gets \bdv_3^{\oracles,\oraclec}(\srs; r), \\
-             & x \in \Qchal[\vec{c}], \\
+             & \smallset{(\vec{c_i}, x_i, \vec{y_i}, \vec{o_i})}_{i \in I} \gets \bdv_3^{\oracles,\oraclec}(\srs; r), \\
+             & \smallset{x_i \in \Qchal[\vec{c_i}]}_{i \in I}, \\
              & \p{f} \gets \ext_{\bdv_3}(\srs, \Qsim, \Qchal; r)
            \end{aligned}
          \right.\right] \leq \negl.
@@ -1823,7 +1822,8 @@ Let idealised proof system $\PS$ be such that
   it is simulation extractable w.r.t~\cref{def:se_bdv3}.
 \end{lemma}
 \begin{proof}
-  Here we build extractor $\ext_{\bdv_3}$ from $\ext_{\bdv_2}$.
+  Here we build extractor $\ext_{\bdv_3}$ from $\ext_{\bdv_2}$. We denote by
+  $\bdv_2^i$ an adversary who internally runs $\bdv_3$ and when $\bdv_3$ returns  
 \end{proof}
 
 \begin{definition}[Flexible simulation extractability with random oracle]
