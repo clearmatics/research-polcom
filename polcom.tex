@@ -1638,7 +1638,7 @@ Let idealised proof system $\PS$ be such that
      \begin{description}
      \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
        $\Qcom$, return $c$.
-     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \neq x$, run
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x'$ not returned by $\oraclec_0$, run
        $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
        $o$. Otherwise return $\bot$.
      \end{description}
@@ -1673,13 +1673,13 @@ Let idealised proof system $\PS$ be such that
   \label{def:se_bdv1}
   Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
   simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
-  polynomials that can be committed. $\oraclec$ take as input $c$ and samples
+  polynomials that can be committed. $\oraclec$ takes as input $c$ and samples
   challenge $x$, then it adds the challenge to, initially empty, list
-  $\Qchal[c]$. Let $\oracles$ be an oracle which on input
+  $\Qchal[c]$.  Eventually, $\oraclec$ returns $x$. Let $\oracles$ be an oracle which on input
      \begin{description}
      \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
        $\Qcom$, return $c$.
-     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \neq x$, run
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \not\in \Qchal[c]$, run
        $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
        $o$. Otherwise return $\bot$.
      \end{description}
@@ -1703,7 +1703,7 @@ Let idealised proof system $\PS$ be such that
            \begin{aligned}
              & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
              & (c, x, y, o) \gets \bdv_1^{\oracles,\oraclec}(\srs; r), \\
-             & (c, x) \in \Qchal, \\
+             & x \in \Qchal[c], \\
              & \p{f} \gets \ext_{\bdv_1}(\srs, Q_{sim}, Q_{chal}; r)
            \end{aligned}
          \right.\right] \leq \negl.
@@ -1723,14 +1723,14 @@ Let idealised proof system $\PS$ be such that
   \label{def:se_bdv2}
   Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
   simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
-  polynomials that can be committed. $\oraclec$ take as input $\vec{c}$. If
-  $\Qchal[\vec{c}] = \bot$, then $\oraclec$ samples $x$, sets
-  $\Qchal[\vec{c}] \gets x$ and returns $x$; if $\Qchal[\vec{c}] = x \neq \bot$ it
-  returns $x$. Let $\oracles$ be an oracle which on input
+  polynomials that can be committed.  $\oraclec$ takes as input $\vec{c}$ and samples
+  challenge $x$, then it adds the challenge to, initially empty, list
+  $\Qchal[\vec{c}]$. Eventually, $\oraclec$ returns $x$. Let $\oracles$ be an oracle
+  which on input
      \begin{description}
      \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
        $\Qcom$, return $c$.
-     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \neq x$, run
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \not\in \Qchal[c]$, run
        $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
        $o$. Otherwise return $\bot$.
      \end{description}
@@ -1754,7 +1754,7 @@ Let idealised proof system $\PS$ be such that
            \begin{aligned}
              & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
              & (\vec{c}, x, \vec{y}, \vec{o}) \gets \bdv_2^{\oracles,\oraclec}(\srs; r), \\
-             & (\vec{c}, x) \in \Qchal, \\
+             & x \in \Qchal [\vec{c}], \\
              & \p{f} \gets \ext_{\bdv_2}(\srs, \Qsim, \Qchal; r)
            \end{aligned}
          \right.\right] \leq \negl.
@@ -1775,18 +1775,14 @@ Let idealised proof system $\PS$ be such that
   \label{def:se_bdv3}
   Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
   simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
-  polynomials that can be committed.  $\oraclec$ take as input $\vec{c}$. If
-  $\Qchal[\vec{c}] = \bot$, then $\oraclec$ samples $x$, sets $\Qchal[c] \gets x$ and
-  returns $x$; if $\Qchal[c] = x \neq \bot$ it returns $x$.
-
-  Let $\oraclec (\vec{c})$ be an oracle that takes
-  a vector commitments $\vec{c}$, samples $x$, sets
-  $\Qchal \gets \Qchal || (\vec{c}, x)$ and returns $x$. Let $\oracles$ be an oracle
+  polynomials that can be committed.  $\oraclec$ takes as input $\vec{c}$ and samples
+  challenge $x$, then it adds the challenge to, initially empty, list
+  $\Qchal[\vec{c}]$. Eventually, $\oraclec$ returns $x$.  Let $\oracles$ be an oracle
   which on input
      \begin{description}
      \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
        $\Qcom$, return $c$.
-     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \neq x$, run
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \not\in \Qchal[c]$, run
        $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
        $o$. Otherwise return $\bot$.
      \end{description}
@@ -1796,7 +1792,7 @@ Let idealised proof system $\PS$ be such that
      \[
        \Pr \left[
          \begin{aligned}
-           & \forall i \in I \verify(\srs, \vec{c_i}, x_i, \vec{y_i}, \vec{o_i}) = 1, \\
+           & \forall i \in I, \verify(\srs, \vec{c_i}, x_i, \vec{y_i}, \vec{o_i}) = 1, \\
            & c \neq \com(\srs, \p{f})\\
          \end{aligned}
          \,\left|\, \vphantom{
@@ -1829,14 +1825,16 @@ Let idealised proof system $\PS$ be such that
 \begin{definition}[Flexible simulation extractability with random oracle]
   \label{def:sepcom}
   \label{def:se_bdv4}
-  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
-  scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
-  committed. 
-  We consider the same $\oracles$ and $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments and openings $\vec{c}, \vec{y}, \vec{o}$.
-   Let $\ro_{aux}(\vec{c},aux)$ be an oracle that when $Q_{\ro}[\vec{c},aux] = \bot$, samples $x$, sets $Q_{\ro}[\vec{c},aux]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns $Q_{\ro}[\vec{c},aux]$.
-  We say that $\PCOM$ is \emph{vector $\ro_{aux}$ simulation extractable} if for any $\ppt$
-  adversary $\bdv_4$ with oracle access to $\oracles$ and $\ro_{aux}$ there exists extractor
-  $\ext_{\adv}$ such that
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment scheme with
+  a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed.  We consider the same $\oracles$ and
+  $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments
+  and openings $\vec{c}, \vec{y}, \vec{o}$.  Let $\ro_{aux}(\vec{c},aux)$ be an
+  oracle that when $Q_{\ro}[\vec{c},aux] = \bot$, samples $x$, sets
+  $Q_{\ro}[\vec{c},aux]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns
+  $Q_{\ro}[\vec{c},aux]$.  We say that $\PCOM$ is \emph{vector $\ro_{aux}$ simulation
+    extractable} if for any $\ppt$ adversary $\bdv_4$ with oracle access to
+  $\oracles$ and $\ro_{aux}$ there exists extractor $\ext_{\adv}$ such that
 \[
   \Pr \left[
     \begin{aligned}
