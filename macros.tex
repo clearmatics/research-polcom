@@ -190,7 +190,7 @@
 \newcommand{\op}{\pcalgostyle{Op}}
 \newcommand{\open}{\op}
 \newcommand{\oracles}{\oracleo_{\simulator}}
-\newcommand{\oraclec}{\oracleo_{\pcalgostyle{chal}}}
+\newcommand{\oraclec}{{\oracleo_{\pcalgostyle{chal}}}}
 \newcommand{\oraclespcom}{{\oracleo_{\simulator}^{\PCOM}}}
 \newcommand{\oraclesps}{{\oracleo_{\simulator}^{\PS}}}
 \newcommand{\decode}{\pcalgostyle{Decode}}
@@ -333,6 +333,7 @@
 % \DeclareRobustCommand{\task}[2]  {{\color{black}\sethlcolor{yellow}\hl{\textsf{TASK #1:} #2}}}
 
 \DeclareRobustCommand{\changedm}[1]  {{\color{magenta}{#1}}}
+\DeclareRobustCommand{\mxout} [1] {{\color{magenta!10}{#1}}}
 
 %%% Local Variables:
 %%% mode: latex

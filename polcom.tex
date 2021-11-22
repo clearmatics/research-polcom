@@ -608,6 +608,7 @@ $\ro_{aux}$.
 }
 \fi
 
+\iffalse
  \begin{definition}[One-to-many openable\hl{Good name needed}]
    We call a commitment scheme $\PCOM$ one-to-many openable \hl{good name
      needed} if for any $\adv$ who outputs commitments $c_1, \ldots, c_k$,
@@ -622,7 +623,8 @@ $\ro_{aux}$.
 
  \michals{23.06}{That's easy for KZG batched as in Plonk (with minor difference)
    -- just get a number of batch openings and do Gaussian elimination.}
-
+\fi
+ 
  \begin{definition}
 \hl{The proof system and the polynomial commitment scheme use virtually the same
 SRS. (Both SRS could differ in some efficiency related elements, but computation
@@ -1609,7 +1611,289 @@ More in detail, if
 $\vec y = (\vec M_0, \vec M_1) \pmtrx{\vec x\\\vec x'}$ and $\vec x' = \vec N \vec x$ then
 easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
 
+\section{Results from the Edinburgh visit}
+\subsection{Proof system definitions}
+\paragraph{Zero knowledge}
+Let idealised proof system $\PS$ be such that  
 
+\subsection{Polynomial commitment SE definitions equivalence}
+\newcommand{\Qop}{Q_{op}}
+\newcommand{\Qsim}{Q_{sim}}
+\newcommand{\Qchal}{{Q_{chal}}}
+\newcommand{\Qh}{Q_{ro}}
+
+%\newcommand{oraclechal}{\oracleo_{chal}}
+
+\newcommand{\qop}{q_{op}}
+\newcommand{\qchal}{q_{chal}}
+
+\begin{definition}[Simple simulation extractability]
+  \label{def:se_bdv0}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed. Let $\oraclec (c)$ be an oracle that when
+  $\Qchal = \bot$, samples $x$, sets $\Qchal = (c, x)$ \mxout{and $\qchal = \abs{\qop}$} and
+    returns $x$. Otherwise it returns $\bot$. Let $\oracles$ be an oracle which on
+    input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \neq x$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$.
+     \end{description}
+     $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_0$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_0}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \verify(\srs, c, x, y, o) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & (c, x, y, o) \gets \bdv_0^{\oracles,\oraclec}(\srs; r), \\
+             & (c, x) = \Qchal, \\
+             & \p{f} \gets \ext_{\bdv_0}(\srs, Q_{sim}, Q_{chal}; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+     \]
+\end{definition}
+
+\begin{definition}[Flexible simulation extractability]
+  \label{def:se_bdv1}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed. $\oraclec$ take as input $c$. If
+  $\Qchal[c] = \bot$, then $\oraclec$ samples $x$, sets $\Qchal[c] \gets x$ and returns $x$; if
+  $\Qchal[c] = x \neq \bot$ it returns $x$. Let $\oracles$ be an oracle which on
+  input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \neq x$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$.
+     \end{description}
+     Let $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_1$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_1}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \verify(\srs, c, x, y, o) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & (c, x, y, o) \gets \bdv_1^{\oracles,\oraclec}(\srs; r), \\
+             & (c, x) \in \Qchal, \\
+             & \p{f} \gets \ext_{\bdv_1}(\srs, Q_{sim}, Q_{chal}; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv0}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv1}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_1}$ from $\ext_{\bdv_0}$.
+\end{proof}
+
+
+\begin{definition}[Flexible simulation extractability for vector of commitments]
+  \label{def:se_bdv2}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed. $\oraclec$ take as input $\vec{c}$. If
+  $\Qchal[\vec{c}] = \bot$, then $\oraclec$ samples $x$, sets
+  $\Qchal[\vec{c}] \gets x$ and returns $x$; if $\Qchal[\vec{c}] = x \neq \bot$ it
+  returns $x$. Let $\oracles$ be an oracle which on input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \neq x$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$.
+     \end{description}
+     Let $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_2$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_2}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & (\vec{c}, x, \vec{y}, \vec{o}) \gets \bdv_2^{\oracles,\oraclec}(\srs; r), \\
+             & (\vec{c}, x) \in \Qchal, \\
+             & \p{f} \gets \ext_{\bdv_2}(\srs, \Qsim, \Qchal; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv1}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv2}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_2}$ from $\ext_{\bdv_1}$.
+\end{proof}
+
+
+\begin{definition}[Flexible simulation extractability for vector of commitments and
+  multiple challenges]
+  \label{def:se_bdv3}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed.  $\oraclec$ take as input $\vec{c}$. If
+  $\Qchal[\vec{c}] = \bot$, then $\oraclec$ samples $x$, sets $\Qchal[c] \gets x$ and
+  returns $x$; if $\Qchal[c] = x \neq \bot$ it returns $x$.
+
+  Let $\oraclec (\vec{c})$ be an oracle that takes
+  a vector commitments $\vec{c}$, samples $x$, sets
+  $\Qchal \gets \Qchal || (\vec{c}, x)$ and returns $x$. Let $\oracles$ be an oracle
+  which on input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \neq x$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$.
+     \end{description}
+     Let $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_3$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_3}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \verify(\srs, \vec{c}, \vec{x}, \vec{y}, \vec{o}) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & (\vec{c}, \vec{x}, \vec{y}, \vec{o}) \gets \bdv_3^{\oracles,\oraclec}(\srs; r), \\
+             & x \in \Qchal[\vec{c}], \\
+             & \p{f} \gets \ext_{\bdv_3}(\srs, \Qsim, \Qchal; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv2}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv3}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_3}$ from $\ext_{\bdv_2}$.
+\end{proof}
+
+\begin{definition}[Flexible simulation extractability with random oracle]
+  \label{def:sepcom}
+  \label{def:se_bdv4}
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
+  scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
+  committed. 
+  We consider the same $\oracles$ and $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments and openings $\vec{c}, \vec{y}, \vec{o}$.
+   Let $\ro_{aux}(\vec{c},aux)$ be an oracle that when $Q_{\ro}[\vec{c},aux] = \bot$, samples $x$, sets $Q_{\ro}[\vec{c},aux]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns $Q_{\ro}[\vec{c},aux]$.
+  We say that $\PCOM$ is \emph{vector $\ro_{aux}$ simulation extractable} if for any $\ppt$
+  adversary $\bdv_4$ with oracle access to $\oracles$ and $\ro_{aux}$ there exists extractor
+  $\ext_{\adv}$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & x \gets \ro_{aux}(\vec{c},aux), \\
+      & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
+      & \;\vec{c} \neq \com(\srs, \vec{\p{f}})\\
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+      & \smallset{(\aux_i, \vec{c_i}, \vec{x_i}, \vec{y_i}, \vec{o_i})}_{i \in I} \gets
+      \bdv_4^{\oracles,\ro_{aux}}(\srs; r), \\
+      & \Qchal[\aux, \vec{c_i}] = x_i\\
+      & \vec{\p{f}} \gets \ext_{\bdv_4}(\srs, Q_{sim}, Q_{\ro}; r)
+    \end{aligned}
+  \right.\right]
+  \leq \negl,
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv3}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv4}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_4}$ from $\ext_{\bdv_3}$. To that end, we show
+  how $\bdv_3$ can use its oracles $\oracles, \oraclec_3$ to simulate
+  $\oracles, \oraclec_4$ for $\bdv_4$. $\bdv_3$ runs internally $\bdv_4$ and answers
+  its queries. First, note that the simulator oracle $\oracles$ works the same in
+  both definitions, so $\bdv_3$ only needs to simulate $\oraclec_4$ with
+  $\oraclec_3$. This is done as follows. For every query $(\vec{c}, \aux)$ to
+  $\oraclec_4$, $\bdv_3$:
+  \begin{itemize}
+  \item checks whether $(\vec{c}, \aux)$ is stored and if it is the case, returns
+    $\bot$,
+  \item if $(\vec{c}, \aux)$ is not stored, then $\bdv_3$ stores the query in
+    $\Qchal_3$ and parses it to get $\vec{c}$ which it then submits to $\oraclec_3$
+    and gets challenge $x$. Then $\bdv_3$ returns $x$ to $\bdv_4$.
+  \end{itemize}
+
+  Extractor $\ext_{\bdv_4}$ on input $(\srs, \Qsim, \Qh; r_{\bdv_4})$ runs internally
+  $\ext_{\bdv_3} (\srs, \Qsim, \Qchal_3; r_{\bdv_3})$ (which internally runs
+  $\bdv_3$) such that $\Qchal_3$ is created as above from the queries in $\Qh$ and
+  $r_{\bdv_3} \gets r_{\bdv_4}$. The latter point corresponds to the fact that
+  $\bdv_3$ uses all its randomness to internally run $\bdv_4$.
+\end{proof}
+
+\subsection{From SE PCOM to SE NIZK -- the reduction}
+\subsection{KZG simulation extractability in the AGM}
 
 
 
