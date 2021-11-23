@@ -1715,7 +1715,29 @@ Let idealised proof system $\PS$ be such that
   it is simulation extractable w.r.t~\cref{def:se_bdv1}.
 \end{lemma}
 \begin{proof}
-  Here we build extractor $\ext_{\bdv_1}$ from $\ext_{\bdv_0}$.
+  Here we build extractor $\ext_{\bdv_1}$ from $\ext_{\bdv_0}$. We denote by
+  $\bdv_0^{j}$, $j \in \range{1}{\abs{\Qchal_2}}$ an adversary who internally runs
+  $\bdv_1$ and provides it with access to oracles $\oracles$ and $\oraclec_1$ by
+  passing its queries to $\oracles$ and $\oraclec_0$. Since $\oraclec_0$ takes a
+  single input a commitment $c$, while $\oraclec_1$ allows the adversary to query the
+  oracle multiple time, $\bdv_0^{j}$ processes $\bdv_1$ calls to $\oraclec_1$ as
+  follows. For a $j$-th query $c_j$ and the corresponding challenge $x$, $\bdv_1^{j}$
+  takes commitment $c_j$, submits it to $\oraclec_0$ and get a challenge $x$. For all
+  other queries, $\bdv_0$ returns a random $x$, see below. Eventually, when $\bdv_1$ returns
+  $(c_j, x, y, o)$, $\bdv_0^{j}$ returns $(c_j, x, y, o)$ and $\bot$ if $\bdv_1$
+  returns opening for another commitments or challenge.
+
+  Extractor $\ext_{\bdv_1} (\srs, \Qsim, \Qchal_1, r_{\bdv_1})$ runs internally
+  $\ext_{\bdv_0^j} (\srs, \Qsim, \Qchal_0, r_{\bdv_0^j})$ where
+  \begin{itemize}
+  \item $\Qchal_0$ consists of a pair $(c, x)$ where $c$ is the $j$-th commitment in
+    $\Qchal_1$ and $x$ the corresponding challenge (also stored in $\Qchal_1$).
+  \item $r_{bdv_0}$ consists of $r_{\bdv_1}$ which is then passed to $\bdv_1$ run
+    internally by $\bdv_0^j$, and $r$ which compounds of commitment--challenge pairs
+    $(c', x') \in \Qchal$, such that $(c', x') \neq (c, x)$. More precisely,
+    randomness $r$ is used by $\bdv_0$ to answer $\bdv_1$'s $\oraclec_1$ queries that
+    are not the picked query $(c, x)$ that is going to be output eventually by $\bdv_0$. 
+  \end{itemize}
 \end{proof}
 
 
@@ -1766,7 +1788,19 @@ Let idealised proof system $\PS$ be such that
   it is simulation extractable w.r.t~\cref{def:se_bdv2}.
 \end{lemma}
 \begin{proof}
-  Here we build extractor $\ext_{\bdv_2}$ from $\ext_{\bdv_1}$.
+  Here we build extractor $\ext_{\bdv_2}$ from $\ext_{\bdv_1}$. We denote by
+  $\bdv_1^{j,k}$, $j \in \range{1}{\abs{\Qchal_2}}$, $k \in \range{1}{l}$
+  \michals{23.11}{Introduce $l$ as the length of the vector} an adversary who
+  internally runs $\bdv_2$ and provides it with access to oracles $\oracles$ and
+  $\oraclec_2$ by passing its queries to $\oracles$ and $\oraclec_1$. Since
+  $\oraclec_1$ takes as input a single commitment $c$, while $\oraclec_2$ takes
+  vectors, $\bdv_1^{j, k}$ processes $\bdv_2$ calls to $\oraclec_2$ as follows. For a
+  $j$-th query $\vec{c} = (c_1, \ldots, c_l)$ and the corresponding challenge $x$,
+  $\bdv_1^{j, k}$ takes commitment $c_j$, submits it to $\oraclec_1$ and get a
+  challenge $x$. Then it writes $(\vec{c}, x)$ in a locally stored
+  $\Qchal_2$. Eventually, when $\bdv_2$ returns $(\vec{c}, x, \vec{y}, \vec{o})$,
+  $\bdv_1^{j, k}$ returns $(c_k, x)$ where $c_k$ is $k$-th coordinate of the $j$-th
+  vector $\bdv_2$ passed to $\Qchal_2$.
 \end{proof}
 
 
@@ -1819,7 +1853,21 @@ Let idealised proof system $\PS$ be such that
 \end{lemma}
 \begin{proof}
   Here we build extractor $\ext_{\bdv_3}$ from $\ext_{\bdv_2}$. We denote by
-  $\bdv_2^i$ an adversary who internally runs $\bdv_3$ and when $\bdv_3$ returns  
+  $\bdv_2^j$ an adversary who internally runs $\bdv_3$ and provides it with access to
+  oracles $\oracles$ and $\oraclec_3$ by passing its queries to $\oracles$ and
+  $\oraclec_2$. Eventually, when $\bdv_3$ returns
+  $\smallset{\vec{c_i}, x_i, \vec{y_i}, \vec{o_i}}_{i \in I}$, $\bdv_2^j$ returns
+  $(\vec{c_j}, x_j, \vec{y_j}, \vec{o_j})$.
+
+  Extractor $\ext_{\bdv_3} (\srs, \Qsim, \Qchal_3, r_{\bdv_3})$ internally runs $\abs{\Qchal}$
+  copies of $\ext_{\bdv_2^j}(\srs, \Qsim, \Qchal_2, r_{\bdv_2^j})$ for each $j \in
+  \range{1}{\abs{\Qchal}}$, where $r_{\bdv_2^j} = r_{\bdv_3}$ and $\Qchal_2 =
+  \Qchal_3$.
+
+  Probability of $\ext_{\bdv_3}$ succeeds is lower-bounded by probability that all fo
+  $\ext_{\bdv_2^j}$ succeeds. Assuming $\abs{\Qchal} = \poly$ and $\ext_{\bdv_2^j}$
+  succeeds with overwhelming probability, $\ext_{\bdv_3}$ succeeds with overwhelming
+  probability as well. 
 \end{proof}
 
 \begin{definition}[Flexible simulation extractability with random oracle]
