@@ -1614,11 +1614,6 @@ $\vec y = (\vec M_0, \vec M_1) \pmtrx{\vec x\\\vec x'}$ and $\vec x' = \vec N \v
 easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
 
 \section{Results from the Edinburgh visit}
-\subsection{Proof system definitions}
-\paragraph{Zero knowledge}
-Let idealised proof system $\PS$ be such that  
-
-\subsection{Polynomial commitment SE definitions equivalence}
 \newcommand{\Qop}{Q_{op}}
 \newcommand{\Qsim}{Q_{sim}}
 \newcommand{\Qchal}{{Q_{chal}}}
@@ -1628,6 +1623,56 @@ Let idealised proof system $\PS$ be such that
 
 \newcommand{\qop}{q_{op}}
 \newcommand{\qchal}{q_{chal}}
+
+\subsection{Proof system definitions}
+\paragraph{Zero knowledge}
+
+\begin{definition}[Proof system]
+  \label{def:ps}
+  Let idealised proof system $\PS$ be such that
+  \begin{description}
+  \item[Prover]
+    \begin{enumerate}
+    \item[On input $\inp, \wit$] the prover picks randomly evaluation $\vec{b}$ of
+      formal variable $\vec{B}$.
+    \item[On protocol building challenge:] on partial transcript $T [i - 1]$ where
+      the last verifier's message contains protocol building challenge $z_i$, the
+      prover sends in Round $i$ messages $m_{i 1}, \ldots m_{i k_i}$ and sets up
+      polynomial oracles for polynomials
+      $\smallset{\p{p_{i}} (X, \vec{b})}_{i = 1}^{k'_i}$.
+    \item[On evaluation challenge:]
+    \end{enumerate}
+  \item[Verifier]
+    \begin{enumerate}
+    \item[$i \leq \mu$:] on partial transcript $T [i - 1]$, prover's messages
+      $m_{i 1}, \ldots m_{i k_i}$ and oracles
+      $\smallset{\oracleo_{\p{p_{i}}}}_{i = 1}^{k'_i}$ sends in Round $i$ a
+      \begin{itemize}
+      \item protocol building challenge $\beta_i$, or
+      \item evaluation challenge $\chz_i$.
+      \end{itemize}
+    \item[$i = \mu$] Eventually the verifier verifies the set of verification
+      equation $E$
+    \end{enumerate}
+  \end{description}
+\end{definition}
+
+\begin{definition}[Polynomial independence]
+  Let $\smallset{\p{p_{i j}} (X, \vec{b})}$ be polynomials which the prover set
+  oracles for. We call these polynomials \emph{independent} if
+  $\smallset{\p{p_{i j}} (X, \vec{B})}$ are linearly independent.
+\end{definition}
+
+\begin{definition}[Some weak version of uber assumption]
+\end{definition}
+
+\begin{definition}[Zero knowledge]
+  Let the protocol be a proof system as described in \cref{def:ps} and let
+  $\smallset{\p{p_{i j}} (X, \vec{b})}$ be independent. Then  
+\end{definition}
+
+\iffalse
+\subsection{Polynomial commitment SE definitions equivalence}
 
 \begin{definition}[Simple simulation extractability]
   \label{def:se_bdv0}
@@ -1939,6 +1984,7 @@ Let idealised proof system $\PS$ be such that
   $r_{\bdv_3} \gets r_{\bdv_4}$. The latter point corresponds to the fact that
   $\bdv_3$ uses all its randomness to internally run $\bdv_4$.
 \end{proof}
+\fi
 
 \subsection{Polynomial commitment SE definitions equivalence w.r.t.~polynomials}
 \michals{23.11}{This section is to show that SE defs are equivalent even when the
@@ -1993,41 +2039,57 @@ We inline to get the following equation which we then analyze in detail,
   x} = 0
 \end{align*}
 
-We now look at different (rational) monomials in $T$ of this equation to derive constraints on $C_{1i}, C_{{2i}},C_{{3ij}}$ and $O_{1i},O_{2i},O_{3ij}$ imposed by the verification equation:
+We now look at different (rational) monomials in $T$ of this equation to derive
+constraints on $C_{1i}, C_{{2i}},C_{{3ij}}$ and $O_{1i},O_{2i},O_{3ij}$ imposed by
+the verification equation:
 \begin{itemize}
   \item[$A_{i}X$:] We have that for all $i$, $O_{2i}=0$ as $O_{2i} A_{i} X = 0$.
-  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}, j>q^{i}_{chal}$:] $C_{3ij}=0$ as $\adv$ did not yet see them when it computes the commitment.
+  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}, j>q^{i}_{chal}$:] $C_{3ij}=0$ as $\adv$ did
+    not yet see them when it computed the commitment.
 \end{itemize}
 
-To obtain a simplified verificaton equation, we express the equation in the exponent and write $C_{1}(X)$ for $\sum C_{1i} X^{i}$ and  $O_{1}(X)$ for $\sum O_{1i} X^{i}$.
-Furthermore, we let $x_{ij}= x+\delta_{ij}$ and replace $x$ with $x_{ij}-\delta_{ij}$
-\antonio{02.09}{Minor: maybe better say "we let $\delta_{ij}:=x_{ij}-x$".}
+To obtain a simplified verificaton equation, we express the equation in the exponent
+and write $C_{1}(X)$ for $\sum C_{1i} X^{i}$ and $O_{1}(X)$ for $\sum O_{1i} X^{i}$.
+Furthermore, we let $\delta_{ij} = x_{i j} - x$ and replace $x$ with
+$x_{ij} - \delta_{ij}$. Importantly, since $x$ is random and unknown to adversary
+before it picks $x_{i j}$ then $\delta_{i j} \neq 0$ with probability at least
+$\infrac{\abs{I}}{\abs{\FF}}$. \michals{24.11}{$I$ is the set of all $i$}
+
 \begin{align*}
-C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}+\delta_{ij}) = 0\\
-C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}) - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} \delta_{ij} = 0
-       \end{align*}
-
-       \markulf{2.09}{We require that $\delta_{ij} \neq 0$}
-\begin{itemize}
-  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}$:] $C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{{3ij}}\delta_{ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}=0$. As
-    $C_{3ij}=0$ for $j>q^{i}_{chal}$, it follows that $O_{{3ij}}=0$ for $j>q^{i}_{chal}$. Otherwise, we have $O_{3ij}= C_{3ij}/\delta_{ij}$.
-  \item[$A_{i}$:] $C_{2i} A_{i} - \sum O_{3ij} A_{i}=0$.
-\end{itemize}
-
-Informal step. $C_{2i}- \sum \frac{C_{3ij}}{x_{ij}-x} =0$ is a rational equation system in $x$. If $x_{ij}\neq x_{ij'}$, then the probability of randomly picking a solution $x$ is small unless all the $C_{2i}$, $C_{3ij}$ are $0$. Thus we also have $O_{{3ij}}=0$.
-If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value for the same commitment (potentially for different $y_{ij}$) multiple times. This is something we want to exclude.
+  C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}+\delta_{ij}) = 0\\
+  C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}) - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} \delta_{ij} = 0
+\end{align*}
 
 \begin{itemize}
-        \item[$X^{i}, i\geq 0$:] $C_{1}(X) - y - O_{1}(X)(X-x) + \sum \sum O_{3ij} y_{ij} = 0$, as $O_{3ij}=0$ we are back to the honest verification equation.
+\item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}$:]
+  $C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{{3ij}}\delta_{ij}
+  \frac{A_{i}-y_{ij}}{X-x_{ij}}=0$. As $C_{3ij}=0$ for $j>q^{i}_{chal}$, it follows
+  that $O_{{3ij}}=0$ for $j>q^{i}_{chal}$. Otherwise, we have
+  $O_{3ij}= C_{3ij}/\delta_{ij}$.
+\item[$A_{i}$:] $C_{2i} A_{i} - \sum O_{3ij} A_{i}=0$.
 \end{itemize}
 
+Informal step. $C_{2i}- \sum \frac{C_{3ij}}{x_{ij}-x} =0$ is a rational equation
+system in $x$. If $x_{ij}\neq x_{ij'}$, then the probability of randomly picking a
+solution $x$ is small unless all the $C_{2i}$, $C_{3ij}$ are $0$. Thus we also have
+$O_{{3ij}}=0$.  If $x_{ij} = x_{ij'}$ then the adversary requested openings on the
+same value for the same commitment (potentially for different $y_{ij}$) multiple
+times. This is something we want to exclude.
 
-\begin{definition}[Simple simulation extractability]
+\begin{itemize}
+\item[$X^{i}, i\geq 0$:]
+  $C_{1}(X) - y - O_{1} (X) (X - x) + \sum \sum O_{3ij} y_{ij} = 0$, as $O_{3ij}=0$ we
+  are back to the honest verification equation.
+\end{itemize}
+
+\newcommand{\ph}[1]{\p{h} (#1)}
+
+\begin{definition}[$\ph{X}$-simple simulation extractability]
   \label{def:se_bdv0}
   Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
   simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
   polynomials that can be committed. Let $\oraclec (c)$ be an oracle that when
-  $\Qchal = \bot$, samples $x$, sets $\Qchal = (c, x)$ \mxout{and $\qchal = \abs{\qop}$} and
+  $\Qchal = \bot$, samples $x$, sets $\Qchal = (c, x)$ and $\qchal = \abs{\qop}$ and
     returns $x$. Otherwise it returns $\bot$. Let $\oracles$ be an oracle which on
     input
      \begin{description}
@@ -2035,7 +2097,8 @@ If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value fo
        $\Qcom$, return $c$.
      \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x'$ not returned by $\oraclec_0$, run
        $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
-       $o$. Otherwise return $\bot$.
+       $o$. Otherwise return $\bot$. \michals{24.11}{We could have here $\ph{x'}$
+         instead of $x'$ but I think it changes nothing.}
      \end{description}
      $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
        extractable} if for any $\ppt$ adversary $\bdv_0$ with oracle access to
@@ -2043,7 +2106,7 @@ If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value fo
      \[
        \Pr \left[
          \begin{aligned}
-           & \verify(\srs, c, x, y, o) = 1, \\
+           & \verify(\srs, c, \ph{x}, y, o) = 1, \\
            & c \neq \com(\srs, \p{f})\\
          \end{aligned}
          \,\left|\, \vphantom{
@@ -2064,7 +2127,7 @@ If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value fo
      \]
 \end{definition}
 
-\begin{definition}[Flexible simulation extractability]
+\begin{definition}[$\ph{X}$-flexible simulation extractability]
   \label{def:se_bdv1}
   Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
   simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
@@ -2084,7 +2147,7 @@ If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value fo
      \[
        \Pr \left[
          \begin{aligned}
-           & \verify(\srs, c, x, y, o) = 1, \\
+           & \verify(\srs, c, \ph{x}, y, o) = 1, \\
            & c \neq \com(\srs, \p{f})\\
          \end{aligned}
          \,\left|\, \vphantom{
@@ -2136,7 +2199,7 @@ If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value fo
 \end{proof}
 
 
-\begin{definition}[Flexible simulation extractability for vector of commitments]
+\begin{definition}[$\vec{\p{h}}(X)$-Flexible simulation extractability for vector of commitments]
   \label{def:se_bdv2}
   Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
   simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
@@ -2335,7 +2398,6 @@ If $x_{ij} = x_{ij'}$ then the adversary requested openings on the same value fo
 
 
 \subsection{From SE PCOM to SE NIZK -- the reduction}
-\subsection{KZG simulation extractability in the AGM}
 
 
 
