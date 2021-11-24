@@ -1646,13 +1646,13 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
     \begin{enumerate}
     \item[$i \leq \mu$:] on partial transcript $T [i - 1]$, prover's messages
       $m_{i 1}, \ldots m_{i k_i}$ and oracles
-      $\smallset{\oracleo_{\p{p_{i}}}}_{i = 1}^{k'_i}$ sends in Round $i$ a
+      $\smallset{\oracleo_{\p{p_{i}}}}_{i = 1}^{k'_i}$ sends in Round $i$ 
       \begin{itemize}
-      \item protocol building challenge $\beta_i$, or
-      \item evaluation challenge $\chz_i$.
+      \item a protocol building challenge $\beta_i$, or
+      \item a evaluation challenge $\chz_i$.
       \end{itemize}
     \item[$i = \mu$] Eventually the verifier verifies the set of verification
-      equation $E$
+      equation $\vereq$
     \end{enumerate}
   \end{description}
 \end{definition}
@@ -1664,11 +1664,18 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
 \end{definition}
 
 \begin{definition}[Some weak version of uber assumption]
+  \michals{24.11}{We don't need a full-blown uber assumption here (probably).}
 \end{definition}
 
 \begin{definition}[Zero knowledge]
-  Let the protocol be a proof system as described in \cref{def:ps} and let
-  $\smallset{\p{p_{i j}} (X, \vec{b})}$ be independent. Then  
+  \michals{24.11}{Need to formalize that the simulator picks some of the polynomials
+    randomly and some such that verification equation holds.}
+  Let the protocol be a proof system $\PS$ as described in \cref{def:ps} and let
+  $\smallset{\p{p_{i j}} (X, \vec{b})}$ be independent. Then $\PS$ is zero-knowledge
+  with simulator $\simulator$ proceeding as follows:
+  \begin{enumerate}
+  \item it picks polynomials $\smallset{\p{p_{i j}} (X, \vec{b})}$ randomly
+  \end{enumerate}
 \end{definition}
 
 \iffalse
