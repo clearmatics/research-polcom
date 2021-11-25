@@ -1625,28 +1625,64 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
 \newcommand{\qchal}{q_{chal}}
 
 \subsection{Proof system definitions}
-\paragraph{Zero knowledge}
 
-\begin{definition}[Proof system]
+\begin{definition}[Evaluation ready polynomial]
+  Let $\p{p} (\vec{X})$ be a polynomial over random variable $\vec{X}$. We call
+  $\p{p}$ \emph{evaluation ready} if all $X \in \vec{X}$ have been already realised.
+\end{definition}
+
+\subsubsection{The idealised proof system}
   \label{def:ps}
-  Let idealised proof system $\PS$ be such that
+  In the idealised proof system $\PS = (\indexer, \prover, \verifier)$ the indexer
+  $\indexer$ provides index $\ind$, prover $\prover$ sends in each Round $i$ messages
+  $m_{i, 1}, \ldots m_{i k'_i}$ and sets up polynomial oracles for polynomials
+  $\p{p}_{i, 1} (\vec{X}, \vec{B}), \ldots, \p{p}_{i, k_i} (\vec{X}, \vec{B})$. We
+  denote by $l$ length of vector $\vec{B}$ and by $l'$ length of vector $\vec{X}$.
+  The
+  verifier sends challenges, which we divide into two groups: \emph{protocol building
+    challenges} $\beta_{i, j}$ and / or \emph{evaluation challenges} $\chz_{i, j}$.
+  Vector $\vec{X}$ denotes a random variable (or a vector of random variables)
+  corresponding to evaluation challenges. That is, for each evaluation challenge
+  $\chz_{i, j}$ the protocol specifies which $X \in \vec{X}$ are realised by
+  $\chz_{i, j}$. Importantly, 
+
+  We interpret messages $m_{i, j}$ sent by the prover as polynomials that are
+  independent of any random variables in $(\vec{X}, \vec{B})$ which has not been
+  realised yet. For the sake of convenience, we write
+  $\p{p}_{i, j + k_i} (\vec{X}, \vec{B})$ to denote $m_{i, j}$. That is, we append
+  polynomials corresponding to messages $m_{i, j}$ to the end of the list of
+  polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$. From now one, we will use only
+  $\p{p}_{i, j} (\vec{X}, \vec{B})$ and not $m_{i, j}$. Importantly, since
+  polynomials $\p{p}_{i, k_i + j} (\vec{X}, \vec{B})$ are independent of random
+  variables that have not been realised yet the prover sends their evaluations
+  directly to the verifier without setting up oracles for them. For the rest of the
+  polynomials the oracles are set up as usual.
+  
+  We call polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ a \emph{randomised
+    polynomial} if there is $B_i \in \smallset{B_1, \ldots, B_l}$ such that
+  $\p{p_{i', j'}} (\vec{X}, \vec{B}$ has non-zero coefficient next to $B_i$ while for all
+  $(i, j) < (i', j')$ coefficient next to $B_i$ is zero.  Polynomials
+  $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not \emph{randomised polynomials} are called
+  \emph{determined}.
+
+
   \begin{description}
   \item[Prover]
     \begin{enumerate}
-    \item[On input $\inp, \wit$] the prover picks randomly evaluation $\vec{b}$ of
-      formal variable $\vec{B}$.
-    \item[On protocol building challenge:] on partial transcript $T [i - 1]$ where
-      the last verifier's message contains protocol building challenge $z_i$, the
-      prover sends in Round $i$ messages $m_{i 1}, \ldots m_{i k_i}$ and sets up
-      polynomial oracles for polynomials
-      $\smallset{\p{p_{i}} (X, \vec{b})}_{i = 1}^{k'_i}$.
-    \item[On evaluation challenge:]
+    \item On input $(\inp, \wit)$ the prover picks randomly evaluation
+      $\vec{b} = b_1, \ldots, b_l$ of variable $\vec{B} = B_1, \ldots, B_l$.
+    \item In Round $i$, on partial transcript $\zkproof [i - 1]$ where the last
+      verifier's message contains protocol building challenge $\beta_i$, the prover
+      sets up polynomial oracles for polynomials
+      $\smallset{\p{p_{i, j}} (\vec{X}, \vec{b})}_{j = 1}^{k_i}$ and sends polynomials
+      messages $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k'_i}$.
+    \item On evaluation challenge $\chz_{i, j}$ the prover  
     \end{enumerate}
   \item[Verifier]
     \begin{enumerate}
     \item[$i \leq \mu$:] on partial transcript $T [i - 1]$, prover's messages
-      $m_{i 1}, \ldots m_{i k_i}$ and oracles
-      $\smallset{\oracleo_{\p{p_{i}}}}_{i = 1}^{k'_i}$ sends in Round $i$ 
+      $m_{i, 1}, \ldots m_{i, k'_i}$ and oracles
+      $\smallset{\oracleo_{\p{p_{i, j}}}}_{i = k'_i + 1}^{k_i}$ sends in Round $i$ 
       \begin{itemize}
       \item a protocol building challenge $\beta_i$, or
       \item a evaluation challenge $\chz_i$.
@@ -1655,14 +1691,31 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
       equation $\vereq$
     \end{enumerate}
   \end{description}
-\end{definition}
+
+  \iffalse
+  We also require that
+  \begin{enumerate}
+  \item The messages $m_{i, 1}, \ldots, m_{i, k'_i}$ sent by the prover in Round $i$ are
+    polynomials that depends only on previous prover's messages, verifier's
+    challenges and polynomial oracles. For message $m_{i, j}$ we write
+    $\p{m}_{i, j} (\vec{B})$ to express that. 
+  \item There is the smallest index $(i', j')$ such that for all
+    $B_i \in \smallset{B_1, \ldots, B_l}$ there is a polynomial
+    $\p{p}_{i, j} (X, \vec{B})$ preceding $\p{p}_{i', j'} (X, \vec{B})$ that has
+    non-zero coefficient next to $B_i$.
+  \item For $(i, j) \geq (i', j')$, polynomial $\p{p_{i, j}}$ is determined by the
+    previous polynomials, prover's messages and verifier's challenges.
+    \fi
+  \end{enumerate}
 
 \begin{definition}[Polynomial independence]
-  Let $\smallset{\p{p_{i j}} (X, \vec{b})}$ be polynomials which the prover set
+  Let $\smallset{\p{p_{i, j}} (X, \vec{b})}$ be polynomials which the prover set
   oracles for. We call these polynomials \emph{independent} if
-  $\smallset{\p{p_{i j}} (X, \vec{B})}$ are linearly independent.
+  $\smallset{\p{p_{i, j}} (X, \vec{B})}$ are linearly independent.
 \end{definition}
 
+\michals{25.11}{If we add $m$ as polynomials how that affects independence?}
+  
 \begin{definition}[Some weak version of uber assumption]
   \michals{24.11}{We don't need a full-blown uber assumption here (probably).}
 \end{definition}
@@ -1674,7 +1727,18 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
   $\smallset{\p{p_{i j}} (X, \vec{b})}$ be independent. Then $\PS$ is zero-knowledge
   with simulator $\simulator$ proceeding as follows:
   \begin{enumerate}
-  \item it picks polynomials $\smallset{\p{p_{i j}} (X, \vec{b})}$ randomly
+  \item Let $(i', j')$ be an index of the first polynomial from
+    $\smallset{\p{p}_{i j}(X, \vec{B})}_{i j}$ such that for all $B_1, \ldots, B_l$
+    there is a preceding polynomial $p_{i'', j''} (X, \vec{B})$ that has non-zero
+    coefficient next to $B_i$. \michals{24.11}{After and including
+      $\p{p_{i' j'}} (X, \vec{B})$ all polynomials are already fixed.} The simulator
+    picks polynomials $\smallset{\p{p_{i j}} (X, \vec{b})}$, for $(i, j) < (i', j')$,
+    randomly.
+  \item Since polynomials $p_{i j} (X, \vec{B})$, for $(i, j) \geq (i', j')$ have
+    randomness fixed, i.e.~they do not introduce any new $B_i$, they can be computed
+    deterministically from the preceding polynomials \michals{24.11}{Stated as this
+      it may not be true. What if some stupid protocol simply use part of the witness
+    as a coefficient for some polynomial that don't use $\vec{B}$?}
   \end{enumerate}
 \end{definition}
 
