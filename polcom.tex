@@ -1,24 +1,25 @@
 % !TeX spellcheck = en_UK
- \let\accentvec\vec              
 \documentclass[runningheads,11pt]{llncs}
-\let\spvec\vec \let\vec\accentvec
+\let\spvec\vec
+\let\vec\accentvec
+
 \newcommand\hmmax{0}
 \newcommand\bmmax{0}
-
-\usepackage{amssymb,amsmath}
-\let\vec\spvec
-%\usepackage{lmodern}
-\usepackage{newtxmath,newtxtext}
-%\usepackage{fouriernc}
-%\usepackage[T1]{fontenc}
-% \def\vec#1{\mathchoice{\mbox{\mathbf$\displaystyle#1$}}
-% {\mbox{\mathbf$\textstyle#1$}} {\mbox{\mathbf$\scriptstyle#1$}}
-% {\mbox{\mathbf$\scriptscriptstyle#1$}}}
 
 \DeclareFontFamily{U}{mathx}{\hyphenchar\font45}
 \DeclareFontShape{U}{mathx}{m}{n}{<-> mathx10}{}
 \DeclareSymbolFont{mathx}{U}{mathx}{m}{n}
 \DeclareMathAccent{\widebar}{0}{mathx}{"73}
+
+\let\spvec\vec
+\usepackage{amssymb,amsmath}
+\let\vec\spvec
+\usepackage{newtxmath,newtxtext}
+\usepackage[T1]{fontenc}
+
+  \def\vec#1{\mathchoice{\mbox{\boldmath$\displaystyle#1$}}
+  {\mbox{\boldmath$\textstyle#1$}} {\mbox{\boldmath$\scriptstyle#1$}}
+  {\mbox{\boldmath$\scriptscriptstyle#1$}}}
 
 \usepackage{bm}
 
