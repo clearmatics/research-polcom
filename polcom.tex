@@ -90,6 +90,8 @@
     definitions which would emphasize more the structure of PHP,
     but would not narrow a class of possible (from the practical point of view)
     PHP too much, cf.~\cref{def:wepiop,def:sdwepiop}.
+    \michals{15.11}{Comment re PHP: it doesn't allow to efficiently check statements
+      like ``coefficient of $X^n$ is $0$'' what is used e.g.~in Sonic.}
   \end{compactenum}
   
 \end{abstract}
@@ -101,7 +103,7 @@
   Let $NIZK = (\kgen, \prove, \verify)$ be a NIZK proof system
   with a simulator $(\simgen, \simprove)$.
   Let $\oracles(\srs, \td, \inp, \wit)$ be an oracle that when $(\inp, \wit)\in
-  \REL$, runs $\pi \gets \simprove(\srs, \tau, \inp)$ internally, records $(\pi,\inp)$ in $Q$, and returns $\pi$.
+  \REL$, runs $\pi \gets \simprove(\srs, \td, \inp)$ internally, records $(\pi,\inp)$ in $Q$, and returns $\pi$.
   We say that $NIZK$ is \emph{simulation extractable} if for any $\ppt$
   adversary $\adv$ with oracle access to $\oracles$ and $\ro$ there exists extractor
   $\ext_{\adv}$ such that
@@ -132,6 +134,7 @@
   \leq \negl.
 \]
 \end{definition}
+\antonio{19/10/2021}{The definition mention $\ro$, I guess it is an error.}
 
 \paragraph{Polynomial commitment scheme.}
 \label{sec:poly_com}
@@ -176,6 +179,7 @@ $\PCOM$:
 	\]
 
 \end{description}
+\antonio{19/10/2021}{Why do we need to use vectors to define Evaluation Binding? Does the security notion for $l=1$ imply already the notion for $l>1$?}
 	
 
 \begin{description}
@@ -214,6 +218,8 @@ knows the underlying polynomial $\p{f}$ which commits to that value.
 
 \markulf{23/08}{Wondering if the $\verify$ condition is really needed for extraction. In the AGM, if the adversary only sees the $\srs$ it has to output group element that is a linear combination of it.}
 \michals{25.08}{You may be right that it is not necessary}
+\antonio{19/10/2021}{I don't understand this definition. I think something is missing here: what's the rola of
+$\adv_2$? how do we use $y,o$ in the event of the probability above? Is the commitment deterministic?}
 
 
 
@@ -263,17 +269,18 @@ $\adv$
   \label{def:sepcom}
   Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment
   scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
-  committed.
+  committed. Let $\oraclec(c)$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(c,x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$.
   Let $\oracles$ be an oracle which on input
   \begin{description}
 %   \item [$(\msg{commit}, f)$:] returns commitment $c = \com(f)$ and adds $(f,
 % c)$ to list $Q$.
 \item[$(\msg{commit})$:] Run $c \gets \simsample(\secparam)$, add $c$ to $Q_{com}$, return $c$.
-  \item[$(\msg{open}, c, x', y)$:] If $c\in Q_{{com}}$ and $x'\neq x$, run
-		$o\gets \simopen(\td,c,x,y)$, \michals{25.08}{$x'$ instead of $x$?}\antonio{02.09}{It's not clear
-		what $x$ should be} add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise return $\bot$.
+  \item[$(\msg{open}, c, x', y)$:] If $c \in Q_{{com}}$ and $x'\neq x$, run
+		$o\gets \simopen(\td,c,x',y)$, \antonio{02.09}{It's not clear
+		what $x$ should be}\michals{16.11}{Explained later} add $(c,x',y,o)$ to $Q_{op}$, and return $o$. Otherwise
+  return $\bot$.
   \end{description}
-  $Q_{sim}= (Q_{com},Q_{op})$. Let $\oraclec(c)$ be an oracle that when $Q_{chal}= \bot$, samples $x$, sets $Q_{chal}=(c,x)$ and $q_{{chal}}= |Q_{{op}}|$, and returns $x$. Otherwise it returns $\bot$
+  $Q_{sim}= (Q_{com},Q_{op})$.
   We say that $\PCOM$ is \emph{simulation extractable} if for any $\ppt$
   adversary $\adv$ with oracle access to $\oracles$ and $\oraclec$ there exists extractor
   $\ext_{\adv}$ such that
@@ -302,7 +309,12 @@ $\adv$
   \right.\right]
   \leq \negl.
 \]
-\michals{25.08}{minor thing -- we should allow the commitment scheme to be randomizable}
+\markulf{2.09}{in that case the extractor would also have to output the randomness}
+\michals{25.08}{minor thing -- we should allow the commitment scheme to be
+  randomizable}
+\michals{16.11}{On PCOM randomization: should we ask the extractor to extract
+  commitment randomness as well or maybe we just require that the commiment $c$ is in
+  the image $IM(\com(f))$? I think the former suits better.}
 % \[
 %   \Pr \left[
 %     \begin{aligned}
@@ -344,7 +356,7 @@ We say that $\verify'_{{X,x,y}}$ is satisfied symbolically, if $\verify'_{{X,x,y
 The symbolic transcript consists of the SRS $\{[X^{i}]_{1}\}, [X]_{2}$, simulated commitments $\{[A_{i}]_{1}$, and simulated opening proofs $ [\frac{A_{ij}-y_{{ij}}}{X-x_{ij}}]\}$.
 
 The honest verification equation is
-$[f(X) - y]_1 \circ [h]_{2} - [q(X)]_1 \circ [X-x]_{2}=0$ while an adversary can
+$[f(X) - y]_1 \bullet [h]_{2} - [q(X)]_1 \bullet [X-x]_{2}=0$ while an adversary can
 provide rational functions
 $f(X, \{A_{i}\}) = \sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3ij}
 \frac{A_{i}-y_{ij}}{X-x_{ij}}$ and
@@ -355,7 +367,7 @@ The security game gives us that $x$ is sampled independently from $x_{ij}$ for $
 
 We inline to get the following equation which we then analyze in detail,
 \begin{align*}
-  \left[\sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - y\right]_{1} \!\!\!\circ\! [1]_{2} - \left[\sum O_{1i} X^{i} + \sum O_{2i} A_{i} + \sum O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}\right]_{1} \!\!\!\circ\! [X-x]_{2} = 0
+  \left[\sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - y\right]_{1} \!\!\!\bullet\! [1]_{2} - \left[\sum O_{1i} X^{i} + \sum O_{2i} A_{i} + \sum O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}\right]_{1} \!\!\!\bullet\! [X-x]_{2} = 0
   \end{align*}
 
 We now look at different (rational) monomials in $T$ of this equation to derive constraints on $C_{1i}, C_{{2i}},C_{{3ij}}$ and $O_{1i},O_{2i},O_{3ij}$ imposed by the verification equation:
@@ -372,8 +384,9 @@ C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{i
 C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}) - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} \delta_{ij} = 0
        \end{align*}
 
+       \markulf{2.09}{We require that $\delta_{ij} \neq 0$}
 \begin{itemize}
-  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}$:] $C_{3i} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{{3i}}\delta_{ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}=0$. As
+  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}$:] $C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{{3ij}}\delta_{ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}=0$. As
     $C_{3ij}=0$ for $j>q^{i}_{chal}$, it follows that $O_{{3ij}}=0$ for $j>q^{i}_{chal}$. Otherwise, we have $O_{3ij}= C_{3ij}/\delta_{ij}$.
   \item[$A_{i}$:] $C_{2i} A_{i} - \sum O_{3ij} A_{i}=0$.
 \end{itemize}
@@ -438,14 +451,14 @@ We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{chal}; r)$ by parsing $Q_{chal}$ as $((c
   scheme with a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of polynomials that can be
   committed. 
   We consider the same $\oracles$ and $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments and openings $\vec{c}, \vec{y}, \vec{o}$.
-   Let $\ro_{aux}(aux,\vec{c})$ be an oracle that when $Q_{\ro}[aux,\vec{c}] = \bot$, samples $x$, sets $Q_{\ro}[aux,\vec{c}]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns $Q_{\ro}[aux,\vec{c}]$.
+   Let $\ro_{aux}(\vec{c},aux)$ be an oracle that when $Q_{\ro}[\vec{c},aux] = \bot$, samples $x$, sets $Q_{\ro}[\vec{c},aux]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns $Q_{\ro}[\vec{c},aux]$.
   We say that $\PCOM$ is \emph{vector $\ro_{aux}$ simulation extractable} if for any $\ppt$
   adversary $\adv$ with oracle access to $\oracles$ and $\ro_{aux}$ there exists extractor
   $\ext_{\adv}$ such that
 \[
   \Pr \left[
     \begin{aligned}
-      & x \gets \ro_{aux}(aux,\vec{c}), \\
+      & x \gets \ro_{aux}(\vec{c},aux), \\
       & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
       & \;\vec{c} \neq \com(\srs, \vec{\p{f}})\\
     \end{aligned}
@@ -473,17 +486,15 @@ We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{chal}; r)$ by parsing $Q_{chal}$ as $((c
 \paragraph{A vectored simulation extractable polynomial commitment is also vectored $\ro_{aux}$ SE.}
 From $(aux, \vec{c}, \vec{y}, \vec{o}) \gets \adv^{\oracles,\ro_{aux}}(\srs; r)$ we build $(\vec{y},\vec{o}) \gets \adv_{i}^{\oracles,\oraclec}(\srs; r\|(Q_{\ro}\setminus x_{i}))$ that simulates $\ro_{aux}$ on the $i$th query using the value $x_{i}$ returned by $\oraclec$ and using its extended random tape otherwise.
 
-On the same $r$ and $x$, whenever $\adv$ passes verification using $aux,\vec{c}$ that were passed in the $i$th query to $\ro_{aux}$, then $\adv_{i}$ passes verification.  Thus by Definition 2 there exist extractors $\Ext_{\adv_{i}}$ that succeeds to extract for most $r$, $x$ and $\oracles$ randomness under that condition.
+On the same $r$ and $x$, whenever $\adv$ passes verification using $\vec{c},aux$ that were passed in the $i$th query to $\ro_{aux}$, then $\adv_{i}$ passes verification.  Thus by Definition 2 there exist extractors $\Ext_{\adv_{i}}$ that succeeds to extract for most $r$, $x$ and $\oracles$ randomness under that condition.
 
 We build $\Ext_{\adv}(\srs, Q_{sim}, Q_{\ro}; r)$ by running both $\adv$
 internally by simulating $\oracles$ and $\ro_{aux}$ using $Q_{sim}$ and
 $Q_{\ro}$, and by running all $\Ext_{\adv_{i}}$ as $\p{f}_{i}\gets
 \Ext_{\adv_{i}}(\srs,Q_{sim},Q_{chal_{i}}; r\|(Q_{\ro}\setminus x_{i}))$ by
 splitting $Q_{\ro}$ into $Q_{chal_{i}}$ and $Q_{\ro}\setminus x_{i}$ to return
-$\p{f}_{i}$ whenever $\adv$ passed $aux,\vec{c}$ in the $i$th query to
+$\p{f}_{i}$ whenever $\adv$ passed $\vec{c},aux$ in the $i$th query to
 $\ro_{aux}$.
-
-\michals{25.08}{Don't we need implication in another direction as well?}
 
 \iffalse
 \begin{definition}[Simulation extractable polynomial commitment]
@@ -598,6 +609,7 @@ $\ro_{aux}$.
 }
 \fi
 
+\iffalse
  \begin{definition}[One-to-many openable\hl{Good name needed}]
    We call a commitment scheme $\PCOM$ one-to-many openable \hl{good name
      needed} if for any $\adv$ who outputs commitments $c_1, \ldots, c_k$,
@@ -612,7 +624,8 @@ $\ro_{aux}$.
 
  \michals{23.06}{That's easy for KZG batched as in Plonk (with minor difference)
    -- just get a number of batch openings and do Gaussian elimination.}
-
+\fi
+ 
  \begin{definition}
 \hl{The proof system and the polynomial commitment scheme use virtually the same
 SRS. (Both SRS could differ in some efficiency related elements, but computation
@@ -1152,7 +1165,7 @@ such that
                \gamma)\p{z}(X \omega))  \frac{1}{\p{Z_H}(X)} \\
 	\p{t_3}(X) & =  (\p{z}(X) - 1) \lag_1(X) \frac{1}{\p{Z_H}(X)}
 \end{align*}
-Output $\cp{t_i} = \gone{\p{t_i}(\xi)}$, for $i \in \range{1}{3}$. \markulf{24/08}{Why isn't this: 	Output polynomial commitment $\PCOM.\com(\p{z}(X))$?}\michals{30.08}{Fixed}
+Output $\cp{t_i} = \gone{\p{t_i}(\xi)}$, for $i \in \range{1}{3}$.
 	
 \item[Round 4] Get the challenge $\chz \in \FF_p$, $\chz = \ro(\zkproof[0..3])$.
   Output evaluations
@@ -1167,9 +1180,7 @@ Output $\cp{t_i} = \gone{\p{t_i}(\xi)}$, for $i \in \range{1}{3}$. \markulf{24/0
 	%Compute the opening challenge $v \in \FF_p$, $v = \ro(\zkproof[0..4])$.
 	Compute the openings for the polynomial commitment scheme
         \michals{11.08}{Need to add that commitment scheme is additively homomorphic}
-        \markulf{25.08}{Challenge $\nu$ doesn't seem to be used by simplified
-          protocol}
-        \michals{30.08}{Fixed}
+
   \begin{align*}
     & \p{W_\chz^{t_1}} = \PCOM.\open(\srs, \cp{t_{1}}, \p{t_1}(\chz)) \\
     & \p{W_\chz^{t_2}} = \PCOM.\open(\srs, \cp{t_{2}}, \p{t_2}(\chz)), \\
@@ -1238,7 +1249,7 @@ $\plonk$ proof system by $\plonkprotfs^{\kzg}$, where $\kzg$ denotes the KZG
 polynomial commitment scheme.
 
 \begin{theorem}
-  Let $\PCOM$ be a polynomial commitment scheme that is binding, simulation-extractable, and a commitment of knowledge,
+  Let $\PCOM$ be a polynomial commitment scheme that is evaluation-binding, binding, simulation-extractable, and a commitment of knowledge,
   then $\plonkprotfs^{\PCOM}$ is simulation extractable.
 %  \michals{16.08}{$(3, \eps)$-aux-simulation-extractable -- $3$ polynomials are
 %    extracted, $1 - \eps$ is probability of extractor's success, aux -- see how
@@ -1253,7 +1264,7 @@ We describe $\oraclesps,\ro$ in terms of calls to $\oraclespcom,\ro_{\aux}$.
 \noindent
 We simulate $\ro(x_{1}\|x_{2})$ via calls to $\ro_{aux}(x_{1},x_{2})$, where
 $x_{1}$ has the length of 3 commitments. \michals{30.08}{sometimes more than
-  just 3}
+  just 3}\markulf{02.09}{I switched the order to be $\vec{c},aux$, so it should be 3 no? I think that order is more intuitive, though aux also contains instance $\inp$?.}
 
 \noindent
 Queries to $(\inp, \wit)$ to $\oraclesps$ are answered as follows:
@@ -1270,6 +1281,7 @@ Queries to $(\inp, \wit)$ to $\oraclesps$ are answered as follows:
       \item Compute evaluations $\p{S_{\sigma 1}}(\chz)$,
         $\p{S_{\sigma 2}}(\chz)$ and simulate openings $W^{\p{S_{\sigma 1}}}_\chz$,
         $W^{\p{S_{\sigma 2}}}_\chz$ for commitments in $\srss$.
+\markulf{02.09}{Probably a good idea for fixed polynomials. In fact, we probably have to do it this way.}
         \michals{30.08}{Why not computing them honestly?}
 								\antonio{02.09}{Good question. I think that it is better to ask the simulator, the
 								reason is that we could imagine a PolyCom (not KZG, I mean a generic one) that
@@ -1342,7 +1354,7 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
     \item Compute
       $\aux = (\beta, \gamma, \cp{z}, \cp{t_1},
       \cp{t_2}, \cp{t_3})$. \michals{30.08}{aux independent on the instance,
-        does it matter?}
+        does it matter?}\markulf{02.09}{You are right, we need $\inp$ here.j}
     \item Output
       \begin{itemize}
       \item commitments $\cp{a}$, $\cp{b}$, $\cp{c}$,
@@ -1497,158 +1509,9 @@ We equip adversary $\bdv$ with $\adv$'s code and randomness
 
   \ncase{$\game{5} \mapsto \game{6}$}
   \michals{30.08}{Reduction to a php adversary}
+
+  \end{proof}
   
-  { \Huge{Old proof}}
-  
-  \ncase{Game 3} Let $\cp{a}, \cp{b}, \cp{c}, \cp{z}, \cp{t_1}, \cp{t_2}, \cp{t_3}$ be
-  commitments sent by the prover in a proof $\zkproof$, and
-  $\p{a}, \p{b}, \p{c}, \p{z}, \p{t_1}, \p{t_2}, \p{t_3}$ the corresponding
-  polynomials.  Denote the set of commitments by $\p{C}$ and set of polynomials
-  by $\p{F}$.
-
-  In this game we consider a set of algebraic adversary $\ddv_{\p{f}}(\srsPC)$,
-  $\pf \in \p{F}$, that
-  \begin{itemize}
-  \item internally run $\adv$ and $\cdv$,
-  \item have access to the random oracle $\ro$.
-  \end{itemize}
-
-  Let $\inp, \zkproof$ be the challenge instance--proof pair output by the
-  adversary $\adv$ that contain commitments
-  $\cp{a}, \cp{b}, \cp{z}, \cp{t_1}, \cp{t_2}, \cp{t_3}$ to polynomials
-  $\p{a}, \p{b}, \p{z}, \p{t_1}, \p{t_2}, \p{t_3}$. Denote the set of
-  commitments by $\p{C}$ and set of polynomials by $\p{F}$. For
-  $\p{f} \in \p{F}$, adversary $\cdv_{\p{f}}$ outputs $\cp{\p{f}}$.
-
-  Since $\cdv_{\p{f}}$ are algebraic, there exists extractors
-  $\ext_{\cdv_{\p{f}}}(\srsPC, {\qro}_{\p{f}}, r_{\p{f}})$ that output
-  $\p{f}$. Here ${\qro}_{\p{f}}$ is a set of all random oracle queries made by
-  $\cdv_{\pf}$ and responses it got. As usual, $r_\pf$ denotes $\cdv_\pf$'s
-  randomness.
-
-  \michals{24.08}{That's actually a set of games -- for each adversary and
-    extractor separately} The game returns $1$ if some of the extractors fail to
-  output a correct polynomial and $0$ otherwise.
-  
-  \michals{23.08}{In the following we reduce to a state-restoration soundness of
-    the PHP (i.e. the proof system is non interactive, instantiated with a
-    random oracle)}
-
-  \ncase{$\game{2} \mapsto \game{3}$} Here the game $\game{3}$ outputs the same
-  value as $\game{2}$ except when one of the extractors fail. That happens with
-  probability upper-bounded by $(1 - (1 - \epsext(\secpar))^{7})$ which is negligible for
-  negligible $\epsext(\secpar)$.
-
-  \ncase{Game 4} In this game we consider a PHP adversary $\edv$ that internally
-  runs $\ddv_{\pf}$ and $\ext_{\ddv_{\pf}}$, for $\pf \in \p{F}$. We show that
-  if the adversary $\adv$ manages to produce a proof $\zkproof$ for instance
-  $\inp$ that verifies correctly, but the extracted polynomials do not encode a
-  valid witness, then one can break PHP state-restoration soundness of the
-  corresponding $\PHP$. $\edv$ proceeds as follows:
-  \begin{enumerate}
-  \item \label{it:get_a_b_c} Run $\ddv_{\p{a}}, \ddv_{\p{b}}, \ddv_{\p{c}}$ with
-    $\ext_{\ddv_\p{a}}(\srsPC, \qro_{\p{a}}, r_{\p{a}}),
-    \ext_{\ddv_\p{b}}(\srsPC, \qro_{\p{b}}, r_{\p{b}}),
-    \ext_{\ddv_\p{c}}(\srsPC, \qro_{\p{c}}, r_{\p{c}})$ to learn polynomials
-    $\p{a}, \p{b}, \p{c}$. If these polynomials encode witness $\wit'$, such
-    that $\REL(\inp, \wit') = 1$ then the game returns $0$, else the polynomials
-    are sent to $\PHP.\verifier$.
-  \item On $\PHP.\verifier$ challenges $\beta, \gamma$,
-    \begin{enumerate}
-    \item Run $\ddv_{\p{z}}(\srsPC)$ such that on $\ddv_{\p{z}}$'s random oracle
-      call on $(\inp, \cp{a}, \cp{b}, \cp{c})$ answer with $(\beta, \gamma)$;
-    \item Append $((\inp, \cp{a}, \cp{b}, \cp{c}), (\beta, \gamma))$ to lists
-      $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
-    \item If $\ddv_{\p{z}}$ outputs proof for $\inp$ containing $\cp{a}, \cp{b},
-      \cp{c}$ then go to \cref{it:get_z};
-    \item Else, if $\ddv_{\p{z}}$ rewinds the proof and queries the random
-      oracle on $(\inp', \cp{a'}, \cp{b'}, \cp{c'})$, 
-      \begin{enumerate}
-      \item Rewind the verifer $\PHP.\verifier$ and get fresh challenges
-        $\beta', \gamma'$.
-      \item Append $(\inp', \cp{a'}, \cp{b'}, \cp{c'}), (\beta', \gamma')$ to
-        lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
-      \item Go back to \cref{it:get_a_b_c} and run
-        $\ddv_{\p{a'}}, \ddv_{\p{b'}}, \ddv_{\p{c'}}$ along with corresponding
-        extractors to get $\p{a'}, \p{b'}, \p{c'}$.
-      \end{enumerate}
-    \end{enumerate}
-  \item \label{it:get_z} Run $\ext_{\p{z}}$ to learn $\p{z}$, send $\p{z}$ to $\PHP.\verifier$.
-  \item On $\PHP.\verifier$ challenge $\alpha$.
-     \begin{enumerate}
-     \item Run
-       $\ddv_{\p{t_1}}(\srsPC), \ddv_{\p{t_2}}(\srsPC), \ddv_{\p{t_3}}(\srsPC)$
-       such that on $\ddv_{\p{t_i}}$'s, $\p{i} \in \range{1}{3}$, random oracle
-       call on $(\inp, \cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z})$ answer
-       with $\alpha$;
-     \item Append
-       $((\inp, \cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}), \alpha)$ to
-       lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
-     \item If all $\ddv_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ finalizes its proof
-       for $\inp$ with $\cp{a}, \cp{b}, \cp{c}, \beta, \gamma, \cp{z}$ then go
-       to \cref{it:get_t_i};
-     \item Else, some $\ddv_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ rewinds the
-       proof and queries the random oracle on
-       $(\inp', \cp{a'}, \cp{b'}, \cp{c'})$,
-      \begin{enumerate}
-      \item Rewind the verifer $\PHP.\verifier$ and get fresh challenges
-        $\beta', \gamma'$.
-      \item Append $(\inp', \cp{a'}, \cp{b'}, \cp{c'}), (\beta', \gamma')$ to
-        lists $\qro_{\p{f}}$, for $\p{f} \in \p{F}$.
-      \item Go back to \cref{it:get_a_b_c} and run
-        $\ddv_{\p{a'}}, \ddv_{\p{b'}}, \ddv_{\p{c'}}$ along with corresponding
-        extractors to get $\p{a'}, \p{b'}, \p{c'}$.
-      \end{enumerate}
-    \end{enumerate}
-  \item \label{it:get_t_i} Run $\ext_{\p{t_i}}$, $\p{i} \in \range{1}{3}$ to learn $\p{z}$, send
-    $\p{t_i}$, $\p{i} \in \range{1}{3}$ to $\PHP.\verifier$.
-  \end{enumerate}
-  The game returns $1$ if the PHP verifier $\PHP.\verifier$ accepts the proof
-  yet the sent polynomials $\p{a}, \p{b}, \p{c}$ does not encode a valid
-  witness. This can happen only with probability $\epssr$ as it breaks
-  state restoration soundness of $\PHP$.
-
-  \ncase{$\game{3} \mapsto \game{4}$}
-  \michals{25.08}{I am not sure how to show that this transition changes output
-    of the game with negligible probability only. The problem I have here is
-    that we rewind adversaries unspecified number of times (it shouldn't be that
-    many times as the sr-snd adversary is polynomial). Each rewinding requiers
-    to run an extractor, which may fail. In that case we loose. But with
-    multiple rewindings, probability that some of the extraactors fail increases.}
-  \markulf{25.08}{Number of polynomial submitted to $\ro$ is polynomial, a polynomial sum of negligible probabilities is still negligible?}
-  \qed
-    \end{proof}
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 \section{DRAFT-Notes on transformation to Universal Interactive Arguments}
 
 \antonio{02.08}{Writing this note to convince myself that things aren't so easy as I
@@ -1749,8 +1612,868 @@ More in detail, if
 $\vec y = (\vec M_0, \vec M_1) \pmtrx{\vec x\\\vec x'}$ and $\vec x' = \vec N \vec x$ then
 easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
 
+\section{Results from the Edinburgh visit}
+\newcommand{\Qop}{Q_{op}}
+\newcommand{\Qsim}{Q_{sim}}
+\newcommand{\Qchal}{{Q_{chal}}}
+\newcommand{\Qh}{Q_{ro}}
 
+%\newcommand{oraclechal}{\oracleo_{chal}}
+
+\newcommand{\qop}{q_{op}}
+\newcommand{\qchal}{q_{chal}}
+
+\subsection{Proof system definitions}
+
+\begin{definition}[Evaluation ready polynomial]
+  Let $\p{p} (\vec{X})$ be a polynomial over random variable $\vec{X}$. We call
+  $\p{p}$ \emph{evaluation ready} if all $X \in \vec{X}$ have been already realised.
+\end{definition}
+
+\subsubsection{The idealised proof system}
+  \label{def:ps}
+  In the idealised proof system $\PS = (\indexer, \prover, \verifier)$ the indexer
+  $\indexer$ provides index $\ind$, prover $\prover$ sends in each Round $i$ messages
+  $m_{i, 1}, \ldots m_{i k'_i}$ and sets up polynomial oracles for polynomials
+  $\p{p}_{i, 1} (\vec{X}, \vec{B}), \ldots, \p{p}_{i, k_i} (\vec{X}, \vec{B})$. We
+  denote by $l$ length of vector $\vec{B}$ and by $l'$ length of vector $\vec{X}$.
+  The
+  verifier sends challenges, which we divide into two groups: \emph{protocol building
+    challenges} $\beta_{i, j}$ and / or \emph{evaluation challenges} $\chz_{i, j}$.
+  Vector $\vec{X}$ denotes a random variable (or a vector of random variables)
+  corresponding to evaluation challenges. That is, for each evaluation challenge
+  $\chz_{i, j}$ the protocol specifies which $X \in \vec{X}$ are realised by
+  $\chz_{i, j}$. Importantly, 
+
+  We interpret messages $m_{i, j}$ sent by the prover as polynomials that are
+  independent of any random variables in $(\vec{X}, \vec{B})$ which has not been
+  realised yet. For the sake of convenience, we write
+  $\p{p}_{i, j + k_i} (\vec{X}, \vec{B})$ to denote $m_{i, j}$. That is, we append
+  polynomials corresponding to messages $m_{i, j}$ to the end of the list of
+  polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$. From now one, we will use only
+  $\p{p}_{i, j} (\vec{X}, \vec{B})$ and not $m_{i, j}$. Importantly, since
+  polynomials $\p{p}_{i, k_i + j} (\vec{X}, \vec{B})$ are independent of random
+  variables that have not been realised yet the prover sends their evaluations
+  directly to the verifier without setting up oracles for them. For the rest of the
+  polynomials the oracles are set up as usual.
+  
+  We call polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ a \emph{randomised
+    polynomial} if there is $B_i \in \smallset{B_1, \ldots, B_l}$ such that
+  $\p{p_{i', j'}} (\vec{X}, \vec{B}$ has non-zero coefficient next to $B_i$ while for all
+  $(i, j) < (i', j')$ coefficient next to $B_i$ is zero.  Polynomials
+  $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not \emph{randomised polynomials} are called
+  \emph{determined}.
+
+
+  \begin{description}
+  \item[Prover]
+    \begin{enumerate}
+    \item On input $(\inp, \wit)$ the prover picks randomly evaluation
+      $\vec{b} = b_1, \ldots, b_l$ of variable $\vec{B} = B_1, \ldots, B_l$.
+    \item In Round $i$, on partial transcript $\zkproof [i - 1]$ where the last
+      verifier's message contains protocol building challenge $\beta_i$, the prover
+      sets up polynomial oracles for polynomials
+      $\smallset{\p{p_{i, j}} (\vec{X}, \vec{b})}_{j = 1}^{k_i}$ and sends polynomials
+      messages $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k'_i}$.
+    \item On evaluation challenge $\chz_{i, j}$ the prover  
+    \end{enumerate}
+  \item[Verifier]
+    \begin{enumerate}
+    \item[$i \leq \mu$:] on partial transcript $T [i - 1]$, prover's messages
+      $m_{i, 1}, \ldots m_{i, k'_i}$ and oracles
+      $\smallset{\oracleo_{\p{p_{i, j}}}}_{i = k'_i + 1}^{k_i}$ sends in Round $i$ 
+      \begin{itemize}
+      \item a protocol building challenge $\beta_i$, or
+      \item a evaluation challenge $\chz_i$.
+      \end{itemize}
+    \item[$i = \mu$] Eventually the verifier verifies the set of verification
+      equation $\vereq$
+    \end{enumerate}
+  \end{description}
+
+  \iffalse
+  We also require that
+  \begin{enumerate}
+  \item The messages $m_{i, 1}, \ldots, m_{i, k'_i}$ sent by the prover in Round $i$ are
+    polynomials that depends only on previous prover's messages, verifier's
+    challenges and polynomial oracles. For message $m_{i, j}$ we write
+    $\p{m}_{i, j} (\vec{B})$ to express that. 
+  \item There is the smallest index $(i', j')$ such that for all
+    $B_i \in \smallset{B_1, \ldots, B_l}$ there is a polynomial
+    $\p{p}_{i, j} (X, \vec{B})$ preceding $\p{p}_{i', j'} (X, \vec{B})$ that has
+    non-zero coefficient next to $B_i$.
+  \item For $(i, j) \geq (i', j')$, polynomial $\p{p_{i, j}}$ is determined by the
+    previous polynomials, prover's messages and verifier's challenges.
+    \fi
+  \end{enumerate}
+
+\begin{definition}[Polynomial independence]
+  Let $\smallset{\p{p_{i, j}} (X, \vec{b})}$ be polynomials which the prover set
+  oracles for. We call these polynomials \emph{independent} if
+  $\smallset{\p{p_{i, j}} (X, \vec{B})}$ are linearly independent.
+\end{definition}
+
+\michals{25.11}{If we add $m$ as polynomials how that affects independence?}
+  
+\begin{definition}[Some weak version of uber assumption]
+  \michals{24.11}{We don't need a full-blown uber assumption here (probably).}
+\end{definition}
+
+\begin{definition}[Zero knowledge]
+  \michals{24.11}{Need to formalize that the simulator picks some of the polynomials
+    randomly and some such that verification equation holds.}
+  Let the protocol be a proof system $\PS$ as described in \cref{def:ps} and let
+  $\smallset{\p{p_{i j}} (X, \vec{b})}$ be independent. Then $\PS$ is zero-knowledge
+  with simulator $\simulator$ proceeding as follows:
+  \begin{enumerate}
+  \item Let $(i', j')$ be an index of the first polynomial from
+    $\smallset{\p{p}_{i j}(X, \vec{B})}_{i j}$ such that for all $B_1, \ldots, B_l$
+    there is a preceding polynomial $p_{i'', j''} (X, \vec{B})$ that has non-zero
+    coefficient next to $B_i$. \michals{24.11}{After and including
+      $\p{p_{i' j'}} (X, \vec{B})$ all polynomials are already fixed.} The simulator
+    picks polynomials $\smallset{\p{p_{i j}} (X, \vec{b})}$, for $(i, j) < (i', j')$,
+    randomly.
+  \item Since polynomials $p_{i j} (X, \vec{B})$, for $(i, j) \geq (i', j')$ have
+    randomness fixed, i.e.~they do not introduce any new $B_i$, they can be computed
+    deterministically from the preceding polynomials \michals{24.11}{Stated as this
+      it may not be true. What if some stupid protocol simply use part of the witness
+    as a coefficient for some polynomial that don't use $\vec{B}$?}
+  \end{enumerate}
+\end{definition}
+
+\iffalse
+\subsection{Polynomial commitment SE definitions equivalence}
+
+\begin{definition}[Simple simulation extractability]
+  \label{def:se_bdv0}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed. Let $\oraclec (c)$ be an oracle that when
+  $\Qchal = \bot$, samples $x$, sets $\Qchal = (c, x)$ \mxout{and $\qchal = \abs{\qop}$} and
+    returns $x$. Otherwise it returns $\bot$. Let $\oracles$ be an oracle which on
+    input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x'$ not returned by $\oraclec_0$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$.
+     \end{description}
+     $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_0$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_0}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \verify(\srs, c, x, y, o) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & (c, x, y, o) \gets \bdv_0^{\oracles,\oraclec}(\srs; r), \\
+             & (c, x) = \Qchal, \\
+             & \p{f} \gets \ext_{\bdv_0}(\srs, Q_{sim}, Q_{chal}; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+     \]
+\end{definition}
+
+\begin{definition}[Flexible simulation extractability]
+  \label{def:se_bdv1}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed. $\oraclec$ takes as input $c$ and samples
+  challenge $x$, then it adds the challenge to, initially empty, list
+  $\Qchal[c]$.  Eventually, $\oraclec$ returns $x$. Let $\oracles$ be an oracle which on input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \not\in \Qchal[c]$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$.
+     \end{description}
+     Let $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_1$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_1}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \verify(\srs, c, x, y, o) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & (c, x, y, o) \gets \bdv_1^{\oracles,\oraclec}(\srs; r), \\
+             & x \in \Qchal[c], \\
+             & \p{f} \gets \ext_{\bdv_1}(\srs, Q_{sim}, Q_{chal}; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv0}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv1}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_1}$ from $\ext_{\bdv_0}$. We denote by
+  $\bdv_0^{j}$, $j \in \range{1}{\abs{\Qchal_2}}$ an adversary who internally runs
+  $\bdv_1$ and provides it with access to oracles $\oracles$ and $\oraclec_1$ by
+  passing its queries to $\oracles$ and $\oraclec_0$. Since $\oraclec_0$ takes a
+  single input a commitment $c$, while $\oraclec_1$ allows the adversary to query the
+  oracle multiple time, $\bdv_0^{j}$ processes $\bdv_1$ calls to $\oraclec_1$ as
+  follows. For a $j$-th query $c_j$ and the corresponding challenge $x$, $\bdv_1^{j}$
+  takes commitment $c_j$, submits it to $\oraclec_0$ and get a challenge $x$. For all
+  other queries, $\bdv_0$ returns a random $x$, see below. Eventually, when $\bdv_1$ returns
+  $(c_j, x, y, o)$, $\bdv_0^{j}$ returns $(c_j, x, y, o)$ and $\bot$ if $\bdv_1$
+  returns opening for another commitments or challenge.
+
+  Extractor $\ext_{\bdv_1} (\srs, \Qsim, \Qchal_1, r_{\bdv_1})$ runs internally
+  $\ext_{\bdv_0^j} (\srs, \Qsim, \Qchal_0, r_{\bdv_0^j})$ where
+  \begin{itemize}
+  \item $\Qchal_0$ consists of a pair $(c, x)$ where $c$ is the $j$-th commitment in
+    $\Qchal_1$ and $x$ the corresponding challenge (also stored in $\Qchal_1$).
+  \item $r_{bdv_0}$ consists of $r_{\bdv_1}$ which is then passed to $\bdv_1$ run
+    internally by $\bdv_0^j$, and $r$ which compounds of commitment--challenge pairs
+    $(c', x') \in \Qchal$, such that $(c', x') \neq (c, x)$. More precisely,
+    randomness $r$ is used by $\bdv_0$ to answer $\bdv_1$'s $\oraclec_1$ queries that
+    are not the picked query $(c, x)$ that is going to be output eventually by $\bdv_0$. 
+  \end{itemize}
+\end{proof}
+
+
+\begin{definition}[Flexible simulation extractability for vector of commitments]
+  \label{def:se_bdv2}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed.  $\oraclec$ takes as input $\vec{c}$ and samples
+  challenge $x$, then it adds the challenge to, initially empty, list
+  $\Qchal[\vec{c}]$. Eventually, $\oraclec$ returns $x$. Let $\oracles$ be an oracle
+  which on input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \not\in \Qchal[c]$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$.
+     \end{description}
+     Let $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_2$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_2}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & (\vec{c}, x, \vec{y}, \vec{o}) \gets \bdv_2^{\oracles,\oraclec}(\srs; r), \\
+             & x \in \Qchal [\vec{c}], \\
+             & \p{f} \gets \ext_{\bdv_2}(\srs, \Qsim, \Qchal; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv1}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv2}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_2}$ from $\ext_{\bdv_1}$. We denote by
+  $\bdv_1^{j,k}$, $j \in \range{1}{\abs{\Qchal_2}}$, $k \in \range{1}{l}$
+  \michals{23.11}{Introduce $l$ as the length of the vector} an adversary who
+  internally runs $\bdv_2$ and provides it with access to oracles $\oracles$ and
+  $\oraclec_2$ by passing its queries to $\oracles$ and $\oraclec_1$. Since
+  $\oraclec_1$ takes as input a single commitment $c$, while $\oraclec_2$ takes
+  vectors, $\bdv_1^{j, k}$ processes $\bdv_2$ calls to $\oraclec_2$ as follows. For a
+  $j$-th query $\vec{c} = (c_1, \ldots, c_l)$ and the corresponding challenge $x$,
+  $\bdv_1^{j, k}$ takes commitment $c_j$, submits it to $\oraclec_1$ and get a
+  challenge $x$. Then it writes $(\vec{c}, x)$ in a locally stored
+  $\Qchal_2$. Eventually, when $\bdv_2$ returns $(\vec{c}, x, \vec{y}, \vec{o})$,
+  $\bdv_1^{j, k}$ returns $(c_k, x)$ where $c_k$ is $k$-th coordinate of the $j$-th
+  vector $\bdv_2$ passed to $\Qchal_2$.
+\end{proof}
+
+
+\begin{definition}[Flexible simulation extractability for vector of commitments and
+  multiple challenges]
+  \label{def:se_bdv3}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed.  $\oraclec$ takes as input $\vec{c}$ and samples
+  challenge $x$, then it adds the challenge to, initially empty, list
+  $\Qchal[\vec{c}]$. Eventually, $\oraclec$ returns $x$.  Let $\oracles$ be an oracle
+  which on input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \not\in \Qchal[c]$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$.
+     \end{description}
+     Let $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_3$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_3}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \forall i \in I, \verify(\srs, \vec{c_i}, x_i, \vec{y_i}, \vec{o_i}) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & \smallset{(\vec{c_i}, x_i, \vec{y_i}, \vec{o_i})}_{i \in I} \gets \bdv_3^{\oracles,\oraclec}(\srs; r), \\
+             & \smallset{x_i \in \Qchal[\vec{c_i}]}_{i \in I}, \\
+             & \p{f} \gets \ext_{\bdv_3}(\srs, \Qsim, \Qchal; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv2}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv3}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_3}$ from $\ext_{\bdv_2}$. We denote by
+  $\bdv_2^j$ an adversary who internally runs $\bdv_3$ and provides it with access to
+  oracles $\oracles$ and $\oraclec_3$ by passing its queries to $\oracles$ and
+  $\oraclec_2$. Eventually, when $\bdv_3$ returns
+  $\smallset{\vec{c_i}, x_i, \vec{y_i}, \vec{o_i}}_{i \in I}$, $\bdv_2^j$ returns
+  $(\vec{c_j}, x_j, \vec{y_j}, \vec{o_j})$.
+
+  Extractor $\ext_{\bdv_3} (\srs, \Qsim, \Qchal_3, r_{\bdv_3})$ internally runs $\abs{\Qchal}$
+  copies of $\ext_{\bdv_2^j}(\srs, \Qsim, \Qchal_2, r_{\bdv_2^j})$ for each $j \in
+  \range{1}{\abs{\Qchal}}$, where $r_{\bdv_2^j} = r_{\bdv_3}$ and $\Qchal_2 =
+  \Qchal_3$.
+
+  Probability of $\ext_{\bdv_3}$ succeeds is lower-bounded by probability that all fo
+  $\ext_{\bdv_2^j}$ succeeds. Assuming $\abs{\Qchal} = \poly$ and $\ext_{\bdv_2^j}$
+  succeeds with overwhelming probability, $\ext_{\bdv_3}$ succeeds with overwhelming
+  probability as well. 
+\end{proof}
+
+\begin{definition}[Flexible simulation extractability with random oracle]
+  \label{def:sepcom}
+  \label{def:se_bdv4}
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment scheme with
+  a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed.  We consider the same $\oracles$ and
+  $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments
+  and openings $\vec{c}, \vec{y}, \vec{o}$.  Let $\ro_{aux}(\vec{c},aux)$ be an
+  oracle that when $Q_{\ro}[\vec{c},aux] = \bot$, samples $x$, sets
+  $Q_{\ro}[\vec{c},aux]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns
+  $Q_{\ro}[\vec{c},aux]$.  We say that $\PCOM$ is \emph{vector $\ro_{aux}$ simulation
+    extractable} if for any $\ppt$ adversary $\bdv_4$ with oracle access to
+  $\oracles$ and $\ro_{aux}$ there exists extractor $\ext_{\adv}$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & x \gets \ro_{aux}(\vec{c},aux), \\
+      & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
+      & \;\vec{c} \neq \com(\srs, \vec{\p{f}})\\
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+      & \smallset{(\aux_i, \vec{c_i}, \vec{x_i}, \vec{y_i}, \vec{o_i})}_{i \in I} \gets
+      \bdv_4^{\oracles,\ro_{aux}}(\srs; r), \\
+      & \Qchal[\aux, \vec{c_i}] = x_i\\
+      & \vec{\p{f}} \gets \ext_{\bdv_4}(\srs, Q_{sim}, Q_{\ro}; r)
+    \end{aligned}
+  \right.\right]
+  \leq \negl,
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv3}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv4}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_4}$ from $\ext_{\bdv_3}$. To that end, we show
+  how $\bdv_3$ can use its oracles $\oracles, \oraclec_3$ to simulate
+  $\oracles, \oraclec_4$ for $\bdv_4$. $\bdv_3$ runs internally $\bdv_4$ and answers
+  its queries. First, note that the simulator oracle $\oracles$ works the same in
+  both definitions, so $\bdv_3$ only needs to simulate $\oraclec_4$ with
+  $\oraclec_3$. This is done as follows. For every query $(\vec{c}, \aux)$ to
+  $\oraclec_4$, $\bdv_3$:
+  \begin{itemize}
+  \item checks whether $(\vec{c}, \aux)$ is stored and if it is the case, returns
+    $\bot$,
+  \item if $(\vec{c}, \aux)$ is not stored, then $\bdv_3$ stores the query in
+    $\Qchal_3$ and parses it to get $\vec{c}$ which it then submits to $\oraclec_3$
+    and gets challenge $x$. Then $\bdv_3$ returns $x$ to $\bdv_4$.
+  \end{itemize}
+
+  Extractor $\ext_{\bdv_4}$ on input $(\srs, \Qsim, \Qh; r_{\bdv_4})$ runs internally
+  $\ext_{\bdv_3} (\srs, \Qsim, \Qchal_3; r_{\bdv_3})$ (which internally runs
+  $\bdv_3$) such that $\Qchal_3$ is created as above from the queries in $\Qh$ and
+  $r_{\bdv_3} \gets r_{\bdv_4}$. The latter point corresponds to the fact that
+  $\bdv_3$ uses all its randomness to internally run $\bdv_4$.
+\end{proof}
+\fi
+
+\subsection{Polynomial commitment SE definitions equivalence w.r.t.~polynomials}
+\michals{23.11}{This section is to show that SE defs are equivalent even when the
+  challenge the adversary responds to is polynomially related to the challenge output
+by the oracle}
+
+\paragraph{KZG is simulation extractable}
+
+We consider an algebraic adversary $\adv$ that outputs a matrix $K$ with coefficients
+$\{C_{{1i}}\},\{C_{{2i}}\}, \{C_{{3ij}}\}$ for the commitment $c$ and
+$\{O_{{1i}}\},\{O_{{2i}}\}, \{O_{{3ij}}\}$ for the opening proof $o$. The matrix $K$
+reconstructs $c,o$ as linear combination of the group elements in $\srs$ and
+$Q_{sim}$. We consider a representation of the group elements in $(\srs, Q_{{sim}})$
+in terms of a function $\mathsf{Tr}_{\{x_{ij},y_{ij}\}}(\tau)$ of its underlying
+secret discrete logarithms $\tau= (\xi, \alpha_{i})$, where $\xi$ is the trapdoor of
+the $\srs$ and the $\alpha_{i}$ are the randomness of simulated proofs.
+
+We move toward considering a verification equation $V'$ expressed in terms of $K$ and
+$\mathsf{Tr}_{\{x_{ij},y_{ij}\}}$ for which we have:
+$\verify (\srs, c, \p{h} (x_0), y, o) = \gone{c - y} \bullet \gtwo{1} - \gone{o} \bullet
+\gtwo{\alpha - \p{h} (x_0)} = 0$ iff
+$\verify'_{{\xi, x_0, y}}(K \cdot \mathsf{Tr}_{\{x_{ij},y_{ij}\}} (\tau)) = 0$. 
+%
+We say that $\verify'_{{X,x_0,y}}$ is satisfied symbolically, if
+$\verify'_{{X,x_0,y}}(K \cdot \mathsf{Tr}_{\{x_{ij},y_{ij}\}} (T)) = 0$ for symbolic
+variables $T=(X, \{A_{i}\})$. \changedm{Here $\p{h} (X)$ is a fixed, public,
+  non-constant polynomial that is applied to the challenge $x_0$. More precisely,
+  adversary $\adv$ given $x$ is supposed to give an evaluation of the polynomial in
+  $c$ at $\p{h} (x_0)$. We note that since $x_0$ is random and $\p{h} (X)$
+  not-constant, then $\p{h} (x_0)$ is random as well. In the following we set
+  $x = \p{h} (x_0)$.}
+
+The symbolic transcript consists of the SRS $\gone{X^{i}}, \gtwo{X}$, simulated commitments $\gone{A_{i}}$, and simulated opening proofs $ \gone{\frac{A_{ij}-y_{{ij}}}{X-x_{ij}}}$.
+%
+The honest verification equation is
+$\gone{f(X) - y} \bullet \gtwo{h} - \gone{q(X)} \bullet \gtwo{X - x} = 0$ while an
+adversary can provide rational functions
+$f(X, \{A_{i}\}) = \sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3ij}
+\frac{A_{i}-y_{ij}}{X-x_{ij}}$ and
+$q(X, \{A_{i}\}) = \sum O_{1i} X^{i} + \sum O_{2i} A_{i} + \sum O_{3ij} \frac{A_{i}-
+  y_{ij}}{X-x_{ij}}$ computed as linear combinations of elements in the transcript.
+The security game gives us that $x$ is sampled independently from $x_{ij}$ for
+$j\leq q^{i}_{chal}$ and $x \neq x_{ij}$ otherwise. Here $q^{i}_{chal}$ are the
+number of simulated opening queries made for commitment $c_{i}$ before the challenge
+query.
+
+We inline to get the following equation which we then analyze in detail,
+\begin{align*}
+  \gone{\sum C_{1i} X^{i} + \sum C_{2i} A_{i} + \sum C_{3ij}
+  \frac{A_{i}-y_{ij}}{X-x_{ij}} - y} \bullet \gtwo{1} - \gone{\sum O_{1i} X^{i}
+  + \sum O_{2i} A_{i} + \sum O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}}} \bullet \gtwo{X -
+  x} = 0
+\end{align*}
+
+We now look at different (rational) monomials in $T$ of this equation to derive
+constraints on $C_{1i}, C_{{2i}},C_{{3ij}}$ and $O_{1i},O_{2i},O_{3ij}$ imposed by
+the verification equation:
+\begin{itemize}
+  \item[$A_{i}X$:] We have that for all $i$, $O_{2i}=0$ as $O_{2i} A_{i} X = 0$.
+  \item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}, j>q^{i}_{chal}$:] $C_{3ij}=0$ as $\adv$ did
+    not yet see them when it computed the commitment.
+\end{itemize}
+
+To obtain a simplified verificaton equation, we express the equation in the exponent
+and write $C_{1}(X)$ for $\sum C_{1i} X^{i}$ and $O_{1}(X)$ for $\sum O_{1i} X^{i}$.
+Furthermore, we let $\delta_{ij} = x_{i j} - x$ and replace $x$ with
+$x_{ij} - \delta_{ij}$. Importantly, since $x$ is random and unknown to adversary
+before it picks $x_{i j}$ then $\delta_{i j} \neq 0$ with probability at least
+$\infrac{\abs{I}}{\abs{\FF}}$. \michals{24.11}{$I$ is the set of all $i$}
+
+\begin{align*}
+  C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}+\delta_{ij}) = 0\\
+  C_{1}(X) - y - O_{i}(X)(X-x) + \sum C_{2i} A_{i} + \sum C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} (X-x_{ij}) - O_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} \delta_{ij} = 0
+\end{align*}
+
+\begin{itemize}
+\item[$\frac{A_{i}-y_{ij}}{X-x_{ij}}$:]
+  $C_{3ij} \frac{A_{i}-y_{ij}}{X-x_{ij}} - O_{{3ij}}\delta_{ij}
+  \frac{A_{i}-y_{ij}}{X-x_{ij}}=0$. As $C_{3ij}=0$ for $j>q^{i}_{chal}$, it follows
+  that $O_{{3ij}}=0$ for $j>q^{i}_{chal}$. Otherwise, we have
+  $O_{3ij}= C_{3ij}/\delta_{ij}$.
+\item[$A_{i}$:] $C_{2i} A_{i} - \sum O_{3ij} A_{i}=0$.
+\end{itemize}
+
+Informal step. $C_{2i}- \sum \frac{C_{3ij}}{x_{ij}-x} =0$ is a rational equation
+system in $x$. If $x_{ij}\neq x_{ij'}$, then the probability of randomly picking a
+solution $x$ is small unless all the $C_{2i}$, $C_{3ij}$ are $0$. Thus we also have
+$O_{{3ij}}=0$.  If $x_{ij} = x_{ij'}$ then the adversary requested openings on the
+same value for the same commitment (potentially for different $y_{ij}$) multiple
+times. This is something we want to exclude.
+
+\begin{itemize}
+\item[$X^{i}, i\geq 0$:]
+  $C_{1}(X) - y - O_{1} (X) (X - x) + \sum \sum O_{3ij} y_{ij} = 0$, as $O_{3ij}=0$ we
+  are back to the honest verification equation.
+\end{itemize}
+
+\newcommand{\ph}[1]{\p{h} (#1)}
+
+\begin{definition}[$\ph{X}$-simple simulation extractability]
+  \label{def:se_bdv0}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed. Let $\oraclec (c)$ be an oracle that when
+  $\Qchal = \bot$, samples $x$, sets $\Qchal = (c, x)$ and $\qchal = \abs{\qop}$ and
+    returns $x$. Otherwise it returns $\bot$. Let $\oracles$ be an oracle which on
+    input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x'$ not returned by $\oraclec_0$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$. \michals{24.11}{We could have here $\ph{x'}$
+         instead of $x'$ but I think it changes nothing.}
+     \end{description}
+     $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_0$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_0}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \verify(\srs, c, \ph{x}, y, o) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & (c, x, y, o) \gets \bdv_0^{\oracles,\oraclec}(\srs; r), \\
+             & (c, x) = \Qchal, \\
+             & \p{f} \gets \ext_{\bdv_0}(\srs, Q_{sim}, Q_{chal}; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+     \]
+\end{definition}
+
+\begin{definition}[$\ph{X}$-flexible simulation extractability]
+  \label{def:se_bdv1}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed. $\oraclec$ takes as input $c$ and samples
+  challenge $x$, then it adds the challenge to, initially empty, list
+  $\Qchal[c]$.  Eventually, $\oraclec$ returns $x$. Let $\oracles$ be an oracle which on input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \not\in \Qchal[c]$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$.
+     \end{description}
+     Let $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_1$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_1}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \verify(\srs, c, \ph{x}, y, o) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & (c, x, y, o) \gets \bdv_1^{\oracles,\oraclec}(\srs; r), \\
+             & x \in \Qchal[c], \\
+             & \p{f} \gets \ext_{\bdv_1}(\srs, Q_{sim}, Q_{chal}; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv0}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv1}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_1}$ from $\ext_{\bdv_0}$. We denote by
+  $\bdv_0^{j}$, $j \in \range{1}{\abs{\Qchal_2}}$ an adversary who internally runs
+  $\bdv_1$ and provides it with access to oracles $\oracles$ and $\oraclec_1$ by
+  passing its queries to $\oracles$ and $\oraclec_0$. Since $\oraclec_0$ takes a
+  single input a commitment $c$, while $\oraclec_1$ allows the adversary to query the
+  oracle multiple time, $\bdv_0^{j}$ processes $\bdv_1$ calls to $\oraclec_1$ as
+  follows. For a $j$-th query $c_j$ and the corresponding challenge $x$, $\bdv_1^{j}$
+  takes commitment $c_j$, submits it to $\oraclec_0$ and get a challenge $x$. For all
+  other queries, $\bdv_0$ returns a random $x$, see below. Eventually, when $\bdv_1$ returns
+  $(c_j, x, y, o)$, $\bdv_0^{j}$ returns $(c_j, x, y, o)$ and $\bot$ if $\bdv_1$
+  returns opening for another commitments or challenge.
+
+  Extractor $\ext_{\bdv_1} (\srs, \Qsim, \Qchal_1, r_{\bdv_1})$ runs internally
+  $\ext_{\bdv_0^j} (\srs, \Qsim, \Qchal_0, r_{\bdv_0^j})$ where
+  \begin{itemize}
+  \item $\Qchal_0$ consists of a pair $(c, x)$ where $c$ is the $j$-th commitment in
+    $\Qchal_1$ and $x$ the corresponding challenge (also stored in $\Qchal_1$).
+  \item $r_{bdv_0}$ consists of $r_{\bdv_1}$ which is then passed to $\bdv_1$ run
+    internally by $\bdv_0^j$, and $r$ which compounds of commitment--challenge pairs
+    $(c', x') \in \Qchal$, such that $(c', x') \neq (c, x)$. More precisely,
+    randomness $r$ is used by $\bdv_0$ to answer $\bdv_1$'s $\oraclec_1$ queries that
+    are not the picked query $(c, x)$ that is going to be output eventually by $\bdv_0$. 
+  \end{itemize}
+\end{proof}
+
+
+\begin{definition}[$\vec{\p{h}}(X)$-Flexible simulation extractability for vector of commitments]
+  \label{def:se_bdv2}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed.  $\oraclec$ takes as input $\vec{c}$ and samples
+  challenge $x$, then it adds the challenge to, initially empty, list
+  $\Qchal[\vec{c}]$. Eventually, $\oraclec$ returns $x$. Let $\oracles$ be an oracle
+  which on input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \not\in \Qchal[c]$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$.
+     \end{description}
+     Let $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_2$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_2}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & (\vec{c}, x, \vec{y}, \vec{o}) \gets \bdv_2^{\oracles,\oraclec}(\srs; r), \\
+             & x \in \Qchal [\vec{c}], \\
+             & \p{f} \gets \ext_{\bdv_2}(\srs, \Qsim, \Qchal; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv1}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv2}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_2}$ from $\ext_{\bdv_1}$. We denote by
+  $\bdv_1^{j,k}$, $j \in \range{1}{\abs{\Qchal_2}}$, $k \in \range{1}{l}$
+  \michals{23.11}{Introduce $l$ as the length of the vector} an adversary who
+  internally runs $\bdv_2$ and provides it with access to oracles $\oracles$ and
+  $\oraclec_2$ by passing its queries to $\oracles$ and $\oraclec_1$. Since
+  $\oraclec_1$ takes as input a single commitment $c$, while $\oraclec_2$ takes
+  vectors, $\bdv_1^{j, k}$ processes $\bdv_2$ calls to $\oraclec_2$ as follows. For a
+  $j$-th query $\vec{c} = (c_1, \ldots, c_l)$ and the corresponding challenge $x$,
+  $\bdv_1^{j, k}$ takes commitment $c_j$, submits it to $\oraclec_1$ and get a
+  challenge $x$. Then it writes $(\vec{c}, x)$ in a locally stored
+  $\Qchal_2$. Eventually, when $\bdv_2$ returns $(\vec{c}, x, \vec{y}, \vec{o})$,
+  $\bdv_1^{j, k}$ returns $(c_k, x)$ where $c_k$ is $k$-th coordinate of the $j$-th
+  vector $\bdv_2$ passed to $\Qchal_2$.
+\end{proof}
+
+
+\begin{definition}[Flexible simulation extractability for vector of commitments and
+  multiple challenges]
+  \label{def:se_bdv3}
+  Let $\PCOM = (\kgen, \com, \op, \verify)$ be a polynomial commitment scheme with a
+  simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed.  $\oraclec$ takes as input $\vec{c}$ and samples
+  challenge $x$, then it adds the challenge to, initially empty, list
+  $\Qchal[\vec{c}]$. Eventually, $\oraclec$ returns $x$.  Let $\oracles$ be an oracle
+  which on input
+     \begin{description}
+     \item[$(\msg{commit})$:] Run $c \gets \simsample (\secparam)$, add $c$ to
+       $\Qcom$, return $c$.
+     \item[$(\msg{open}, c, x', y)$:] If $c \in \Qcom$ and $x' \not\in \Qchal[c]$, run
+       $o \gets \simopen(\td, c, x', y)$, add $(c, x', y, o)$ to $\Qop$, and return
+       $o$. Otherwise return $\bot$.
+     \end{description}
+     Let $\Qsim = (\Qcom, \Qop)$.  We say that $\PCOM$ is \emph{simulation
+       extractable} if for any $\ppt$ adversary $\bdv_3$ with oracle access to
+     $\oracles$ and $\oraclec$ there exists extractor $\ext_{\bdv_3}$ such that
+     \[
+       \Pr \left[
+         \begin{aligned}
+           & \forall i \in I, \verify(\srs, \vec{c_i}, x_i, \vec{y_i}, \vec{o_i}) = 1, \\
+           & c \neq \com(\srs, \p{f})\\
+         \end{aligned}
+         \,\left|\, \vphantom{
+             \begin{aligned}
+               & \\
+               & \\
+               & \\
+               &
+             \end{aligned}
+           }
+           \begin{aligned}
+             & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+             & \smallset{(\vec{c_i}, x_i, \vec{y_i}, \vec{o_i})}_{i \in I} \gets \bdv_3^{\oracles,\oraclec}(\srs; r), \\
+             & \smallset{x_i \in \Qchal[\vec{c_i}]}_{i \in I}, \\
+             & \p{f} \gets \ext_{\bdv_3}(\srs, \Qsim, \Qchal; r)
+           \end{aligned}
+         \right.\right] \leq \negl.
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv2}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv3}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_3}$ from $\ext_{\bdv_2}$. We denote by
+  $\bdv_2^j$ an adversary who internally runs $\bdv_3$ and provides it with access to
+  oracles $\oracles$ and $\oraclec_3$ by passing its queries to $\oracles$ and
+  $\oraclec_2$. Eventually, when $\bdv_3$ returns
+  $\smallset{\vec{c_i}, x_i, \vec{y_i}, \vec{o_i}}_{i \in I}$, $\bdv_2^j$ returns
+  $(\vec{c_j}, x_j, \vec{y_j}, \vec{o_j})$.
+
+  Extractor $\ext_{\bdv_3} (\srs, \Qsim, \Qchal_3, r_{\bdv_3})$ internally runs $\abs{\Qchal}$
+  copies of $\ext_{\bdv_2^j}(\srs, \Qsim, \Qchal_2, r_{\bdv_2^j})$ for each $j \in
+  \range{1}{\abs{\Qchal}}$, where $r_{\bdv_2^j} = r_{\bdv_3}$ and $\Qchal_2 =
+  \Qchal_3$.
+
+  Probability of $\ext_{\bdv_3}$ succeeds is lower-bounded by probability that all fo
+  $\ext_{\bdv_2^j}$ succeeds. Assuming $\abs{\Qchal} = \poly$ and $\ext_{\bdv_2^j}$
+  succeeds with overwhelming probability, $\ext_{\bdv_3}$ succeeds with overwhelming
+  probability as well. 
+\end{proof}
+
+\begin{definition}[Flexible simulation extractability with random oracle]
+  \label{def:sepcom}
+  \label{def:se_bdv4}
+  Let $\PCOM = (\kgen, \com, \open, \verify)$ be a polynomial commitment scheme with
+  a simulator $(\simgen, \simsample, \simopen)$. Let $\maxdeg$ be a maximal degree of
+  polynomials that can be committed.  We consider the same $\oracles$ and
+  $Q_{sim}= (Q_{com},Q_{op})$ but an adversary that provides vectors of commitments
+  and openings $\vec{c}, \vec{y}, \vec{o}$.  Let $\ro_{aux}(\vec{c},aux)$ be an
+  oracle that when $Q_{\ro}[\vec{c},aux] = \bot$, samples $x$, sets
+  $Q_{\ro}[\vec{c},aux]=x$ and $q_{{chal}}= |Q_{{op}}|$. In all cases, it returns
+  $Q_{\ro}[\vec{c},aux]$.  We say that $\PCOM$ is \emph{vector $\ro_{aux}$ simulation
+    extractable} if for any $\ppt$ adversary $\bdv_4$ with oracle access to
+  $\oracles$ and $\ro_{aux}$ there exists extractor $\ext_{\adv}$ such that
+\[
+  \Pr \left[
+    \begin{aligned}
+      & x \gets \ro_{aux}(\vec{c},aux), \\
+      & \verify(\srs, \vec{c}, x, \vec{y}, \vec{o}) = 1, \\
+      & \;\vec{c} \neq \com(\srs, \vec{\p{f}})\\
+    \end{aligned}
+    \,\left|\,
+      \vphantom{
+        \begin{aligned}
+          & \\
+          & \\
+          & \\
+          &
+        \end{aligned}
+        }
+    \begin{aligned}
+      & (\srs, \td) \gets \simgen(\secparam, \maxdeg),\\
+      & \smallset{(\aux_i, \vec{c_i}, \vec{x_i}, \vec{y_i}, \vec{o_i})}_{i \in I} \gets
+      \bdv_4^{\oracles,\ro_{aux}}(\srs; r), \\
+      & \Qchal[\aux, \vec{c_i}] = x_i\\
+      & \vec{\p{f}} \gets \ext_{\bdv_4}(\srs, Q_{sim}, Q_{\ro}; r)
+    \end{aligned}
+  \right.\right]
+  \leq \negl,
+\]
+\end{definition}
+
+\begin{lemma}[]
+  If polynomial commitment is simulation extractable w.r.t.~\cref{def:se_bdv3}, then
+  it is simulation extractable w.r.t~\cref{def:se_bdv4}.
+\end{lemma}
+\begin{proof}
+  Here we build extractor $\ext_{\bdv_4}$ from $\ext_{\bdv_3}$. To that end, we show
+  how $\bdv_3$ can use its oracles $\oracles, \oraclec_3$ to simulate
+  $\oracles, \oraclec_4$ for $\bdv_4$. $\bdv_3$ runs internally $\bdv_4$ and answers
+  its queries. First, note that the simulator oracle $\oracles$ works the same in
+  both definitions, so $\bdv_3$ only needs to simulate $\oraclec_4$ with
+  $\oraclec_3$. This is done as follows. For every query $(\vec{c}, \aux)$ to
+  $\oraclec_4$, $\bdv_3$:
+  \begin{itemize}
+  \item checks whether $(\vec{c}, \aux)$ is stored and if it is the case, returns
+    $\bot$,
+  \item if $(\vec{c}, \aux)$ is not stored, then $\bdv_3$ stores the query in
+    $\Qchal_3$ and parses it to get $\vec{c}$ which it then submits to $\oraclec_3$
+    and gets challenge $x$. Then $\bdv_3$ returns $x$ to $\bdv_4$.
+  \end{itemize}
+
+  Extractor $\ext_{\bdv_4}$ on input $(\srs, \Qsim, \Qh; r_{\bdv_4})$ runs internally
+  $\ext_{\bdv_3} (\srs, \Qsim, \Qchal_3; r_{\bdv_3})$ (which internally runs
+  $\bdv_3$) such that $\Qchal_3$ is created as above from the queries in $\Qh$ and
+  $r_{\bdv_3} \gets r_{\bdv_4}$. The latter point corresponds to the fact that
+  $\bdv_3$ uses all its randomness to internally run $\bdv_4$.
+\end{proof}
+
+
+\subsection{From SE PCOM to SE NIZK -- the reduction}
 
 
 
 \end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
