@@ -1,5 +1,4 @@
 % !TeX spellcheck = en_UK
-% \let\accentvec\vec      
 \documentclass[runningheads,11pt]{llncs}
 \let\spvec\vec
 \let\vec\accentvec
@@ -15,12 +14,12 @@
 \let\spvec\vec
 \usepackage{amssymb,amsmath}
 \let\vec\spvec
+\usepackage{newtxtext}
 %\usepackage{newtxmath,newtxtext}
 
-\def\vec#1{\mathchoice{\mbox{\boldmath$\displaystyle#1$}}
+  \def\vec#1{\mathchoice{\mbox{\boldmath$\displaystyle#1$}}
   {\mbox{\boldmath$\textstyle#1$}} {\mbox{\boldmath$\scriptstyle#1$}}
   {\mbox{\boldmath$\scriptscriptstyle#1$}}}
-
 
 \usepackage{bm}
 
@@ -1709,9 +1708,9 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
     non-zero coefficient next to $B_i$.
   \item For $(i, j) \geq (i', j')$, polynomial $\p{p_{i, j}}$ is determined by the
     previous polynomials, prover's messages and verifier's challenges.
-    \fi
   \end{enumerate}
-
+  \fi
+  
 \begin{definition}[Polynomial independence]
   Let $\smallset{\p{p_{i, j}} (X, \vec{b})}$ be polynomials which the prover set
   oracles for. We call these polynomials \emph{independent} if
