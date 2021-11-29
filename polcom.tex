@@ -15,7 +15,7 @@
 \let\spvec\vec
 \usepackage{amssymb,amsmath}
 \let\vec\spvec
-\usepackage{newtxmath,newtxtext}
+%\usepackage{newtxmath,newtxtext}
 
 \def\vec#1{\mathchoice{\mbox{\boldmath$\displaystyle#1$}}
   {\mbox{\boldmath$\textstyle#1$}} {\mbox{\boldmath$\scriptstyle#1$}}
@@ -1676,7 +1676,11 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
       sets up polynomial oracles for polynomials
       $\smallset{\p{p_{i, j}} (\vec{X}, \vec{b})}_{j = 1}^{k_i}$ and sends polynomials
       messages $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k'_i}$.
-    \item On evaluation challenge $\chz_{i, j}$ the prover  
+    \item On evaluation challenge $\chz_{i, j}$ the prover checks if in the already
+      set oracles there are polynomials which are evaluation ready. In that case it
+      allows the verifier to learn the evaluations. \michals{25.11}{Here the prover
+        ``allows'' the verifier to learn some oracle evaluations, maybe it could be
+        expressed differently???}
     \end{enumerate}
   \item[Verifier]
     \begin{enumerate}
