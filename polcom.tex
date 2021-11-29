@@ -1622,6 +1622,17 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
 
 \newcommand{\qop}{q_{op}}
 \newcommand{\qchal}{q_{chal}}
+\subsection{To be added to preliminaries}
+Let proof system $\PS$ compounds of $\mu + 1$ messages sent by the prover and $\mu$
+messages sent by the verifier. We say that such proof system has $\mu$ \emph{rounds}
+or $(2\mu + 1)$ \emph{messages}. We define a round by a pair of messages: one that
+comes from the prover, and another coming from the verifier. When the first message
+in the proof system comes from the verifier, we assume that the first round of such
+proof system contains empty prover's message.
+
+We denote the proof by $\zkproof$ and its partial transcripts that contains all
+prover's and verifier's messages exchanged up to and including Round $i - 1$ by
+$\zkproof[i - 1]$.
 
 \subsection{Proof system definitions}
 
@@ -1632,35 +1643,39 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
 
 \subsubsection{The idealised proof system}
   \label{def:ps}
-  In the idealised proof system $\PS = (\indexer, \prover, \verifier)$ the indexer
-  $\indexer$ provides index $\ind$, prover $\prover$ sends in each Round $i$ messages
-  $m_{i, 1}, \ldots m_{i k'_i}$ and sets up polynomial oracles for polynomials
+  An idealised zero knowledge proof system $\PS$ consists of four parties: indexer
+  $\indexer$, prover $\prover$ and verifier $\verifier$, and simulator
+  $\simulator$. At the beginning, the indexer $\indexer$ provides index $\ind$,
+  prover $\prover$ sends in each Round $i$ messages $m_{i, 1}, \ldots m_{i k'_i}$ and
+  sets up polynomial oracles for polynomials
   $\p{p}_{i, 1} (\vec{X}, \vec{B}), \ldots, \p{p}_{i, k_i} (\vec{X}, \vec{B})$. We
   denote by $l$ length of vector $\vec{B}$ and by $l'$ length of vector $\vec{X}$.
-  The
-  verifier sends challenges, which we divide into two groups: \emph{protocol building
-    challenges} $\beta_{i, j}$ and / or \emph{evaluation challenges} $\chz_{i, j}$.
-  Vector $\vec{X}$ denotes a random variable (or a vector of random variables)
-  corresponding to evaluation challenges. That is, for each evaluation challenge
-  $\chz_{i, j}$ the protocol specifies which $X \in \vec{X}$ are realised by
-  $\chz_{i, j}$. Importantly, 
+  The verifier sends challenges, which we divide into two groups: \emph{protocol
+    building challenges} $\beta_{i, j}$ and / or \emph{evaluation challenges}
+  $\chz_{i, j}$, where index $(i, j)$ should be interpreted as $j$-th challenge in
+  Round $i$. Vector $\vec{X}$ denotes a random variable (or a vector of random
+  variables) corresponding to evaluation challenges. That is, for each evaluation
+  challenge $\chz_{i, j}$ the protocol specifies which $X \in \vec{X}$ are realised
+  by $\chz_{i, j}$. Importantly, \hl{...} \michals{29.11}{Don't recall now what was
+    so important here}
 
   We interpret messages $m_{i, j}$ sent by the prover as polynomials that are
   independent of any random variables in $(\vec{X}, \vec{B})$ which has not been
-  realised yet. For the sake of convenience, we write
-  $\p{p}_{i, j + k_i} (\vec{X}, \vec{B})$ to denote $m_{i, j}$. That is, we append
-  polynomials corresponding to messages $m_{i, j}$ to the end of the list of
-  polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$. From now one, we will use only
-  $\p{p}_{i, j} (\vec{X}, \vec{B})$ and not $m_{i, j}$. Importantly, since
-  polynomials $\p{p}_{i, k_i + j} (\vec{X}, \vec{B})$ are independent of random
+  realised yet. Other way around, messages $m_{i, j}$ are polynomials which
+  evaluations points are fully specified, i.e.~constants. For the sake of
+  convenience, we write $\p{p}_{i, j + k_i} (\vec{X}, \vec{B})$ to denote $m_{i,
+    j}$. That is, we append polynomials corresponding to messages $m_{i, j}$ to the
+  end of the list of polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$. From now one, we
+  will use only $\p{p}_{i, j} (\vec{X}, \vec{B})$ and not $m_{i, j}$. Importantly,
+  since polynomials $\p{p}_{i, k_i + j} (\vec{X}, \vec{B})$ are independent of random
   variables that have not been realised yet the prover sends their evaluations
   directly to the verifier without setting up oracles for them. For the rest of the
   polynomials the oracles are set up as usual.
   
   We call polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ a \emph{randomised
     polynomial} if there is $B_i \in \smallset{B_1, \ldots, B_l}$ such that
-  $\p{p_{i', j'}} (\vec{X}, \vec{B}$ has non-zero coefficient next to $B_i$ while for all
-  $(i, j) < (i', j')$ coefficient next to $B_i$ is zero.  Polynomials
+  $\p{p_{i', j'}} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_i$ while for
+  all $\p{p}_{i, j}$ for $(i, j) < (i', j')$, coefficient next to $B_i$ is zero.  Polynomials
   $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not \emph{randomised polynomials} are called
   \emph{determined}.
 
@@ -1668,30 +1683,30 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
   \begin{description}
   \item[Prover]
     \begin{enumerate}
-    \item On input $(\inp, \wit)$ the prover picks randomly evaluation
+    \item On input $(\ind, \inp, \wit)$ the prover picks randomly an evaluation
       $\vec{b} = b_1, \ldots, b_l$ of variable $\vec{B} = B_1, \ldots, B_l$.
-    \item In Round $i$, on partial transcript $\zkproof [i - 1]$ where the last
-      verifier's message contains protocol building challenge $\beta_i$, the prover
-      sets up polynomial oracles for polynomials
-      $\smallset{\p{p_{i, j}} (\vec{X}, \vec{b})}_{j = 1}^{k_i}$ and sends polynomials
-      messages $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k'_i}$.
+    \item In Round $i$, on partial transcript $\zkproof [i - 1]$, the prover sets up
+      polynomial oracles $\smallset{\oracleo_{\p{p}_{i, j}}}_{j = 1}^{k_i}$ for polynomials
+      $\smallset{\p{p_{i, j}} (\vec{X}, \vec{b})}_{j = 1}^{k_i}$ and sends
+      polynomials messages $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k'_i}$.
     \item On evaluation challenge $\chz_{i, j}$ the prover checks if in the already
       set oracles there are polynomials which are evaluation ready. In that case it
       allows the verifier to learn the evaluations. \michals{25.11}{Here the prover
         ``allows'' the verifier to learn some oracle evaluations, maybe it could be
-        expressed differently???}
+        expressed differently?}
     \end{enumerate}
   \item[Verifier]
     \begin{enumerate}
-    \item[$i \leq \mu$:] on partial transcript $T [i - 1]$, prover's messages
-      $m_{i, 1}, \ldots m_{i, k'_i}$ and oracles
-      $\smallset{\oracleo_{\p{p_{i, j}}}}_{i = k'_i + 1}^{k_i}$ sends in Round $i$ 
+    \item[$i \leq \mu$:] on partial transcript $\zkproof [i - 1]$, prover's messages
+      $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k_i + k'_i}$ and oracles
+      $\smallset{\oracleo_{\p{p_{i, j}}}}_{i = 1}^{k_i}$ sends in Round $i$ 
       \begin{itemize}
-      \item a protocol building challenge $\beta_i$, or
-      \item a evaluation challenge $\chz_i$.
+      \item a protocol building challenge $\smallset{\beta_{i, j}}_j$, and / or
+      \item a evaluation challenge $\smallset{\chz_{i, j}}_j$.
       \end{itemize}
     \item[$i = \mu$] Eventually the verifier verifies the set of verification
-      equation $\vereq$
+      equation $\vereq (\vec{X}, \vec{B})$ and outputs $1$ iff the verification
+      equation holds.
     \end{enumerate}
   \end{description}
 
@@ -1712,38 +1727,74 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
   \fi
   
 \begin{definition}[Polynomial independence]
-  Let $\smallset{\p{p_{i, j}} (X, \vec{b})}$ be polynomials which the prover set
-  oracles for. We call these polynomials \emph{independent} if
-  $\smallset{\p{p_{i, j}} (X, \vec{B})}$ are linearly independent.
+  Let $\smallset{\p{p}_{i, j} (\vec{X}, \vec{b})}_{i = 1, j = 1}^{\mu, k_i}$ be polynomials
+  which the prover set oracles for. We call these polynomials \emph{independent} if
+  $\smallset{\p{p}_{i, j} (\vec{X}, \vec{B})}$ are linearly independent.
 \end{definition}
 
 \michals{25.11}{If we add $m$ as polynomials how that affects independence?}
+\michals{29.11}{Polynomials that encode messages $m$ are already constants, i.e. all
+  variables are known, hence they don't affect independence. However, the definition
+  has to be clear about that.}
+\michals{29.11}{Should we introduce $Q$-independence? Where $Q$ would be the set of
+  allowed operations, here linear, then we could use an uber assumption
+  w.r.t. $Q$. (OTOH if $Q$ contains only linear operations, uber assumption probably
+  is not needed.)}
   
 \begin{definition}[Some weak version of uber assumption]
   \michals{24.11}{We don't need a full-blown uber assumption here (probably).}
 \end{definition}
 
-\begin{definition}[Zero knowledge]
+\michals{29.11}{Comment after call with Markulf: definition of ZK and ZK equivalence
+  theorem should be light, the heavy lifting specific for our framework should be
+  done in the reduction, where $\bdv$ uses PCOM to simulate PS.}
+
+\begin{definition}[$\vec{Z}$-Zero knowledge]
+  \label{def:ips_zk}
   \michals{24.11}{Need to formalize that the simulator picks some of the polynomials
-    randomly and some such that verification equation holds.}
-  Let the protocol be a proof system $\PS$ as described in \cref{def:ps} and let
-  $\smallset{\p{p_{i j}} (X, \vec{b})}$ be independent. Then $\PS$ is zero-knowledge
-  with simulator $\simulator$ proceeding as follows:
+    randomly and some such that verification equation holds.} Let
+  $\vec{Z} = \smallset{z_{i, j}}_{i = 1, j = 1}^{\mu, k_i}$. Let the protocol be a
+  proof system $\PS$ as described in \cref{def:ps} such that
+  \begin{itemize}
+  \item $\smallset{\p{p}_{i, j} (\vec{X}, \vec{b})}$ be independent;
+  \item The verifier makes less than $z_{i, j}$ evaluation queries to an oracle set
+    for polynomial $\p{p}_{i, j}$;
+  \end{itemize}
+  In the following we denote by $\p{p}_{i, j}$ polynomials computed as defined in the
+  protocol and by $\p{p}'_{i, j}$ the corresponding simulated polynomials
+  corresponding to $\p{p}_{i, j}$; and $R$ (resp.~$D$) denotes the set of all randomized
+  (resp.~determined) polynomials in $\PS$. Then, $\PS$ is zero-knowledge with
+  simulator $\simulator$ that for instance $\inp$ picks a random witness $\wit$, and
+  in Round $i$ proceeds as follows:
   \begin{enumerate}
-  \item Let $(i', j')$ be an index of the first polynomial from
-    $\smallset{\p{p}_{i j}(X, \vec{B})}_{i j}$ such that for all $B_1, \ldots, B_l$
-    there is a preceding polynomial $p_{i'', j''} (X, \vec{B})$ that has non-zero
-    coefficient next to $B_i$. \michals{24.11}{After and including
-      $\p{p_{i' j'}} (X, \vec{B})$ all polynomials are already fixed.} The simulator
-    picks polynomials $\smallset{\p{p_{i j}} (X, \vec{b})}$, for $(i, j) < (i', j')$,
-    randomly.
-  \item Since polynomials $p_{i j} (X, \vec{B})$, for $(i, j) \geq (i', j')$ have
-    randomness fixed, i.e.~they do not introduce any new $B_i$, they can be computed
-    deterministically from the preceding polynomials \michals{24.11}{Stated as this
-      it may not be true. What if some stupid protocol simply use part of the witness
-    as a coefficient for some polynomial that don't use $\vec{B}$?}
+  \item Pick polynomials $\smallset{\p{p}_{i, j}}_{(i, j) \in R}$ randomly and set
+    the corresponding oracles;
+  \item For $j = k_i + 1, \ldots, k_i + k'_i$, send to the verifier polynomials
+    $\p{p}_{i, j} (\vec{X}, \vec{b})$ evaluated w.r.t~$\zkproof[i - 1]$.
+  \item On verifier's evaluation query to a polynomial oracle:
+    \begin{itemize}
+    \item If the queried oracle is for a polynomial in $R$, then respond honestly
+      w.r.t.~to the polynomial that the oracle was set for;
+    \item Else, that is the queried oracle is for a polynomial in $D$, compute
+      $p_{i, j} = \p{p}_{i, j} (\vec{x}, \vec{b})$ and pick polynomial $\p{p}'_{i, j}
+      (\vec{X}, \vec{B})$ such that $\p{p}'_{i, j} (\vec{x}, \vec{b}) = p_{i, j}$ and
+      respond with $p_{i, j}$. 
+    \end{itemize}
   \end{enumerate}
+  \michals{29.11}{Here I say nothing about evaluation equation to be
+    fulfilled. However, this is obvious as we pick evaluations of polynomials in $D$
+    in a way an honest prover would pick, hence the ver equation holds directly from
+    the completeness of the proof system.}
 \end{definition}
+
+\michals{29.11}{To our reduction to work we need to have witness encoded as
+  coefficients of some of the polynomials sent by the prover. This assumption need to
+be done in the reduction part, not here.}
+
+\begin{theorem}
+  Zero knowledge, as defined in \cref{def:ips_zk}, implies zero-knowledge as defined
+  in \hl{PHP zero knowledge reference}.
+\end{theorem}
 
 \iffalse
 \subsection{Polynomial commitment SE definitions equivalence}
