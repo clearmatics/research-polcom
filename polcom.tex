@@ -1756,7 +1756,7 @@ $\zkproof[i - 1]$.
   $\vec{Z} = \smallset{z_{i, j}}_{i = 1, j = 1}^{\mu, k_i}$. Let the protocol be a
   proof system $\PS$ as described in \cref{def:ps} such that
   \begin{itemize}
-  \item $\smallset{\p{p}_{i, j} (\vec{X}, \vec{b})}$ be independent;
+  \item $\smallset{\p{p}_{i, j} (\vec{X}, \vec{b})}$ are independent;
   \item The verifier makes less than $z_{i, j}$ evaluation queries to an oracle set
     for polynomial $\p{p}_{i, j}$;
   \end{itemize}
@@ -1771,14 +1771,19 @@ $\zkproof[i - 1]$.
     the corresponding oracles;
   \item For $j = k_i + 1, \ldots, k_i + k'_i$, send to the verifier polynomials
     $\p{p}_{i, j} (\vec{X}, \vec{b})$ evaluated w.r.t~$\zkproof[i - 1]$.
-  \item On verifier's evaluation query to a polynomial oracle:
+  \item On verifier's evaluation query $\chz_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$, to a
+    polynomial oracle $\oracleo_{\p{p}_{i, j}}$:
     \begin{itemize}
     \item If the queried oracle is for a polynomial in $R$, then respond honestly
       w.r.t.~to the polynomial that the oracle was set for;
     \item Else, that is the queried oracle is for a polynomial in $D$, compute
-      $p_{i, j} = \p{p}_{i, j} (\vec{x}, \vec{b})$ and pick polynomial $\p{p}'_{i, j}
-      (\vec{X}, \vec{B})$ such that $\p{p}'_{i, j} (\vec{x}, \vec{b}) = p_{i, j}$ and
-      respond with $p_{i, j}$. 
+      $p_{i, j, k} = \p{p}_{i, j} (\vec{x}, \vec{b})$ where $\vec{x}$ is w.r.t
+      $\chz_k$ and \mxout{pick polynomial $\p{p}'_{i, j} (\vec{X}, \vec{B})$ such
+        that $\p{p}'_{i, j} (\vec{x}, \vec{b}) = p_{i, j}$ and} respond with
+      $p_{i, j, k}$. If the protocol does not contain any more evaluations of
+      $\p{p}_{i, j} (\vec{x}, \vec{b})$, pick a polynomial $\p{p}'_{i, j} (\vec{x},
+      \vec{b})$ that on $\chz_{i, j, k}$ evaluates to $p_{i, j, k}$, for $k \in
+      \range{1}{K_{i, j}}$ and set an oracle for it.
     \end{itemize}
   \end{enumerate}
   \michals{29.11}{Here I say nothing about evaluation equation to be
@@ -1793,8 +1798,10 @@ be done in the reduction part, not here.}
 
 \begin{theorem}
   Zero knowledge, as defined in \cref{def:ips_zk}, implies zero-knowledge as defined
-  in \hl{PHP zero knowledge reference}.
+  in \hl{AHP zero knowledge reference}.
 \end{theorem}
+\begin{proof}
+\end{proof}
 
 \iffalse
 \subsection{Polynomial commitment SE definitions equivalence}
@@ -2201,10 +2208,30 @@ $O_{{3ij}}=0$.  If $x_{ij} = x_{ij'}$ then the adversary requested openings on t
 same value for the same commitment (potentially for different $y_{ij}$) multiple
 times. This is something we want to exclude.
 
-\changedm{ Write $C_{2i} - \sum_{j = 1}^{k_i} \frac{C_{3ij}}{x_{ij} - x} = 0$ as
-  $C_{2 i} \cdot (x_{i 1} - x) \cdot \ldots \cdot (x_{i k_i} - x) - \sum_{j =
-    1}^{k_i} C_{3 i j} \cdot (x_{i 1} - x) \cdot \ldots \cdot (x_{i j - 1} - x) \cdot
-  (x_{i j + 1} - x) \cdot \ldots \cdot (x_{i k_i} - x)$. Assuming 
+\michals{29.11}{The following magenta text is to replace the informal step}
+
+\changedm{ Write $C_{2i} - \sum_{j = 1}^{k_i} \frac{C_{3ij}}{x_{ij} - x} = 0$ as a
+  polynomial $\p{D} (X)$, that is
+  $\p{D} (X) = C_{2 i} \cdot (x_{i 1} - X) \cdot \ldots \cdot (x_{i k_i} - X) -
+  \sum_{j = 1}^{k_i} C_{3 i j} \cdot (x_{i 1} - X) \cdot \ldots \cdot (x_{i j - 1} -
+  X) \cdot (x_{i j + 1} - X) \cdot \ldots \cdot (x_{i k_i} - X)$. Let $d_j$ be a
+  coefficient that stands next to $X^j$ in $\p{D} (X)$. We want to show that
+  $\p{D} (X)$ is a zero polynomial and coefficients $C_{2 i}, C_{3 i j}$ are all zero
+  with overwhelming probability. First, we note that $D_{k_i} = C_{2 i}$. Hence, if
+  $\p{D} (X)$ evaluates to $0$ at random $x$ with probability at most
+  $\infrac{k_i}{\abs{\FF}}$ if $\p{D} (X)$ is a non-zero polynomial. Hence, from now
+  on we assume that $\p{D} (X) \equiv 0$. Second, we show that $\p{D} (X)$ being zero
+  polynomial implies $C_{3 i j}$ are, with overwhelming probability, zero as well. We
+  define polynomials
+  $\p{C}_{3 i j} (X) := C_{3 i j} \cdot (x_{i 1} - X) \cdot \ldots \cdot (x_{i j - 1}
+  - X) \cdot (x_{i j + 1} - X) \cdot \ldots \cdot (x_{i k_i} - X)$.
+
+  Note that $C_{3 i k_i} = - \sum_{j = 1}^{k_i - 1} C_{3 i j}$ and
+  $\p{C}_{3 i k_i} (X) = -\sum_{j = 1}^{k_i - 1} \p{C}_{3 i j} (X)$. This comes since
+  $D_{k_i - 1} = \sum_{j = 1}^{k_i} C_{3 i j}$.  }
+
+\iffalse
+  \changedm{Assuming 
   $x_{ij} \neq x_{i'j'}$ for $(i, j) \neq (i', j')$ we have that
   $C_{3 i j} \cdot (x_{i 1} - x) \cdot \ldots \cdot (x_{i j - 1} - x) \cdot (x_{i j +
     1} - x) \cdot \ldots \cdot (x_{i k_i} - x) = C_{3 i j'} \cdot (x_{i 1} - x) \cdot
@@ -2227,8 +2254,9 @@ times. This is something we want to exclude.
   $C_{3 i j} = C_{3 i j'} = 0$. Hence, with overwhelming probability
   $\smallset{C_{3 i j} \cdot (x_{i 1} - x) \cdot \ldots \cdot (x_{i j - 1} - x) \cdot
     (x_{i j + 1} - x) \cdot \ldots \cdot (x_{i k_i} - x)}_{j = 1}^{k_i}$ are pairwise
-  different.
-}
+  different.}
+  \fi
+
 \begin{itemize}
 \item[$X^{i}, i\geq 0$:]
   $C_{1}(X) - y - O_{1} (X) (X - x) + \sum \sum O_{3ij} y_{ij} = 0$, as $O_{3ij}=0$ we
