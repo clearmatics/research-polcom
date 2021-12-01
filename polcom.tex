@@ -1689,42 +1689,27 @@ $\zkproof[i - 1]$.
       polynomial oracles $\smallset{\oracleo_{\p{p}_{i, j}}}_{j = 1}^{k_i}$ for polynomials
       $\smallset{\p{p_{i, j}} (\vec{X}, \vec{b})}_{j = 1}^{k_i}$ and sends
       polynomials messages $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k'_i}$.
-    \item On evaluation challenge $\chz_{i, j}$ the prover checks if in the already
-      set oracles there are polynomials which are evaluation ready. In that case it
-      allows the verifier to learn the evaluations. \michals{25.11}{Here the prover
-        ``allows'' the verifier to learn some oracle evaluations, maybe it could be
-        expressed differently?}
+    \item On evaluation challenge $\chz_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$,
+      where $K_{i, j}$ is the number of evaluation queries the verifier makes to
+      $\p{p}_{i, j}$, the prover computes
+      $p_{i, j, k} = \p{p}_{i, j} (\chz_{i, j, k}, \vec{b})$ and sends it to the
+      verifier.
     \end{enumerate}
   \item[Verifier]
     \begin{enumerate}
     \item[$i \leq \mu$:] on partial transcript $\zkproof [i - 1]$, prover's messages
       $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k_i + k'_i}$ and oracles
-      $\smallset{\oracleo_{\p{p_{i, j}}}}_{i = 1}^{k_i}$ sends in Round $i$ 
+      $\smallset{\oracleo_{\p{p_{i, j}}}}_{i = 1}^{k_i}$ the verifier sends in Round
+      $i$:
       \begin{itemize}
       \item a protocol building challenge $\smallset{\beta_{i, j}}_j$, and / or
-      \item a evaluation challenge $\smallset{\chz_{i, j}}_j$.
+      \item a evaluation challenge $\smallset{\chz_{i', j, k}}_{k = 1}^{K_{i', j}}$.
       \end{itemize}
-    \item[$i = \mu$] Eventually the verifier verifies the set of verification
+    \item[$i = \mu$:] Eventually the verifier verifies the set of verification
       equation $\vereq (\vec{X}, \vec{B})$ and outputs $1$ iff the verification
       equation holds.
     \end{enumerate}
   \end{description}
-
-  \iffalse
-  We also require that
-  \begin{enumerate}
-  \item The messages $m_{i, 1}, \ldots, m_{i, k'_i}$ sent by the prover in Round $i$ are
-    polynomials that depends only on previous prover's messages, verifier's
-    challenges and polynomial oracles. For message $m_{i, j}$ we write
-    $\p{m}_{i, j} (\vec{B})$ to express that. 
-  \item There is the smallest index $(i', j')$ such that for all
-    $B_i \in \smallset{B_1, \ldots, B_l}$ there is a polynomial
-    $\p{p}_{i, j} (X, \vec{B})$ preceding $\p{p}_{i', j'} (X, \vec{B})$ that has
-    non-zero coefficient next to $B_i$.
-  \item For $(i, j) \geq (i', j')$, polynomial $\p{p_{i, j}}$ is determined by the
-    previous polynomials, prover's messages and verifier's challenges.
-  \end{enumerate}
-  \fi
   
 \begin{definition}[Polynomial independence]
   Let $\smallset{\p{p}_{i, j} (\vec{X}, \vec{b})}_{i = 1, j = 1}^{\mu, k_i}$ be polynomials
@@ -1749,12 +1734,10 @@ $\zkproof[i - 1]$.
   theorem should be light, the heavy lifting specific for our framework should be
   done in the reduction, where $\bdv$ uses PCOM to simulate PS.}
 
-\begin{definition}[$\vec{Z}$-Zero knowledge]
+\begin{theorem}[$\vec{Z}$-Zero knowledge]
   \label{def:ips_zk}
-  \michals{24.11}{Need to formalize that the simulator picks some of the polynomials
-    randomly and some such that verification equation holds.} Let
-  $\vec{Z} = \smallset{z_{i, j}}_{i = 1, j = 1}^{\mu, k_i}$. Let the protocol be a
-  proof system $\PS$ as described in \cref{def:ps} such that
+  Let $\vec{Z} = \smallset{z_{i, j}}_{i = 1, j = 1}^{\mu, k_i}$. Let the protocol be
+  a proof system $\PS$ as described in \cref{def:ps} such that
   \begin{itemize}
   \item $\smallset{\p{p}_{i, j} (\vec{X}, \vec{b})}$ are independent;
   \item The verifier makes less than $z_{i, j}$ evaluation queries to an oracle set
@@ -1770,38 +1753,72 @@ $\zkproof[i - 1]$.
   \item Pick polynomials $\smallset{\p{p}_{i, j}}_{(i, j) \in R}$ randomly and set
     the corresponding oracles;
   \item For $j = k_i + 1, \ldots, k_i + k'_i$, send to the verifier polynomials
-    $\p{p}_{i, j} (\vec{X}, \vec{b})$ evaluated w.r.t~$\zkproof[i - 1]$.
+    $\p{p}_{i, j} (\vec{X}, \vec{b})$ evaluated w.r.t~$\zkproof[i - 1]$ and
+    $\wit$. \michals{1.12}{We assume that the instance $\inp$ is part of the transcript.}
   \item On verifier's evaluation query $\chz_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$, to a
     polynomial oracle $\oracleo_{\p{p}_{i, j}}$:
     \begin{itemize}
     \item If the queried oracle is for a polynomial in $R$, then respond honestly
       w.r.t.~to the polynomial that the oracle was set for;
     \item Else, that is the queried oracle is for a polynomial in $D$, compute
-      $p_{i, j, k} = \p{p}_{i, j} (\vec{x}, \vec{b})$ where $\vec{x}$ is w.r.t
-      $\chz_k$ and \mxout{pick polynomial $\p{p}'_{i, j} (\vec{X}, \vec{B})$ such
-        that $\p{p}'_{i, j} (\vec{x}, \vec{b}) = p_{i, j}$ and} respond with
-      $p_{i, j, k}$. If the protocol does not contain any more evaluations of
-      $\p{p}_{i, j} (\vec{x}, \vec{b})$, pick a polynomial $\p{p}'_{i, j} (\vec{x},
-      \vec{b})$ that on $\chz_{i, j, k}$ evaluates to $p_{i, j, k}$, for $k \in
-      \range{1}{K_{i, j}}$ and set an oracle for it.
+      $p_{i, j, k} = \p{p}_{i, j} (\chz_{i, j, k}, \vec{b})$ (note that since the
+      simulator picked witness at random $\p{p}_{i, j, k}$ may not be a polynomial)
+      and respond with $p_{i, j, k}$. If the protocol does not contain any more
+      evaluations of $\p{p}_{i, j} (\vec{x}, \vec{b})$, pick a polynomial
+      $\p{p}'_{i, j} (\vec{X}, \vec{b})$ that on $\chz_{i, j, k}$ evaluates to
+      $p_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$ and set an oracle for it.
     \end{itemize}
   \end{enumerate}
   \michals{29.11}{Here I say nothing about evaluation equation to be
     fulfilled. However, this is obvious as we pick evaluations of polynomials in $D$
     in a way an honest prover would pick, hence the ver equation holds directly from
     the completeness of the proof system.}
-\end{definition}
+\end{theorem}
+\begin{proof}
+  The proof is twofold. First we show that the proof provided by the simulator is
+  acceptable, then we show that it is indistinguishable from a real proof.
+
+  \ncase{Completeness} For the first part, we note that the simulator provides
+  evaluations such that the verification equation holds. That is, it gives random
+  numbers as evaluations of randomised polynomials, and computes evaluations of the
+  determined polynomials as an honest prover would compute.
+
+  Importantly, since the polynomials in $R$ are randomised, for each $\p{p}_{i, j}$,
+  s.t.~$(i, j) \in R$, for witness $\wit$ there is a randomness $\tilde{\vec{b}}$
+  that gives the same evaluation at $\smallset{\chz_{i, j, k}}_{k = 1}^{K_{i, j}}$.
+  \michals{1.12}{Do we need to justify that?} We denote by $\tilde{\zkproof}$ the
+  proof that uses the real witness $\wit$ and randomness $\vec{b}$.
+
+  Furthermore, since evaluations $p_{i, j, k}$ for $(i, j) \in D$ are already
+  determined by $p_{i, j, k}$ for $(i, j) \in R$ and $\zkproof [i - 1]$, these values
+  are the same in the simulated proof and in $\tilde{\zkproof}$. Similarly for the
+  polynomials $\p{p}_{i, j}$, $j \in \range{k_i, k_i + k'_{i}}$. Hence, if
+  $\tilde{\zkproof}$ is acceptable, so is the simulated proof.
+  
+  \ncase{Zero knowledge} Both in the real and simulated proofs polynomials in $R$ are
+  randomized, hence any evaluation on them gives a random field element, hence for
+  these evaluations distributions of the proofs are the same.
+
+  According to the definition, polynomials in $D$ are already determined by the state
+  of the transcript and previously picked polynomials. 
+
+  Since protocol messages are determined by the actual state of the proof transcript
+  and the witness and the simulator computes them as an honest prover would compute,
+  the distributions of the real and simulated proofs do not differ here as well.
+\end{proof}
 
 \michals{29.11}{To our reduction to work we need to have witness encoded as
   coefficients of some of the polynomials sent by the prover. This assumption need to
 be done in the reduction part, not here.}
 
+\iffalse
 \begin{theorem}
   Zero knowledge, as defined in \cref{def:ips_zk}, implies zero-knowledge as defined
   in \hl{AHP zero knowledge reference}.
 \end{theorem}
 \begin{proof}
 \end{proof}
+\fi
 
 \iffalse
 \subsection{Polynomial commitment SE definitions equivalence}
