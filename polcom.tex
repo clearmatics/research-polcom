@@ -1651,16 +1651,15 @@ $\zkproof[i - 1]$.
   $\p{p}_{i, 1} (\vec{X}, \vec{B}), \ldots, \p{p}_{i, k_i} (\vec{X}, \vec{B})$. We
   denote by $l$ length of vector $\vec{B}$ and by $l'$ length of vector $\vec{X}$.
   The verifier sends challenges, which we divide into two groups: \emph{protocol
-    building challenges} $\beta_{i, j}$ and / or \emph{evaluation challenges}
-  $\chz_{i, j}$, where index $(i, j)$ should be interpreted as $j$-th challenge in
-  Round $i$. Vector $\vec{X}$ denotes a random variable (or a vector of random
-  variables) corresponding to evaluation challenges. That is, for each evaluation
-  challenge $\chz_{i, j}$ the protocol specifies which $X \in \vec{X}$ are realised
-  by $\chz_{i, j}$. Importantly, \hl{...} \michals{29.11}{Don't recall now what was
-    so important here}
+    building challenges} $\beta_{i, j}$ where index $(i, j)$ should be interpreted as
+  $j$-th challenge in Round $i$ and \emph{evaluation challenges} $\chz_{i, j, k}$,
+  where index $(i, j, k)$ means $k$-th challenge to polynomial $\p{p}_{i, j}$. Vector
+  $\vec{X}$ denotes a vector of random variables corresponding to evaluation
+  challenges. That is, for each evaluation challenge $\chz_{i, j, k}$ the protocol
+  specifies which $X \in \vec{X}$ are realised by $\chz_{i, j, k}$. 
 
   We interpret messages $m_{i, j}$ sent by the prover as polynomials that are
-  independent of any random variables in $(\vec{X}, \vec{B})$ which has not been
+  independent of random variables in $(\vec{X}, \vec{B})$ which has not been
   realised yet. Other way around, messages $m_{i, j}$ are polynomials which
   evaluations points are fully specified, i.e.~constants. For the sake of
   convenience, we write $\p{p}_{i, j + k_i} (\vec{X}, \vec{B})$ to denote $m_{i,
@@ -1668,13 +1667,13 @@ $\zkproof[i - 1]$.
   end of the list of polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$. From now one, we
   will use only $\p{p}_{i, j} (\vec{X}, \vec{B})$ and not $m_{i, j}$. Importantly,
   since polynomials $\p{p}_{i, k_i + j} (\vec{X}, \vec{B})$ are independent of random
-  variables that have not been realised yet the prover sends their evaluations
+  variables that have not been realised yet, the prover sends their evaluations
   directly to the verifier without setting up oracles for them. For the rest of the
   polynomials the oracles are set up as usual.
   
   We call polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ a \emph{randomised
     polynomial} if there is $B_i \in \smallset{B_1, \ldots, B_l}$ such that
-  $\p{p_{i', j'}} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_i$ while for
+  $\p{p}_{i', j'} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_i$ while for
   all $\p{p}_{i, j}$ for $(i, j) < (i', j')$, coefficient next to $B_i$ is zero.  Polynomials
   $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not \emph{randomised polynomials} are called
   \emph{determined}.
@@ -1787,7 +1786,7 @@ $\zkproof[i - 1]$.
   s.t.~$(i, j) \in R$, for witness $\wit$ there is a randomness $\tilde{\vec{b}}$
   that gives the same evaluation at $\smallset{\chz_{i, j, k}}_{k = 1}^{K_{i, j}}$.
   \michals{1.12}{Do we need to justify that?} We denote by $\tilde{\zkproof}$ the
-  proof that uses the real witness $\wit$ and randomness $\vec{b}$.
+  proof that uses the real witness $\wit$ and randomness $\vec{\tilde{b}}$.
 
   Furthermore, since evaluations $p_{i, j, k}$ for $(i, j) \in D$ are already
   determined by $p_{i, j, k}$ for $(i, j) \in R$ and $\zkproof [i - 1]$, these values
@@ -1795,7 +1794,14 @@ $\zkproof[i - 1]$.
   polynomials $\p{p}_{i, j}$, $j \in \range{k_i, k_i + k'_{i}}$. Hence, if
   $\tilde{\zkproof}$ is acceptable, so is the simulated proof.
   
-  \ncase{Zero knowledge} Both in the real and simulated proofs polynomials in $R$ are
+  \ncase{Zero knowledge} We argue about zero knowledge using the same argument as in
+  the case of completeness. Since there is a randomness $\vec{\tilde{b}}$ that for a
+  real witness $\wit$ gives the same proof as the simulated one, distribution of real
+  ans simulated proofs are indistinguishable. 
+   
+
+  \iffalse
+  Both in the real and simulated proofs polynomials in $R$ are
   randomized, hence any evaluation on them gives a random field element, hence for
   these evaluations distributions of the proofs are the same.
 
@@ -1805,6 +1811,7 @@ $\zkproof[i - 1]$.
   Since protocol messages are determined by the actual state of the proof transcript
   and the witness and the simulator computes them as an honest prover would compute,
   the distributions of the real and simulated proofs do not differ here as well.
+  \fi
 \end{proof}
 
 \michals{29.11}{To our reduction to work we need to have witness encoded as
