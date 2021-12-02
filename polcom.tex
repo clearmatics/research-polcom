@@ -1676,8 +1676,10 @@ $\zkproof[i - 1]$.
   $\p{p}_{i', j'} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_i$ while for
   all $\p{p}_{i, j}$ for $(i, j) < (i', j')$, coefficient next to $B_i$ is zero.  Polynomials
   $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not \emph{randomised polynomials} are called
-  \emph{determined}.
-
+  \emph{determined}. Importantly, polynomials in $D$ depends only
+  \begin{itemize}
+  \item on the current transcript, i.e.~
+  \end{itemize}
 
   \begin{description}
   \item[Prover]
@@ -1738,16 +1740,19 @@ $\zkproof[i - 1]$.
   Let $\vec{Z} = \smallset{z_{i, j}}_{i = 1, j = 1}^{\mu, k_i}$. Let the protocol be
   a proof system $\PS$ as described in \cref{def:ps} such that
   \begin{itemize}
-  \item $\smallset{\p{p}_{i, j} (\vec{X}, \vec{b})}$ are independent;
+  \item $\smallset{\p{p}_{i, j} (\vec{X}, \vec{b})}$ are pairwise independent;
+    \michals{2.12}{All of the polynomials or only these in $R$?}
   \item The verifier makes less than $z_{i, j}$ evaluation queries to an oracle set
     for polynomial $\p{p}_{i, j}$;
   \end{itemize}
+  
   In the following we denote by $\p{p}_{i, j}$ polynomials computed as defined in the
   protocol and by $\p{p}'_{i, j}$ the corresponding simulated polynomials
   corresponding to $\p{p}_{i, j}$; and $R$ (resp.~$D$) denotes the set of all randomized
-  (resp.~determined) polynomials in $\PS$. Then, $\PS$ is zero-knowledge with
-  simulator $\simulator$ that for instance $\inp$ picks a random witness $\wit$, and
-  in Round $i$ proceeds as follows:
+  (resp.~determined) polynomials in $\PS$. 
+
+  $\PS$ is zero-knowledge with simulator $\simulator$ that for instance $\inp$ picks
+  a random witness $\wit$, and in Round $i$ proceeds as follows:
   \begin{enumerate}
   \item Pick polynomials $\smallset{\p{p}_{i, j}}_{(i, j) \in R}$ randomly and set
     the corresponding oracles;
