@@ -1670,18 +1670,97 @@ $\zkproof[i - 1]$.
   variables that have not been realised yet, the prover sends their evaluations
   directly to the verifier without setting up oracles for them. For the rest of the
   polynomials the oracles are set up as usual.
-  
-  We call polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ a \emph{randomised
-    polynomial} if there is $B_i \in \smallset{B_1, \ldots, B_l}$ such that
-  $\p{p}_{i', j'} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_i$ while for
-  all $\p{p}_{i, j}$ for $(i, j) < (i', j')$, coefficient next to $B_i$ is zero.  Polynomials
-  $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not \emph{randomised polynomials} are called
-  \emph{determined}. Importantly, polynomials in $D$ depends only
-  \begin{itemize}
-  \item on the current transcript, i.e.~
-  \end{itemize}
 
-  \begin{description}
+  In the following we consider two kinds of polynomials -- randomised and determined.
+  \begin{itemize}
+  \item Let $\p{p}_{i', j'} (\vec{X}, \vec{B})$ be a polynomial that is evaluated at
+    $k_{i', j'}$ points. We call $\p{p}_{i', j'} (\vec{X}, \vec{B})$
+    \emph{randomised} if there is
+    $B_{i_1}, \ldots, B_{i_{k_{i' j'}}} \in \smallset{B_1, \ldots, B_l}$ such that
+    $\p{p}_{i', j'} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_{i_k}$
+    while for all $\p{p}_{i, j}$ for $(i, j) < (i', j')$, coefficient next to
+    $B_{i_k}$ is zero. We denote the set of randomized polynomials by $R$.
+
+    We say that $\p{p}_{i', j'}$ \emph{introduces} $B_i$ if for all
+    $(i, j) < (i', j')$ coefficient of $B_i$ in $\p{p}_{i, j}$ is zero. Hence, a
+    randomised polynomial evaluated at $k$ points is a polynomial that introduces at
+    least $k$ randomizers $B_i$
+
+    Importantly, we assume that there are no polynomials $\p{p}_{i', j'}$ which are
+    evaluated at $k$ points but there is only $k'$, for $k' \in \range{1}{k - 1}$
+    elements $B_{i_1}, \ldots, B_{i_k'} \in \smallset{B_1, \ldots, B_l}$ such that
+    $\p{p}_{i', j'} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_{i_k}$
+    while for all $\p{p}_{i, j}$ for $(i, j) < (i', j')$, coefficient next to
+    $B_{i_k}$ is zero. That is, we assume that there is no polynomials that are
+    evaluated at $k$ points but which introduce non-zero, but less than $k$
+    randomisers.
+
+    
+  \item Polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not \emph{randomised
+      polynomials} are called \emph{determined}. We denote the set of determined
+    polynomials by $D$.
+  \end{itemize}
+    
+    % \iffalse
+    % We call polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ a \emph{randomised
+    %   polynomial} if there is $B_i \in \smallset{B_1, \ldots, B_l}$ such that
+    % $\p{p}_{i', j'} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_i$ while
+    % for all $\p{p}_{i, j}$ for $(i, j) < (i', j')$, coefficient next to $B_i$ is
+    % zero.  Polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not
+    % \emph{randomised polynomials} are called \emph{determined}.  \fi
+
+    Importantly, the following lemma holds.
+
+    \begin{lemma}
+      \label{lem:matching_R_polys}
+      Let $\p{p}_{i', j'} (\vec{X}, \vec{B})$ be a polynomial that is to be evaluated
+      at $k$ points $\vec{x_1}, \ldots, \vec{x_k}$. For selection of $\vec{x_i}$,
+      randomness $\vec{b}$ and randomised polynomial $\p{p}(\vec{X}, \vec{B})$ there
+      is a PPT algorithm $\adv$ that outputs a rational function
+      $\p{p}'(\vec{X}, \vec{B})$ such that
+      $\p{p}(\vec{x}, \vec{b}) = \p{p}(\vec{x}, \vec{b})$.
+    \end{lemma}
+    \begin{proof}
+      Let $\p{p} (\vec{x_i}, \vec{b}) = r_i$. Let $\adv$ be an algorithm that picks
+      coefficients of $\p{p}'' (\vec{X}, \vec{B})$ randomly and defines
+      $\p{p}' (\vec{X}, \vec{B}) = \p{p}'' (\vec{X}, \vec{B}) \cdot (X_1 \cdot \ldots
+      \cdot X_{l'} - x_{j1} \cdot \ldots \cdot x_{jl'}) + b_i (\vec{X})$ where
+      $b_i (X)$ is defined as follows:
+    \[
+      b_i (\vec{X}) = r_i \prod_{j = 1, j \neq i}^{k} \frac{(X_1 \cdot \ldots \cdot
+        X_{l'} - x_{j1} \cdot \ldots \cdot x_{jl'})}{(x_{i1} \cdot \ldots \cdot
+        x_{il'} - x_{j1} \cdot \ldots \cdot x_{jl'})}
+    \]
+    That is for $b_i (\vec{x_i}) = r_i$ and $b_i (\vec{x_j}) = 0$, for $j \neq
+    i$. Eventually $\p{p}' (\vec{x_i}, \vec{b}) = r_i$.
+  \end{proof}
+
+  Note that polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ can be written as
+  \[
+    \p{p}_{i', j'} (\vec{X}, \vec{B}) = \p{h}_{i, j}\left(\vec{X}, \vec{\beta},
+      (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right)
+  \]
+  \michals{9.12}{Note that in the definition above i removed $\vec{B}$. That is,
+    polynomial $h$ depends on $\vec{B}$ only indirectly, i.e.~via polynomials
+    $p$. Formalize that}
+
+  Assume that
+  $\p{p}'_{i, j} (\vec{X}, \vec{B}) = \p{h}'_{i, j}\left(\vec{X}, \vec{B},
+    \vec{\beta}, (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right) $
+  are polynomials such that
+  $\p{p}'_{i, j} (\vec{x}, \vec{b}) = \p{p} (\vec{x}, \vec{b})$ for $\p{p} \in R$. We
+  then show that for all $\p{p}_{i, j} \in D$ holds
+  \[
+    \p{p}_{i, j} (\vec{x}, \vec{b}) =  \p{h}_{i, j}\left(\vec{x},
+      \vec{\beta}, (\p{p}'_{i, j} (\vec{x}, \vec{b}))_{(i, j) \leq (i', j')} \right)
+  \]
+  
+
+  
+
+    
+
+    \begin{description}
   \item[Prover]
     \begin{enumerate}
     \item On input $(\ind, \inp, \wit)$ the prover picks randomly an evaluation
