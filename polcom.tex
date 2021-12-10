@@ -1652,11 +1652,12 @@ $\zkproof[i - 1]$.
   denote by $l$ length of vector $\vec{B}$ and by $l'$ length of vector $\vec{X}$.
   The verifier sends challenges, which we divide into two groups: \emph{protocol
     building challenges} $\beta_{i, j}$ where index $(i, j)$ should be interpreted as
-  $j$-th challenge in Round $i$ and \emph{evaluation challenges} $\chz_{i, j, k}$,
+  $j$-th challenge in Round $i$ and \emph{evaluation challenges} $\vec{x_{i, j, k}}$,
   where index $(i, j, k)$ means $k$-th challenge to polynomial $\p{p}_{i, j}$. Vector
   $\vec{X}$ denotes a vector of random variables corresponding to evaluation
-  challenges. That is, for each evaluation challenge $\chz_{i, j, k}$ the protocol
-  specifies which $X \in \vec{X}$ are realised by $\chz_{i, j, k}$. 
+  challenges.
+  % That is, for each evaluation challenge $\vec{x_{i, j, k}}$ the protocol
+  % specifies which $X \in \vec{X}$ are realised by $\chz_{i, j, k}$. 
 
   We interpret messages $m_{i, j}$ sent by the prover as polynomials that are
   independent of random variables in $(\vec{X}, \vec{B})$ which has not been
@@ -1737,31 +1738,34 @@ $\zkproof[i - 1]$.
 
   Note that polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ can be written as
   \[
-    \p{p}_{i', j'} (\vec{X}, \vec{B}) = \p{h}_{i, j}\left(\vec{X}, \vec{\beta},
+    \p{p}_{i', j'} (\vec{X}, \vec{B}) = \p{h}_{i', j'}\left(\vec{X}, \vec{\beta},
       (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right)
   \]
   \michals{9.12}{Note that in the definition above i removed $\vec{B}$. That is,
     polynomial $h$ depends on $\vec{B}$ only indirectly, i.e.~via polynomials
     $p$. Formalize that}
 
-  Assume that
-  $\p{p}'_{i, j} (\vec{X}, \vec{B}) = \p{h}'_{i, j}\left(\vec{X}, \vec{B},
-    \vec{\beta}, (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right) $
-  are polynomials such that
-  $\p{p}'_{i, j} (\vec{x}, \vec{b}) = \p{p} (\vec{x}, \vec{b})$ for $\p{p} \in R$. We
-  then show that for all $\p{p}_{i, j} \in D$ holds
+  Let
+  $\p{p}'_{i, j} (\vec{X}, \vec{B}) = \p{h}_{i, j}\left(\vec{X}, \vec{\beta},
+    (\p{p}'_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right) $ be
+  polynomials such that $\p{p}'_{i, j} (\vec{x}, \vec{b'}) = \p{p}_{i, j} (\vec{x}, \vec{b})$
+  for $\p{p}_{i, j} \in R$. Observe that for all $\p{p}_{i, j} \in D$ hold
   \[
-    \p{p}_{i, j} (\vec{x}, \vec{b}) =  \p{h}_{i, j}\left(\vec{x},
-      \vec{\beta}, (\p{p}'_{i, j} (\vec{x}, \vec{b}))_{(i, j) \leq (i', j')} \right)
+    \p{p}_{i, j} (\vec{x}, \vec{b}) = \p{h}_{i, j}\left(\vec{x}, (\p{p}'_{i, j}
+      (\vec{x}, \vec{b'}))_{(i, j) \leq (i', j')} \right).
   \]
+
+  That is, if $\adv$ produces polynomials $\p{p}'_{i, j}$, $(i, j) \in R$, as in
+  \cref{lem:matching_R_polys} then $\p{p}_{i, j} (\vec{x}, \vec{b}) = \p{p}'_{i, j}
+  (\vec{x}, \vec{b'})$.
+
+
+  We now present more detailed description of the actors.
+  % \begin{description}
+
+  \paragraph{Indexer.}
   
-
-  
-
-    
-
-    \begin{description}
-  \item[Prover]
+  \paragraph{Prover.}
     \begin{enumerate}
     \item On input $(\ind, \inp, \wit)$ the prover picks randomly an evaluation
       $\vec{b} = b_1, \ldots, b_l$ of variable $\vec{B} = B_1, \ldots, B_l$.
@@ -1769,28 +1773,63 @@ $\zkproof[i - 1]$.
       polynomial oracles $\smallset{\oracleo_{\p{p}_{i, j}}}_{j = 1}^{k_i}$ for polynomials
       $\smallset{\p{p_{i, j}} (\vec{X}, \vec{b})}_{j = 1}^{k_i}$ and sends
       polynomials messages $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k'_i}$.
-    \item On evaluation challenge $\chz_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$,
-      where $K_{i, j}$ is the number of evaluation queries the verifier makes to
-      $\p{p}_{i, j}$, the prover computes
-      $p_{i, j, k} = \p{p}_{i, j} (\chz_{i, j, k}, \vec{b})$ and sends it to the
-      verifier.
+    \item Denote by $K_{i, j}$ the number of evaluation queries the verifier makes to
+      polynomial $\p{p}_{i, j}$. If for polynomial $\p{p}_{i, j}$ the verifier sent
+      all $K_{i, j}$ evaluation challenges $\vec{x_{i, j, k}}$, the prover computes
+      $p_{i, j, k} = \p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b})$ and sends it to the
+      verifier. \michals{10.12}{Requiring that we send evaluations only after all
+        evaluation points are known is needed by zero knowledge}
     \end{enumerate}
-  \item[Verifier]
-    \begin{enumerate}
-    \item[$i \leq \mu$:] on partial transcript $\zkproof [i - 1]$, prover's messages
-      $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k_i + k'_i}$ and oracles
-      $\smallset{\oracleo_{\p{p_{i, j}}}}_{i = 1}^{k_i}$ the verifier sends in Round
-      $i$:
-      \begin{itemize}
-      \item a protocol building challenge $\smallset{\beta_{i, j}}_j$, and / or
-      \item a evaluation challenge $\smallset{\chz_{i', j, k}}_{k = 1}^{K_{i', j}}$.
-      \end{itemize}
-    \item[$i = \mu$:] Eventually the verifier verifies the set of verification
-      equation $\vereq (\vec{X}, \vec{B})$ and outputs $1$ iff the verification
-      equation holds.
-    \end{enumerate}
-  \end{description}
+
+    \paragraph{Verifier.}
+  \begin{enumerate}
+  \item[$i \leq \mu$:] on partial transcript $\zkproof [i - 1]$, prover's messages
+    $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k_i + k'_i}$ and oracles
+    $\smallset{\oracleo_{\p{p_{i, j}}}}_{i = 1}^{k_i}$ the verifier sends in Round
+    $i$:
+    \begin{itemize}
+    \item a protocol building challenge $\smallset{\beta_{i, j}}_j$,
+    \item a evaluation challenge $\smallset{\vec{x_{i', j, k}}}_{k = 1}^{K_{i', j}}$.
+    \end{itemize}
+  \item[$i = \mu$:] Eventually, the verifier verifies the set of verification
+    equation $\vereq (\vec{X}, \vec{B})$ and outputs $1$ iff the verification
+    equation holds.
+  \end{enumerate}
   
+  \paragraph{Simulator.}
+\michals{10.12}{We need to require that the polynomial are evaluated after all
+  evaluations queries for that polynomial are known! (Otherwise we can easily have a
+  HVZK -- the simulator would just pick the evaluation challenges randomly), but
+  showing ZK may be difficult.}
+  In the following we denote by $\p{p}_{i, j}$ polynomials
+  computed as defined in the protocol and by $\p{p}'_{i, j}$ the corresponding
+  simulated rational functions corresponding to $\p{p}_{i, j}$. As previously we
+  denote by and $R$ (resp.~$D$) the set of all randomized (resp.~determined)
+  polynomials in $\PS$.
+
+  The simulator $\simulator$ for instance $\inp$ picks a random witness $\wit$,
+  and in Round $i$ proceeds as follows:
+  \begin{enumerate}
+  \item \michals{10.12}{Question -- the simulator picks polynomials after evaluations
+      $\vec{x}$ are known. What if messages $\p{p}_{i, j}$,
+      $j = k_i + 1, \ldots, k_i + k'_i$ depends on those polys?} For
+    $j = k_i + 1, \ldots, k_i + k'_i$, send to the verifier polynomials
+    $\p{p}_{i, j} (\vec{X}, \vec{b})$ evaluated w.r.t~$\zkproof[i - 1]$.
+  \item On verifier's evaluation query $\vec{x_{i, j, K_{i, j}}}$, i.e. for the last
+    evaluation query for an oracle corresponding to polynomial $\p{p}_{i, j}$:
+    \begin{itemize}
+    \item Pick rational functions $\smallset{\p{p}_{i, j}}_{(i, j) \in R}$ as
+      described in \cref{lem:matching_R_polys}.
+    \item Compute rational functions $\smallset{\p{p}_{i, j}}_{(i, j) \in D}$
+      according to the protocol.
+    \item Send evaluations $\p{p}' (\vec{x}, \vec{b'})$, for
+      $\vec{x} \in \smallset{\vec{x_{i, j, k}}}_{k = 1}^{K_{i, j}}$.
+    \end{itemize}
+  \end{enumerate}
+
+  Before it is shown that such simulator indeed outputs proofs indistinguishable from
+  proofs output by an honest verifier some definitions and additional assumptions are needed.
+    
 \begin{definition}[Polynomial independence]
   Let $\smallset{\p{p}_{i, j} (\vec{X}, \vec{b})}_{i = 1, j = 1}^{\mu, k_i}$ be polynomials
   which the prover set oracles for. We call these polynomials \emph{independent} if
@@ -1814,6 +1853,13 @@ $\zkproof[i - 1]$.
   theorem should be light, the heavy lifting specific for our framework should be
   done in the reduction, where $\bdv$ uses PCOM to simulate PS.}
 
+\begin{definition}[$\vec{Z}$-Zero knowledge]
+\end{definition}
+
+\begin{description}
+\item[Simulator]
+\end{description}
+
 \begin{theorem}[$\vec{Z}$-Zero knowledge]
   \label{def:ips_zk}
   Let $\vec{Z} = \smallset{z_{i, j}}_{i = 1, j = 1}^{\mu, k_i}$. Let the protocol be
@@ -1825,33 +1871,33 @@ $\zkproof[i - 1]$.
     for polynomial $\p{p}_{i, j}$;
   \end{itemize}
   
-  In the following we denote by $\p{p}_{i, j}$ polynomials computed as defined in the
-  protocol and by $\p{p}'_{i, j}$ the corresponding simulated polynomials
-  corresponding to $\p{p}_{i, j}$; and $R$ (resp.~$D$) denotes the set of all randomized
-  (resp.~determined) polynomials in $\PS$. 
+  % In the following we denote by $\p{p}_{i, j}$ polynomials computed as defined in the
+  % protocol and by $\p{p}'_{i, j}$ the corresponding simulated polynomials
+  % corresponding to $\p{p}_{i, j}$; and $R$ (resp.~$D$) denotes the set of all randomized
+  % (resp.~determined) polynomials in $\PS$. 
 
-  $\PS$ is zero-knowledge with simulator $\simulator$ that for instance $\inp$ picks
-  a random witness $\wit$, and in Round $i$ proceeds as follows:
-  \begin{enumerate}
-  \item Pick polynomials $\smallset{\p{p}_{i, j}}_{(i, j) \in R}$ randomly and set
-    the corresponding oracles;
-  \item For $j = k_i + 1, \ldots, k_i + k'_i$, send to the verifier polynomials
-    $\p{p}_{i, j} (\vec{X}, \vec{b})$ evaluated w.r.t~$\zkproof[i - 1]$ and
-    $\wit$. \michals{1.12}{We assume that the instance $\inp$ is part of the transcript.}
-  \item On verifier's evaluation query $\chz_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$, to a
-    polynomial oracle $\oracleo_{\p{p}_{i, j}}$:
-    \begin{itemize}
-    \item If the queried oracle is for a polynomial in $R$, then respond honestly
-      w.r.t.~to the polynomial that the oracle was set for;
-    \item Else, that is the queried oracle is for a polynomial in $D$, compute
-      $p_{i, j, k} = \p{p}_{i, j} (\chz_{i, j, k}, \vec{b})$ (note that since the
-      simulator picked witness at random $\p{p}_{i, j, k}$ may not be a polynomial)
-      and respond with $p_{i, j, k}$. If the protocol does not contain any more
-      evaluations of $\p{p}_{i, j} (\vec{x}, \vec{b})$, pick a polynomial
-      $\p{p}'_{i, j} (\vec{X}, \vec{b})$ that on $\chz_{i, j, k}$ evaluates to
-      $p_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$ and set an oracle for it.
-    \end{itemize}
-  \end{enumerate}
+  % $\PS$ is zero-knowledge with simulator $\simulator$ that for instance $\inp$ picks
+  % a random witness $\wit$, and in Round $i$ proceeds as follows:
+  % \begin{enumerate}
+  % \item Pick polynomials $\smallset{\p{p}_{i, j}}_{(i, j) \in R}$ randomly and set
+  %   the corresponding oracles;
+  % \item For $j = k_i + 1, \ldots, k_i + k'_i$, send to the verifier polynomials
+  %   $\p{p}_{i, j} (\vec{X}, \vec{b})$ evaluated w.r.t~$\zkproof[i - 1]$ and
+  %   $\wit$. \michals{1.12}{We assume that the instance $\inp$ is part of the transcript.}
+  % \item On verifier's evaluation query $\chz_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$, to a
+  %   polynomial oracle $\oracleo_{\p{p}_{i, j}}$:
+  %   \begin{itemize}
+  %   \item If the queried oracle is for a polynomial in $R$, then respond honestly
+  %     w.r.t.~to the polynomial that the oracle was set for;
+  %   \item Else, that is the queried oracle is for a polynomial in $D$, compute
+  %     $p_{i, j, k} = \p{p}_{i, j} (\chz_{i, j, k}, \vec{b})$ (note that since the
+  %     simulator picked witness at random $\p{p}_{i, j, k}$ may not be a polynomial)
+  %     and respond with $p_{i, j, k}$. If the protocol does not contain any more
+  %     evaluations of $\p{p}_{i, j} (\vec{x}, \vec{b})$, pick a polynomial
+  %     $\p{p}'_{i, j} (\vec{X}, \vec{b})$ that on $\chz_{i, j, k}$ evaluates to
+  %     $p_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$ and set an oracle for it.
+  %   \end{itemize}
+  % \end{enumerate}
   \michals{29.11}{Here I say nothing about evaluation equation to be
     fulfilled. However, this is obvious as we pick evaluations of polynomials in $D$
     in a way an honest prover would pick, hence the ver equation holds directly from
