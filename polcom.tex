@@ -1644,20 +1644,37 @@ $\zkproof[i - 1]$.
 \subsubsection{The idealised proof system}
   \label{def:ps}
   An idealised zero knowledge proof system $\PS$ consists of four parties: indexer
-  $\indexer$, prover $\prover$ and verifier $\verifier$, and simulator
-  $\simulator$. At the beginning, the indexer $\indexer$ provides index $\ind$,
-  prover $\prover$ sends in each Round $i$ messages $m_{i, 1}, \ldots m_{i k'_i}$ and
-  sets up polynomial oracles for polynomials
-  $\p{p}_{i, 1} (\vec{X}, \vec{B}), \ldots, \p{p}_{i, k_i} (\vec{X}, \vec{B})$. We
-  denote by $l$ length of vector $\vec{B}$ and by $l'$ length of vector $\vec{X}$.
-  The verifier sends challenges, which we divide into two groups: \emph{protocol
-    building challenges} $\beta_{i, j}$ where index $(i, j)$ should be interpreted as
-  $j$-th challenge in Round $i$ and \emph{evaluation challenges} $\vec{x_{i, j, k}}$,
-  where index $(i, j, k)$ means $k$-th challenge to polynomial $\p{p}_{i, j}$. Vector
-  $\vec{X}$ denotes a vector of random variables corresponding to evaluation
-  challenges.
-  % That is, for each evaluation challenge $\vec{x_{i, j, k}}$ the protocol
-  % specifies which $X \in \vec{X}$ are realised by $\chz_{i, j, k}$. 
+  $\indexer$, prover $\prover$, verifier $\verifier$, and simulator
+  $\simulator$.
+
+  \paragraph{Indexer.} The protocol starts with the indexer $\indexer$ providing
+  index $\ind$. This step needs to be performed only once for all circuits up to
+  given size. \michals{13.12}{Should we introduce here universal setup vs specialized
+    setup?}
+
+  \paragraph{Prover.} Prover $\prover$ gets as input the index $\ind$, instance $\inp$ and the
+  corresponding witness $\wit$ and starts the protocol with picking $l$ random values
+  $\vec{b} = b_1, \ldots, b_l$. Then in each Round $i$ it sends messages
+  $m_{i, 1}, \ldots m_{i k'_i}$ and sets up polynomial oracles
+  $\oracleo_{\p{p}_{i, 1}}, \ldots, \oracleo_{\p{p}_{i, k_i}}$ for polynomials
+  $\p{p}_{i, 1} (\vec{X}, \vec{b}), \ldots, \p{p}_{i, k_i} (\vec{X}, \vec{b})$, where
+  $\vec{X}$ is a vector of length $l'$.
+  
+  \paragraph{Verifier.} The verifier in Round $i$ sends challenges, which we divide
+  into two groups:
+  \begin{itemize}
+  \item \emph{protocol building challenges} $\beta_{i, j}$ where index $(i, j)$
+    should be interpreted as $j$-th challenge in Round $i$. We denote by
+    $\vec{\beta_i}$ the vector of all challenges sent by the verifier in Round $i$.
+  \item \emph{evaluation challenges} $\vec{x_{i, j, k}}$, where index $(i, j, k)$
+    means $k$-th challenge to polynomial $\p{p}_{i, j}$. Denote by $K_{i, j}$ number
+    of evaluation challenges that the verifier sends to the oracle
+    $\oracleo_{\p{p}_{i, j}}$. When all $K_{i, j}$ evaluation challenges are sent,
+    the verifier learns $\p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b})$, for
+    $k = 1, \ldots, K_{i, j}$.
+  \end{itemize}
+
+  Eventually, the verifier decides either to accept or reject the proof. 
 
   We interpret messages $m_{i, j}$ sent by the prover as polynomials that are
   independent of random variables in $(\vec{X}, \vec{B})$ which has not been
@@ -1665,66 +1682,54 @@ $\zkproof[i - 1]$.
   evaluations points are fully specified, i.e.~constants. For the sake of
   convenience, we write $\p{p}_{i, j + k_i} (\vec{X}, \vec{B})$ to denote $m_{i,
     j}$. That is, we append polynomials corresponding to messages $m_{i, j}$ to the
-  end of the list of polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$. From now one, we
+  end of the list of polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$. From now on, we
   will use only $\p{p}_{i, j} (\vec{X}, \vec{B})$ and not $m_{i, j}$. Importantly,
   since polynomials $\p{p}_{i, k_i + j} (\vec{X}, \vec{B})$ are independent of random
   variables that have not been realised yet, the prover sends their evaluations
   directly to the verifier without setting up oracles for them. For the rest of the
   polynomials the oracles are set up as usual.
 
+  Before we describe how the last party -- the simulator -- works, we introduce some
+  new definitions and make some assumptions on our proof system.
+
   In the following we consider two kinds of polynomials -- randomised and determined.
+  \begin{definition}[Randomised and determined polynomials]
   \begin{itemize}
   \item Let $\p{p}_{i', j'} (\vec{X}, \vec{B})$ be a polynomial that is evaluated at
     $k_{i', j'}$ points. We call $\p{p}_{i', j'} (\vec{X}, \vec{B})$
-    \emph{randomised} if there is
+    \emph{randomised} if there are
     $B_{i_1}, \ldots, B_{i_{k_{i' j'}}} \in \smallset{B_1, \ldots, B_l}$ such that
     $\p{p}_{i', j'} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_{i_k}$
     while for all $\p{p}_{i, j}$ for $(i, j) < (i', j')$, coefficient next to
-    $B_{i_k}$ is zero. We denote the set of randomized polynomials by $R$.
-
-    We say that $\p{p}_{i', j'}$ \emph{introduces} $B_i$ if for all
-    $(i, j) < (i', j')$ coefficient of $B_i$ in $\p{p}_{i, j}$ is zero. Hence, a
+    $B_{i_k}$ is zero. We denote the set of randomized polynomials by $R$. In that
+    case we also say that $\p{p}_{i', j'}$ \emph{introduces} $B_{i_k}$. Hence, a
     randomised polynomial evaluated at $k$ points is a polynomial that introduces at
     least $k$ randomizers $B_i$
 
-    Importantly, we assume that there are no polynomials $\p{p}_{i', j'}$ which are
-    evaluated at $k$ points but there is only $k'$, for $k' \in \range{1}{k - 1}$
-    elements $B_{i_1}, \ldots, B_{i_k'} \in \smallset{B_1, \ldots, B_l}$ such that
-    $\p{p}_{i', j'} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_{i_k}$
-    while for all $\p{p}_{i, j}$ for $(i, j) < (i', j')$, coefficient next to
-    $B_{i_k}$ is zero. That is, we assume that there is no polynomials that are
-    evaluated at $k$ points but which introduce non-zero, but less than $k$
-    randomisers.
+    Importantly, we assume that there is no polynomials $\p{p}_{i', j'}$ which are
+    evaluated at $k$ points but that introduces only $k'$, for $k' \in \range{1}{k - 1}$
+    randomisers $B_{i_1}, \ldots, B_{i_k'} \in \smallset{B_1, \ldots, B_l}$.
 
-    
   \item Polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not \emph{randomised
       polynomials} are called \emph{determined}. We denote the set of determined
     polynomials by $D$.
   \end{itemize}
-    
-    % \iffalse
-    % We call polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ a \emph{randomised
-    %   polynomial} if there is $B_i \in \smallset{B_1, \ldots, B_l}$ such that
-    % $\p{p}_{i', j'} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_i$ while
-    % for all $\p{p}_{i, j}$ for $(i, j) < (i', j')$, coefficient next to $B_i$ is
-    % zero.  Polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not
-    % \emph{randomised polynomials} are called \emph{determined}.  \fi
+\end{definition}
 
     Importantly, the following lemma holds.
 
     \begin{lemma}
       \label{lem:matching_R_polys}
-      Let $\p{p}_{i', j'} (\vec{X}, \vec{B})$ be a polynomial that is to be evaluated
-      at $k$ points $\vec{x_1}, \ldots, \vec{x_k}$. For selection of $\vec{x_i}$,
-      randomness $\vec{b}$ and randomised polynomial $\p{p}(\vec{X}, \vec{B})$ there
-      is a PPT algorithm $\adv$ that outputs a rational function
-      $\p{p}'(\vec{X}, \vec{B})$ such that
-      $\p{p}(\vec{x}, \vec{b}) = \p{p}(\vec{x}, \vec{b})$.
+      Let $\p{p} (\vec{X}, \vec{B})$ be a randomised polynomial that is to be
+      evaluated at $k$ vectors $\vec{x_1}, \ldots, \vec{x_k}$ each of length
+      $l'$. Then for every $\vec{x_i}$ and randomness $\vec{b}$, there is a PPT
+      algorithm $\adv$ that outputs a rational function $\p{p}'(\vec{X}, \vec{B})$
+      such that $\p{p}(\vec{x}, \vec{b}) = \p{p}'(\vec{x}, \vec{b'})$.
     \end{lemma}
     \begin{proof}
       Let $\p{p} (\vec{x_i}, \vec{b}) = r_i$. Let $\adv$ be an algorithm that picks
       coefficients of $\p{p}'' (\vec{X}, \vec{B})$ randomly and defines
-      $\p{p}' (\vec{X}, \vec{B}) = \p{p}'' (\vec{X}, \vec{B}) \cdot (X_1 \cdot \ldots
+      $\p{p}' (\vec{X}, \vec{B}) = \p{p}'' (\vec{X}, \vec{B}) \cdot \prod_{j = 1}^{l'} (X_1 \cdot \ldots
       \cdot X_{l'} - x_{j1} \cdot \ldots \cdot x_{jl'}) + b_i (\vec{X})$ where
       $b_i (X)$ is defined as follows:
     \[
@@ -1733,33 +1738,39 @@ $\zkproof[i - 1]$.
         x_{il'} - x_{j1} \cdot \ldots \cdot x_{jl'})}
     \]
     That is for $b_i (\vec{x_i}) = r_i$ and $b_i (\vec{x_j}) = 0$, for $j \neq
-    i$. Eventually $\p{p}' (\vec{x_i}, \vec{b}) = r_i$.
+    i$. Eventually $\p{p}' (\vec{x_i}, \vec{b}) = r_i$. \qed
   \end{proof}
 
-  Note that polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ can be written as
+  Note that each polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ sent by the prover
+  can be written as
   \[
-    \p{p}_{i', j'} (\vec{X}, \vec{B}) = \p{h}_{i', j'}\left(\vec{X}, \vec{\beta},
-      (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right)
+    \p{p}_{i', j'} (\vec{X}, \vec{B}) = \p{h}_{i', j'}\left(\vec{X},
+      (\vec{\beta_i})_{i \leq i' - 1},
+      (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right).
   \]
   \michals{9.12}{Note that in the definition above i removed $\vec{B}$. That is,
     polynomial $h$ depends on $\vec{B}$ only indirectly, i.e.~via polynomials
     $p$. Formalize that}
 
-  Let
-  $\p{p}'_{i, j} (\vec{X}, \vec{B}) = \p{h}_{i, j}\left(\vec{X}, \vec{\beta},
-    (\p{p}'_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right) $ be
-  polynomials such that $\p{p}'_{i, j} (\vec{x}, \vec{b'}) = \p{p}_{i, j} (\vec{x}, \vec{b})$
-  for $\p{p}_{i, j} \in R$. Observe that for all $\p{p}_{i, j} \in D$ hold
+  Let $\adv$ be an algorithm from \cref{lem:matching_R_polys} which for each
+  randomised polynomial
+  $\p{p}_{i, j} (\vec{X}, \vec{B}) = \p{h}_{i, j}\left(\vec{X}, \vec{\beta},
+    (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right)$, evaluation
+  challenges $\vec{x_{i, j, k}}$ and randomness $\vec{b}$ produces a polynomial
+  $\p{p}'_{i, j} (\vec{X}, \vec{B})$ and randomness $\vec{b'}$ such that for
+  $\vec{x} \in \smallset{\vec{x_{i, j, 1}}, \ldots, \vec{x_{i, j, K_{i, j}}}}$ holds
+  $\p{p} (\vec{x}, \vec{b}) = \p{p}' (\vec{x}, \vec{b'})$.  Then for all
+  $\p{p}_{i, j} \in D$ hold
   \[
     \p{p}_{i, j} (\vec{x}, \vec{b}) = \p{h}_{i, j}\left(\vec{x}, (\p{p}'_{i, j}
       (\vec{x}, \vec{b'}))_{(i, j) \leq (i', j')} \right).
   \]
 
-  That is, if $\adv$ produces polynomials $\p{p}'_{i, j}$, $(i, j) \in R$, as in
+  That is, if $\adv$ produces polynomials $\p{p}'_{i, j}$, for $(i, j) \in R$, as in
   \cref{lem:matching_R_polys} then $\p{p}_{i, j} (\vec{x}, \vec{b}) = \p{p}'_{i, j}
   (\vec{x}, \vec{b'})$.
 
-
+\iffalse
   We now present more detailed description of the actors.
   % \begin{description}
 
@@ -1795,6 +1806,7 @@ $\zkproof[i - 1]$.
     equation $\vereq (\vec{X}, \vec{B})$ and outputs $1$ iff the verification
     equation holds.
   \end{enumerate}
+\fi
   
   \paragraph{Simulator.}
 \michals{10.12}{We need to require that the polynomial are evaluated after all
