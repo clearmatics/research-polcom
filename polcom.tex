@@ -1716,126 +1716,132 @@ $\zkproof[i - 1]$.
   \end{itemize}
 \end{definition}
 
-    Importantly, the following lemma holds.
+Let $(\ind, \inp, \wit) \in \REL$, $\vec{b} \sample \FF^{l}$ and
+$(\p{p}_{i, j} (\vec{X}, \vec{b}))_{(i, j)}$ be randomised polynomials which an honest
+prover $\prover (\ind, \inp, \wit)$ sets an oracle for. Denote by $\dist{P}_{i, j, k}$ a distribution such that
+\[
+  \left\{ (\p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b}))_{(i, j)}\right\}_{\vec{x_{i, j,
+        k}}} \approx \dist{P}_{i, j, k}.
+\]
+
+   The following lemma holds.
 
     \begin{lemma}
       \label{lem:matching_R_polys}
-      Let $\p{p} (\vec{X}, \vec{B})$ be a randomised polynomial that is to be
-      evaluated at $k$ vectors $\vec{x_1}, \ldots, \vec{x_k}$ each of length
-      $l'$. Then for every $\vec{x_i}$ and randomness $\vec{b}$, there is a PPT
-      algorithm $\adv$ that outputs a rational function $\p{p}'(\vec{X}, \vec{B})$
-      such that $\p{p}(\vec{x}, \vec{b}) = \p{p}'(\vec{x}, \vec{b'})$.
+      Let $r_{i, j, k} \in \FF$ be an evaluation of a randomised polynomial
+      $\p{p}_{i, j} (\vec{X}, \vec{B})$ at some evaluation point $\vec{x_{i, j, k}}$. Then
+      there is a a PPT algorithm $\adv$ that outputs a rational function
+      $\p{p}'_{i, j} (\vec{X}, \vec{B})$ and vector $\vec{b'}$ such that
+      $\p{p}_{i, j}(\vec{x}, \vec{b}) = \p{p}'(\vec{x}, \vec{b'})$.
     \end{lemma}
     \begin{proof}
-      Let $\p{p} (\vec{x_i}, \vec{b}) = r_i$. Let $\adv$ be an algorithm that picks
-      coefficients of $\p{p}'' (\vec{X}, \vec{B})$ randomly and defines
-      $\p{p}' (\vec{X}, \vec{B}) = \p{p}'' (\vec{X}, \vec{B}) \cdot \prod_{j = 1}^{l'} (X_1 \cdot \ldots
-      \cdot X_{l'} - x_{j1} \cdot \ldots \cdot x_{jl'}) + b_i (\vec{X})$ where
-      $b_i (X)$ is defined as follows:
-    \[
-      b_i (\vec{X}) = r_i \prod_{j = 1, j \neq i}^{k} \frac{(X_1 \cdot \ldots \cdot
-        X_{l'} - x_{j1} \cdot \ldots \cdot x_{jl'})}{(x_{i1} \cdot \ldots \cdot
-        x_{il'} - x_{j1} \cdot \ldots \cdot x_{jl'})}
+      Algorithm $\adv$ begins by picking coefficients of $\p{p}''_{i, j} (\vec{X}, \vec{B})$
+      randomly and defines
+      \[
+        \p{p}'_{i, j} (\vec{X}, \vec{B}) = \p{r} (\vec{X}, \vec{B})  +
+      \sum_{k = 1}^{K_i, j} b_{i, j, k} (\vec{X}),
     \]
-    That is for $b_i (\vec{x_i}) = r_i$ and $b_i (\vec{x_j}) = 0$, for $j \neq
-    i$. Eventually $\p{p}' (\vec{x_i}, \vec{b}) = r_i$. \qed
+    where $\p{r} (\vec{X}, \vec{B})$ and $b_{i, j, k} (\vec{X})$ are defined as
+    follows:
+    \begin{align*}
+      \p{r} (\vec{X}, \vec{B}) & = \p{p}''_{i, j} (\vec{X}, \vec{B}) \cdot \prod_{k = 1}^{K_{i, j}} (X_1 \cdot \ldots \cdot X_{l'} - x_{i, j, k, 1} \cdot \ldots \cdot x_{i, j, k, l'}) \\
+      b_{i, j, k} (\vec{X}) & =  r_{i, j, k} \prod_{k' = 1, k' \neq k}^{K_{i, j}} \frac{(X_1 \cdot \ldots \cdot
+                              X_{l'} - x_{i, j, k', 1} \cdot \ldots \cdot x_{i, j, k', l'})}{(x_{i, j, k' 1} \cdot \ldots \cdot
+                              x_{i, j, k', l'} - x_{i, j, k', 1} \cdot \ldots \cdot x_{i, j, k', l'})}
+    \end{align*}
+      
+    That is, for all $\vec{x_{i, j, k}}$ polynomial $\p{r} (\vec{X}, \vec{B})$
+zeroes; and $b_{i, j, k} (\vec{x_{i, j, k}}) = r_{i, j, k}$ and
+    $b_{i, j, k} (\vec{x_{i, j, k'}}) = 0$, for $k' \neq k$. Eventually
+    $\p{p}'_{i, j, k} (\vec{x_{i, j, k}}, \vec{b}) = r_{i, j, k}$. \qed
   \end{proof}
 
-  Note that each polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ sent by the prover
-  can be written as
+  \begin{lemma}
+    Let $r_{i, j, k} = \p{p}_{i', j'} (\vec{x_{i, j, k}}, \vec{b})$ and let
+    $\p{p}'_{i', j'} (\vec{X}, \vec{B})$ be such that
+    $\p{p}'_{i', j'} (\vec{x_{i, j, k}}, \vec{b'}) = r_{i, j, k}$ for all
+    $(i', j') \in R$. Then for all $(i', j') \in D$ holds
+    \[
+      \p{p}_{i', j'} (\vec{x_{i, j, k}}, \vec{b}) =\p{p}'_{i', j'} (\vec{x_{i, j,
+          k}}, \vec{b'}).
+    \]
+    That is, if $\adv$ produces polynomials $\p{p}'_{i, j}$, for $(i, j) \in R$, as
+    in \cref{lem:matching_R_polys} then
+    $\p{p}_{i, j} (\vec{x}, \vec{b}) = \p{p}'_{i, j} (\vec{x}, \vec{b'})$.
+  \end{lemma}
+  \begin{proof}
+    Note that each polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ sent by the prover
+    can be written as
   \[
     \p{p}_{i', j'} (\vec{X}, \vec{B}) = \p{h}_{i', j'}\left(\vec{X},
-      (\vec{\beta_i})_{i \leq i' - 1},
-      (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right).
+      (\vec{\beta_i})_{i \leq i' - 1}, (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq
+        (i', j')} \right).
   \]
+  Also note that there is a minimal index $(i, j) \in D$ such that for all $(i^*, j^*)
+  \leq (i, j)$ polynomials $\p{p}_{i^*, j^*}$ are randomised.
+ % 
+  Hence by an induction argument over $(i', j')$ for all $(i', j') \in D$ holds
+  \begin{equation*}
+  \begin{split}
+    \p{p}_{i', j'} (\vec{x_{i, j, k}}, \vec{b}) = \p{h}_{i', j'}\left(\vec{x_{i, j, k}},
+      (\vec{\beta_i})_{i \leq i' - 1}, (\p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b}))_{(i, j) \leq
+        (i', j')} \right) =
+    \\ \p{h}_{i', j'}\left(\vec{x_{i, j, k}},
+      (\vec{\beta_i})_{i \leq i' - 1}, (\p{p}'_{i, j} (\vec{x_{i, j, k}}, \vec{b'}))_{(i, j) \leq
+        (i', j')} \right) = \p{p}'_{i', j'} (\vec{x_{i, j, k}}, \vec{b'})
+  \end{split}
+\end{equation*}
+\end{proof}
+  
   \michals{9.12}{Note that in the definition above i removed $\vec{B}$. That is,
     polynomial $h$ depends on $\vec{B}$ only indirectly, i.e.~via polynomials
     $p$. Formalize that}
 
-  Let $\adv$ be an algorithm from \cref{lem:matching_R_polys} which for each
-  randomised polynomial
-  $\p{p}_{i, j} (\vec{X}, \vec{B}) = \p{h}_{i, j}\left(\vec{X}, \vec{\beta},
-    (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right)$, evaluation
-  challenges $\vec{x_{i, j, k}}$ and randomness $\vec{b}$ produces a polynomial
-  $\p{p}'_{i, j} (\vec{X}, \vec{B})$ and randomness $\vec{b'}$ such that for
-  $\vec{x} \in \smallset{\vec{x_{i, j, 1}}, \ldots, \vec{x_{i, j, K_{i, j}}}}$ holds
-  $\p{p} (\vec{x}, \vec{b}) = \p{p}' (\vec{x}, \vec{b'})$.  Then for all
-  $\p{p}_{i, j} \in D$ hold
-  \[
-    \p{p}_{i, j} (\vec{x}, \vec{b}) = \p{h}_{i, j}\left(\vec{x}, (\p{p}'_{i, j}
-      (\vec{x}, \vec{b'}))_{(i, j) \leq (i', j')} \right).
-  \]
+  % Let $\adv$ be an algorithm from \cref{lem:matching_R_polys} which for each
+  % randomised polynomial
+  % $\p{p}_{i, j} (\vec{X}, \vec{B}) = \p{h}_{i, j}\left(\vec{X}, \vec{\beta},
+  %   (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right)$, evaluation
+  % challenges $\vec{x_{i, j, k}}$ and randomness $\vec{b}$ produces a polynomial
+  % $\p{p}'_{i, j} (\vec{X}, \vec{B})$ and randomness $\vec{b'}$ such that for
+  % $\vec{x} \in \smallset{\vec{x_{i, j, 1}}, \ldots, \vec{x_{i, j, K_{i, j}}}}$ holds
+  % $\p{p} (\vec{x}, \vec{b}) = \p{p}' (\vec{x}, \vec{b'})$.  Then for all
+  % $\p{p}_{i, j} \in D$ hold
+  % \[
+  %   \p{p}_{i, j} (\vec{x}, \vec{b}) = \p{h}_{i, j}\left(\vec{x}, (\p{p}'_{i, j}
+  %     (\vec{x}, \vec{b'}))_{(i, j) \leq (i', j')} \right).
+  % \]
 
-  That is, if $\adv$ produces polynomials $\p{p}'_{i, j}$, for $(i, j) \in R$, as in
-  \cref{lem:matching_R_polys} then $\p{p}_{i, j} (\vec{x}, \vec{b}) = \p{p}'_{i, j}
-  (\vec{x}, \vec{b'})$.
 
-\iffalse
-  We now present more detailed description of the actors.
-  % \begin{description}
-
-  \paragraph{Indexer.}
-  
-  \paragraph{Prover.}
-    \begin{enumerate}
-    \item On input $(\ind, \inp, \wit)$ the prover picks randomly an evaluation
-      $\vec{b} = b_1, \ldots, b_l$ of variable $\vec{B} = B_1, \ldots, B_l$.
-    \item In Round $i$, on partial transcript $\zkproof [i - 1]$, the prover sets up
-      polynomial oracles $\smallset{\oracleo_{\p{p}_{i, j}}}_{j = 1}^{k_i}$ for polynomials
-      $\smallset{\p{p_{i, j}} (\vec{X}, \vec{b})}_{j = 1}^{k_i}$ and sends
-      polynomials messages $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k'_i}$.
-    \item Denote by $K_{i, j}$ the number of evaluation queries the verifier makes to
-      polynomial $\p{p}_{i, j}$. If for polynomial $\p{p}_{i, j}$ the verifier sent
-      all $K_{i, j}$ evaluation challenges $\vec{x_{i, j, k}}$, the prover computes
-      $p_{i, j, k} = \p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b})$ and sends it to the
-      verifier. \michals{10.12}{Requiring that we send evaluations only after all
-        evaluation points are known is needed by zero knowledge}
-    \end{enumerate}
-
-    \paragraph{Verifier.}
-  \begin{enumerate}
-  \item[$i \leq \mu$:] on partial transcript $\zkproof [i - 1]$, prover's messages
-    $\p{p}_{i, k_i + 1}, \ldots \p{p}_{i, k_i + k'_i}$ and oracles
-    $\smallset{\oracleo_{\p{p_{i, j}}}}_{i = 1}^{k_i}$ the verifier sends in Round
-    $i$:
-    \begin{itemize}
-    \item a protocol building challenge $\smallset{\beta_{i, j}}_j$,
-    \item a evaluation challenge $\smallset{\vec{x_{i', j, k}}}_{k = 1}^{K_{i', j}}$.
-    \end{itemize}
-  \item[$i = \mu$:] Eventually, the verifier verifies the set of verification
-    equation $\vereq (\vec{X}, \vec{B})$ and outputs $1$ iff the verification
-    equation holds.
-  \end{enumerate}
-\fi
   
   \paragraph{Simulator.}
-\michals{10.12}{We need to require that the polynomial are evaluated after all
-  evaluations queries for that polynomial are known! (Otherwise we can easily have a
-  HVZK -- the simulator would just pick the evaluation challenges randomly), but
-  showing ZK may be difficult.}
   In the following we denote by $\p{p}_{i, j}$ polynomials
   computed as defined in the protocol and by $\p{p}'_{i, j}$ the corresponding
   simulated rational functions corresponding to $\p{p}_{i, j}$. As previously we
   denote by and $R$ (resp.~$D$) the set of all randomized (resp.~determined)
   polynomials in $\PS$.
 
-  The simulator $\simulator$ for instance $\inp$ picks a random witness $\wit$,
-  and in Round $i$ proceeds as follows:
+  The simulator $\simulator$ for instance $\inp$ picks a random witness $\wit'$,
+  randomisers $\vec{b'}$, and in Round $i$ proceeds as follows:
   \begin{enumerate}
-  \item \michals{10.12}{Question -- the simulator picks polynomials after evaluations
-      $\vec{x}$ are known. What if messages $\p{p}_{i, j}$,
-      $j = k_i + 1, \ldots, k_i + k'_i$ depends on those polys?} For
-    $j = k_i + 1, \ldots, k_i + k'_i$, send to the verifier polynomials
+  \item
+    % \michals{10.12}{Question -- the simulator picks polynomials after evaluations
+    %   $\vec{x}$ are known. What if messages $\p{p}_{i, j}$,
+    %   $j = k_i + 1, \ldots, k_i + k'_i$ depends on those polys?}
+    \michals{13.12}{Since the simulator picks polynomials in $R$ randomly, we probably
+      doesn't need to wait till it learns all evaluation points to reveal evaluations}
+    For $j = k_i + 1, \ldots, k_i + k'_i$, send to the verifier polynomials
     $\p{p}_{i, j} (\vec{X}, \vec{b})$ evaluated w.r.t~$\zkproof[i - 1]$.
   \item On verifier's evaluation query $\vec{x_{i, j, K_{i, j}}}$, i.e. for the last
     evaluation query for an oracle corresponding to polynomial $\p{p}_{i, j}$:
     \begin{itemize}
-    \item Pick rational functions $\smallset{\p{p}_{i, j}}_{(i, j) \in R}$ as
-      described in \cref{lem:matching_R_polys}.
-    \item Compute rational functions $\smallset{\p{p}_{i, j}}_{(i, j) \in D}$
+    \item Pick evaluations $r_{i, j, k}$ randomly w.r.t distribution
+      $\dist{P}_{i, j, k}$.
+    \item Compute polynomials $\smallset{\p{p}'_{i, j}}_{(i, j) \in R}$ as described
+      in \cref{lem:matching_R_polys}. 
+    \item Compute rational functions $\smallset{\p{p}'_{i, j}}_{(i, j) \in D}$
       according to the protocol.
-    \item Send evaluations $\p{p}' (\vec{x}, \vec{b'})$, for
-      $\vec{x} \in \smallset{\vec{x_{i, j, k}}}_{k = 1}^{K_{i, j}}$.
+    \item Send evaluations $r_{i, j, k} = \p{p}' (\vec{x_{i, j, k}}, \vec{b'})$, for
+      $k \in \range= {1}{K_{i, j}}$.
     \end{itemize}
   \end{enumerate}
 
@@ -1866,16 +1872,13 @@ $\zkproof[i - 1]$.
   done in the reduction, where $\bdv$ uses PCOM to simulate PS.}
 
 \begin{definition}[$\vec{Z}$-Zero knowledge]
+  \michals{13.12}{Here will be a definition for zero knowledge}
 \end{definition}
-
-\begin{description}
-\item[Simulator]
-\end{description}
 
 \begin{theorem}[$\vec{Z}$-Zero knowledge]
   \label{def:ips_zk}
-  Let $\vec{Z} = \smallset{z_{i, j}}_{i = 1, j = 1}^{\mu, k_i}$. Let the protocol be
-  a proof system $\PS$ as described in \cref{def:ps} such that
+  Let $\vec{Z} = \smallset{z_{i, j}}_{i = 1, j = 1}^{\mu, k_i}$. Let $\PS$ be a proof
+  system as described in \cref{def:ps} such that
   \begin{itemize}
   \item $\smallset{\p{p}_{i, j} (\vec{X}, \vec{b})}$ are pairwise independent;
     \michals{2.12}{All of the polynomials or only these in $R$?}
@@ -1910,12 +1913,20 @@ $\zkproof[i - 1]$.
   %     $p_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$ and set an oracle for it.
   %   \end{itemize}
   % \end{enumerate}
-  \michals{29.11}{Here I say nothing about evaluation equation to be
-    fulfilled. However, this is obvious as we pick evaluations of polynomials in $D$
-    in a way an honest prover would pick, hence the ver equation holds directly from
-    the completeness of the proof system.}
 \end{theorem}
 \begin{proof}
+  We note that since \cref{lem:matching_R_polys} holds, for every instance $\inp$,
+  random witness $\wit'$ and evaluations $r_{i, j, k}$ there exists a real prover
+  that for instance $\inp$, witness $\wit$ and randomness $\vec{b}$ sets oracles for
+  polynomials $\p{p}_{i, j}$ such that
+  $\p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b}) = r_{i, j, k}$. Since the simulated
+  evaluations were picked according to distributions of the real evaluations
+  (i.e.~evaluations of polynomials computed by an honest prover), a simulated proof
+  is indistinguishable from a real one.
+\end{proof}
+
+\iffalse
+% Old proof
   The proof is twofold. First we show that the proof provided by the simulator is
   acceptable, then we show that it is indistinguishable from a real proof.
 
@@ -1954,7 +1965,7 @@ $\zkproof[i - 1]$.
   and the witness and the simulator computes them as an honest prover would compute,
   the distributions of the real and simulated proofs do not differ here as well.
   \fi
-\end{proof}
+  \fi
 
 \michals{29.11}{To our reduction to work we need to have witness encoded as
   coefficients of some of the polynomials sent by the prover. This assumption need to
