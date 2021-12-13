@@ -1767,7 +1767,7 @@ zeroes; and $b_{i, j, k} (\vec{x_{i, j, k}}) = r_{i, j, k}$ and
     \]
     That is, if $\adv$ produces polynomials $\p{p}'_{i, j}$, for $(i, j) \in R$, as
     in \cref{lem:matching_R_polys} then
-    $\p{p}_{i, j} (\vec{x}, \vec{b}) = \p{p}'_{i, j} (\vec{x}, \vec{b'})$.
+    $\p{p}_{i, j} (\vec{x}, \vec{b}) = \p{p}'_{i, j} (\vec{x}, \vec{b'})$ for all $(i, j)$.
   \end{lemma}
   \begin{proof}
     Note that each polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ sent by the prover
@@ -1777,40 +1777,28 @@ zeroes; and $b_{i, j, k} (\vec{x_{i, j, k}}) = r_{i, j, k}$ and
       (\vec{\beta_i})_{i \leq i' - 1}, (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq
         (i', j')} \right).
   \]
-  Also note that there is a minimal index $(i, j) \in D$ such that for all $(i^*, j^*)
-  \leq (i, j)$ polynomials $\p{p}_{i^*, j^*}$ are randomised.
- % 
-  Hence by an induction argument over $(i', j')$ for all $(i', j') \in D$ holds
-  \begin{equation*}
-  \begin{split}
-    \p{p}_{i', j'} (\vec{x_{i, j, k}}, \vec{b}) = \p{h}_{i', j'}\left(\vec{x_{i, j, k}},
-      (\vec{\beta_i})_{i \leq i' - 1}, (\p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b}))_{(i, j) \leq
-        (i', j')} \right) =
-    \\ \p{h}_{i', j'}\left(\vec{x_{i, j, k}},
-      (\vec{\beta_i})_{i \leq i' - 1}, (\p{p}'_{i, j} (\vec{x_{i, j, k}}, \vec{b'}))_{(i, j) \leq
-        (i', j')} \right) = \p{p}'_{i', j'} (\vec{x_{i, j, k}}, \vec{b'})
-  \end{split}
-\end{equation*}
+  Denote by $E$ a set of indices $(i, j)$ such that
+  $\p{p}'_{i, j} (\vec{x_{i, j, k}}, \vec{b'}) = \p{p}_{i, j} (\vec{x_{i, j,
+      k}})$. Obviously, $R \subset E$. Note that there is a minimal index
+  $(i^*, j^*) \in D \setminus E$ such that for all $(i, j) \leq (i^*, j^*)$ polynomials
+  $\p{p}_{i, j}$ are in $E$. For $\p{p}_{i^*, j^*}$ holds
+  \begin{equation}
+    \begin{split}
+      \p{p}_{i^*, j^*} (\vec{x_{i^*, j^*, k^*}}, \vec{b}) =
+      \p{h}_{i^*, j^*}\left((\vec{x_{i^*, j^*, k}})_{k \leq k^*},
+        (\vec{\beta_{i}})_{i \leq i^* - 1}, (\p{p}_{i, j} (\vec{x_{i, j, k}},
+        \vec{b}))_{(i, j) < (i^*, j^*)} \right) = \\ \p{h}_{i^*, j^*}\left((\vec{x_{i^*, j^*,
+            k}})_{k \leq k^*}, (\vec{\beta_i})_{i \leq i^* - 1}, (\p{p}'_{i, j} (\vec{x_{i, j, k}},
+        \vec{b'}))_{(i, j) < (i^*, j^*)} \right) = \p{p}'_{i^*, j^*} (\vec{x_{i^*, j^*, k^*}},
+      \vec{b'})
+    \end{split}
+  \end{equation}
+  \qed
 \end{proof}
   
   \michals{9.12}{Note that in the definition above i removed $\vec{B}$. That is,
     polynomial $h$ depends on $\vec{B}$ only indirectly, i.e.~via polynomials
     $p$. Formalize that}
-
-  % Let $\adv$ be an algorithm from \cref{lem:matching_R_polys} which for each
-  % randomised polynomial
-  % $\p{p}_{i, j} (\vec{X}, \vec{B}) = \p{h}_{i, j}\left(\vec{X}, \vec{\beta},
-  %   (\p{p}_{i, j} (\vec{X}, \vec{B}))_{(i, j) \leq (i', j')} \right)$, evaluation
-  % challenges $\vec{x_{i, j, k}}$ and randomness $\vec{b}$ produces a polynomial
-  % $\p{p}'_{i, j} (\vec{X}, \vec{B})$ and randomness $\vec{b'}$ such that for
-  % $\vec{x} \in \smallset{\vec{x_{i, j, 1}}, \ldots, \vec{x_{i, j, K_{i, j}}}}$ holds
-  % $\p{p} (\vec{x}, \vec{b}) = \p{p}' (\vec{x}, \vec{b'})$.  Then for all
-  % $\p{p}_{i, j} \in D$ hold
-  % \[
-  %   \p{p}_{i, j} (\vec{x}, \vec{b}) = \p{h}_{i, j}\left(\vec{x}, (\p{p}'_{i, j}
-  %     (\vec{x}, \vec{b'}))_{(i, j) \leq (i', j')} \right).
-  % \]
-
 
   
   \paragraph{Simulator.}
@@ -1823,25 +1811,21 @@ zeroes; and $b_{i, j, k} (\vec{x_{i, j, k}}) = r_{i, j, k}$ and
   The simulator $\simulator$ for instance $\inp$ picks a random witness $\wit'$,
   randomisers $\vec{b'}$, and in Round $i$ proceeds as follows:
   \begin{enumerate}
-  \item
-    % \michals{10.12}{Question -- the simulator picks polynomials after evaluations
-    %   $\vec{x}$ are known. What if messages $\p{p}_{i, j}$,
-    %   $j = k_i + 1, \ldots, k_i + k'_i$ depends on those polys?}
-    \michals{13.12}{Since the simulator picks polynomials in $R$ randomly, we probably
+  \item \michals{13.12}{Since the simulator picks polynomials in $R$ randomly, we probably
       doesn't need to wait till it learns all evaluation points to reveal evaluations}
-    For $j = k_i + 1, \ldots, k_i + k'_i$, send to the verifier polynomials
+    For $j = k_i + 1, \ldots, k_i + k'_i$, send to the verifier (constant) polynomials
     $\p{p}_{i, j} (\vec{X}, \vec{b})$ evaluated w.r.t~$\zkproof[i - 1]$.
   \item On verifier's evaluation query $\vec{x_{i, j, K_{i, j}}}$, i.e. for the last
     evaluation query for an oracle corresponding to polynomial $\p{p}_{i, j}$:
     \begin{itemize}
     \item Pick evaluations $r_{i, j, k}$ randomly w.r.t distribution
       $\dist{P}_{i, j, k}$.
-    \item Compute polynomials $\smallset{\p{p}'_{i, j}}_{(i, j) \in R}$ as described
+    \item Compute rational functions $\smallset{\p{p}'_{i, j}}_{(i, j) \in R}$ as described
       in \cref{lem:matching_R_polys}. 
     \item Compute rational functions $\smallset{\p{p}'_{i, j}}_{(i, j) \in D}$
       according to the protocol.
     \item Send evaluations $r_{i, j, k} = \p{p}' (\vec{x_{i, j, k}}, \vec{b'})$, for
-      $k \in \range= {1}{K_{i, j}}$.
+      $k \in \range{1}{K_{i, j}}$.
     \end{itemize}
   \end{enumerate}
 
@@ -1883,36 +1867,9 @@ zeroes; and $b_{i, j, k} (\vec{x_{i, j, k}}) = r_{i, j, k}$ and
   \item $\smallset{\p{p}_{i, j} (\vec{X}, \vec{b})}$ are pairwise independent;
     \michals{2.12}{All of the polynomials or only these in $R$?}
   \item The verifier makes less than $z_{i, j}$ evaluation queries to an oracle set
-    for polynomial $\p{p}_{i, j}$;
+    for polynomial $\p{p}_{i, j}$.
   \end{itemize}
-  
-  % In the following we denote by $\p{p}_{i, j}$ polynomials computed as defined in the
-  % protocol and by $\p{p}'_{i, j}$ the corresponding simulated polynomials
-  % corresponding to $\p{p}_{i, j}$; and $R$ (resp.~$D$) denotes the set of all randomized
-  % (resp.~determined) polynomials in $\PS$. 
-
-  % $\PS$ is zero-knowledge with simulator $\simulator$ that for instance $\inp$ picks
-  % a random witness $\wit$, and in Round $i$ proceeds as follows:
-  % \begin{enumerate}
-  % \item Pick polynomials $\smallset{\p{p}_{i, j}}_{(i, j) \in R}$ randomly and set
-  %   the corresponding oracles;
-  % \item For $j = k_i + 1, \ldots, k_i + k'_i$, send to the verifier polynomials
-  %   $\p{p}_{i, j} (\vec{X}, \vec{b})$ evaluated w.r.t~$\zkproof[i - 1]$ and
-  %   $\wit$. \michals{1.12}{We assume that the instance $\inp$ is part of the transcript.}
-  % \item On verifier's evaluation query $\chz_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$, to a
-  %   polynomial oracle $\oracleo_{\p{p}_{i, j}}$:
-  %   \begin{itemize}
-  %   \item If the queried oracle is for a polynomial in $R$, then respond honestly
-  %     w.r.t.~to the polynomial that the oracle was set for;
-  %   \item Else, that is the queried oracle is for a polynomial in $D$, compute
-  %     $p_{i, j, k} = \p{p}_{i, j} (\chz_{i, j, k}, \vec{b})$ (note that since the
-  %     simulator picked witness at random $\p{p}_{i, j, k}$ may not be a polynomial)
-  %     and respond with $p_{i, j, k}$. If the protocol does not contain any more
-  %     evaluations of $\p{p}_{i, j} (\vec{x}, \vec{b})$, pick a polynomial
-  %     $\p{p}'_{i, j} (\vec{X}, \vec{b})$ that on $\chz_{i, j, k}$ evaluates to
-  %     $p_{i, j, k}$, for $k \in \range{1}{K_{i, j}}$ and set an oracle for it.
-  %   \end{itemize}
-  % \end{enumerate}
+  Then $\PS$ is zero-knowledge with the simulator as above.
 \end{theorem}
 \begin{proof}
   We note that since \cref{lem:matching_R_polys} holds, for every instance $\inp$,
@@ -1952,19 +1909,6 @@ zeroes; and $b_{i, j, k} (\vec{x_{i, j, k}}) = r_{i, j, k}$ and
   real witness $\wit$ gives the same proof as the simulated one, distribution of real
   ans simulated proofs are indistinguishable. 
    
-
-  \iffalse
-  Both in the real and simulated proofs polynomials in $R$ are
-  randomized, hence any evaluation on them gives a random field element, hence for
-  these evaluations distributions of the proofs are the same.
-
-  According to the definition, polynomials in $D$ are already determined by the state
-  of the transcript and previously picked polynomials. 
-
-  Since protocol messages are determined by the actual state of the proof transcript
-  and the witness and the simulator computes them as an honest prover would compute,
-  the distributions of the real and simulated proofs do not differ here as well.
-  \fi
   \fi
 
 \michals{29.11}{To our reduction to work we need to have witness encoded as
