@@ -1696,19 +1696,19 @@ $\zkproof[i - 1]$.
   \begin{definition}[Randomised and determined polynomials]
   \begin{itemize}
   \item Let $\p{p}_{i', j'} (\vec{X}, \vec{B})$ be a polynomial that is evaluated at
-    $k_{i', j'}$ points. We call $\p{p}_{i', j'} (\vec{X}, \vec{B})$
+    $K_{i', j'}$ points. We call $\p{p}_{i', j'} (\vec{X}, \vec{B})$
     \emph{randomised} if there are
-    $B_{i_1}, \ldots, B_{i_{k_{i' j'}}} \in \smallset{B_1, \ldots, B_l}$ such that
+    $B_{i_1}, \ldots, B_{i_{K_{i' j'}}} \in \smallset{B_1, \ldots, B_l}$ such that
     $\p{p}_{i', j'} (\vec{X}, \vec{B})$ has non-zero coefficient next to $B_{i_k}$
     while for all $\p{p}_{i, j}$ for $(i, j) < (i', j')$, coefficient next to
     $B_{i_k}$ is zero. We denote the set of randomized polynomials by $R$. In that
     case we also say that $\p{p}_{i', j'}$ \emph{introduces} $B_{i_k}$. Hence, a
-    randomised polynomial evaluated at $k$ points is a polynomial that introduces at
-    least $k$ randomizers $B_i$
+    randomised polynomial evaluated at $K$ points is a polynomial that introduces at
+    least $K$ randomizers $B_i$
 
     Importantly, we assume that there is no polynomials $\p{p}_{i', j'}$ which are
-    evaluated at $k$ points but that introduces only $k'$, for $k' \in \range{1}{k - 1}$
-    randomisers $B_{i_1}, \ldots, B_{i_k'} \in \smallset{B_1, \ldots, B_l}$.
+    evaluated at $k$ points but that introduces only $k'$, for $k' \in \range{1}{k - 1}$,
+    randomisers $B_{i'_1}, \ldots, B_{i_k'} \in \smallset{B_1, \ldots, B_l}$.
 
   \item Polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not \emph{randomised
       polynomials} are called \emph{determined}. We denote the set of determined
@@ -1723,16 +1723,23 @@ prover $\prover (\ind, \inp, \wit)$ sets an oracle for. Denote by $\dist{P}_{i, 
   \left\{ (\p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b}))_{(i, j)}\right\}_{\vec{x_{i, j,
         k}}} \approx \dist{P}_{i, j, k}.
 \]
+That is, $\dist{P}_{i, j, k}$ is a distribution of evaluation values of the
+polynomials sent by the prover w.r.t.~the randomisers the prover picked and
+verifier's challenges. We note that in popular proof systems like, e.g.~Plonk,
+Marlin, Sonic, etc.~this distribution is a uniform distribution -- regardless of the
+challenges picked by the verifier.
 
    The following lemma holds.
 
     \begin{lemma}
       \label{lem:matching_R_polys}
       Let $r_{i, j, k} \in \FF$ be an evaluation of a randomised polynomial
-      $\p{p}_{i, j} (\vec{X}, \vec{B})$ at some evaluation point $\vec{x_{i, j, k}}$. Then
-      there is a a PPT algorithm $\adv$ that outputs a rational function
+      $\p{p}_{i, j} (\vec{X}, \vec{B})$ at some evaluation point $\vec{x_{i, j,
+          k}}$. Then there is a a PPT algorithm $\adv$ that for any
+      $\vec{x'_{i, j, k}}$ outputs a rational function
       $\p{p}'_{i, j} (\vec{X}, \vec{B})$ and vector $\vec{b'}$ such that
-      $\p{p}_{i, j}(\vec{x}, \vec{b}) = \p{p}'(\vec{x}, \vec{b'})$.
+      $\p{p}_{i, j}(\vec{x_{i, j, k}}, \vec{b}) = \p{p}'(\vec{x'_{i, j, k}},
+      \vec{b'})$.
     \end{lemma}
     \begin{proof}
       Algorithm $\adv$ begins by picking coefficients of $\p{p}''_{i, j} (\vec{X}, \vec{B})$
@@ -1744,30 +1751,32 @@ prover $\prover (\ind, \inp, \wit)$ sets an oracle for. Denote by $\dist{P}_{i, 
     where $\p{r} (\vec{X}, \vec{B})$ and $b_{i, j, k} (\vec{X})$ are defined as
     follows:
     \begin{align*}
-      \p{r} (\vec{X}, \vec{B}) & = \p{p}''_{i, j} (\vec{X}, \vec{B}) \cdot \prod_{k = 1}^{K_{i, j}} (X_1 \cdot \ldots \cdot X_{l'} - x_{i, j, k, 1} \cdot \ldots \cdot x_{i, j, k, l'}) \\
+      \p{r} (\vec{X}, \vec{B}) & = \p{p}''_{i, j} (\vec{X}, \vec{B}) \cdot \prod_{k = 1}^{K_{i, j}} (X_1 \cdot \ldots \cdot X_{l'} - x'_{i, j, k, 1} \cdot \ldots \cdot x'_{i, j, k, l'}) \\
       b_{i, j, k} (\vec{X}) & =  r_{i, j, k} \prod_{k' = 1, k' \neq k}^{K_{i, j}} \frac{(X_1 \cdot \ldots \cdot
-                              X_{l'} - x_{i, j, k', 1} \cdot \ldots \cdot x_{i, j, k', l'})}{(x_{i, j, k' 1} \cdot \ldots \cdot
-                              x_{i, j, k', l'} - x_{i, j, k', 1} \cdot \ldots \cdot x_{i, j, k', l'})}
+                              X_{l'} - x'_{i, j, k', 1} \cdot \ldots \cdot x'_{i, j, k', l'})}{(x'_{i, j, k' 1} \cdot \ldots \cdot
+                              x'_{i, j, k', l'} - x'_{i, j, k', 1} \cdot \ldots \cdot x'_{i, j, k', l'})}
     \end{align*}
       
-    That is, for all $\vec{x_{i, j, k}}$ polynomial $\p{r} (\vec{X}, \vec{B})$
-zeroes; and $b_{i, j, k} (\vec{x_{i, j, k}}) = r_{i, j, k}$ and
-    $b_{i, j, k} (\vec{x_{i, j, k'}}) = 0$, for $k' \neq k$. Eventually
-    $\p{p}'_{i, j, k} (\vec{x_{i, j, k}}, \vec{b}) = r_{i, j, k}$. \qed
+    That is, for all $\vec{x'_{i, j, k}}$ polynomial $\p{r} (\vec{X}, \vec{B})$
+zeroes; and $b_{i, j, k} (\vec{x'_{i, j, k}}) = r_{i, j, k}$ and
+    $b_{i, j, k} (\vec{x'_{i, j, k'}}) = 0$, for $k' \neq k$. Eventually
+    $\p{p}'_{i, j, k} (\vec{x'_{i, j, k}}, \vec{b'}) = r_{i, j, k}$. \qed
   \end{proof}
 
   \begin{lemma}
+    \label{lem:rand_imp_det}
     Let $r_{i, j, k} = \p{p}_{i', j'} (\vec{x_{i, j, k}}, \vec{b})$ and let
     $\p{p}'_{i', j'} (\vec{X}, \vec{B})$ be such that
-    $\p{p}'_{i', j'} (\vec{x_{i, j, k}}, \vec{b'}) = r_{i, j, k}$ for all
-    $(i', j') \in R$. Then for all $(i', j') \in D$ holds
+    $\p{p}'_{i', j'} (\vec{x'_{i, j, k}}, \vec{b'}) = r_{i, j, k}$ for some
+    $ (\vec{x'_{i, j, k}}, \vec{b'})$ and all $(i', j') \in R$. Then for all
+    $(i', j') \in D$ holds
     \[
-      \p{p}_{i', j'} (\vec{x_{i, j, k}}, \vec{b}) =\p{p}'_{i', j'} (\vec{x_{i, j,
+      \p{p}_{i', j'} (\vec{x_{i, j, k}}, \vec{b}) =\p{p}'_{i', j'} (\vec{x'_{i, j,
           k}}, \vec{b'}).
     \]
     That is, if $\adv$ produces polynomials $\p{p}'_{i, j}$, for $(i, j) \in R$, as
     in \cref{lem:matching_R_polys} then
-    $\p{p}_{i, j} (\vec{x}, \vec{b}) = \p{p}'_{i, j} (\vec{x}, \vec{b'})$ for all $(i, j)$.
+    $\p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b}) = \p{p}'_{i, j} (\vec{x'_{i, j, k}}, \vec{b'})$ for all $(i, j)$.
   \end{lemma}
   \begin{proof}
     Note that each polynomial $\p{p}_{i', j'} (\vec{X}, \vec{B})$ sent by the prover
@@ -1778,8 +1787,8 @@ zeroes; and $b_{i, j, k} (\vec{x_{i, j, k}}) = r_{i, j, k}$ and
         (i', j')} \right).
   \]
   Denote by $E$ a set of indices $(i, j)$ such that
-  $\p{p}'_{i, j} (\vec{x_{i, j, k}}, \vec{b'}) = \p{p}_{i, j} (\vec{x_{i, j,
-      k}})$. Obviously, $R \subset E$. Note that there is a minimal index
+  $\p{p}'_{i, j} (\vec{x'_{i, j, k}}, \vec{b'}) = \p{p}_{i, j} (\vec{x_{i, j,
+      k}}, \vec{b})$. Obviously, $R \subset E$. Note that there is a minimal index
   $(i^*, j^*) \in D \setminus E$ such that for all $(i, j) \leq (i^*, j^*)$ polynomials
   $\p{p}_{i, j}$ are in $E$. For $\p{p}_{i^*, j^*}$ holds
   \begin{equation}
@@ -1788,11 +1797,12 @@ zeroes; and $b_{i, j, k} (\vec{x_{i, j, k}}) = r_{i, j, k}$ and
       \p{h}_{i^*, j^*}\left((\vec{x_{i^*, j^*, k}})_{k \leq k^*},
         (\vec{\beta_{i}})_{i \leq i^* - 1}, (\p{p}_{i, j} (\vec{x_{i, j, k}},
         \vec{b}))_{(i, j) < (i^*, j^*)} \right) = \\ \p{h}_{i^*, j^*}\left((\vec{x_{i^*, j^*,
-            k}})_{k \leq k^*}, (\vec{\beta_i})_{i \leq i^* - 1}, (\p{p}'_{i, j} (\vec{x_{i, j, k}},
-        \vec{b'}))_{(i, j) < (i^*, j^*)} \right) = \p{p}'_{i^*, j^*} (\vec{x_{i^*, j^*, k^*}},
-      \vec{b'})
+            k}})_{k \leq k^*}, (\vec{\beta_i})_{i \leq i^* - 1}, (\p{p}'_{i, j} (\vec{x'_{i, j, k}},
+        \vec{b'}))_{(i, j) < (i^*, j^*)} \right) = \p{p}'_{i^*, j^*} (\vec{x'_{i^*, j^*, k^*}},
+      \vec{b'}),
     \end{split}
   \end{equation}
+ Hence, $(i^*, j^*)$ is in $E$ as well.  
   \qed
 \end{proof}
   
@@ -1805,7 +1815,7 @@ zeroes; and $b_{i, j, k} (\vec{x_{i, j, k}}) = r_{i, j, k}$ and
   In the following we denote by $\p{p}_{i, j}$ polynomials
   computed as defined in the protocol and by $\p{p}'_{i, j}$ the corresponding
   simulated rational functions corresponding to $\p{p}_{i, j}$. As previously we
-  denote by and $R$ (resp.~$D$) the set of all randomized (resp.~determined)
+  denote by $R$ (resp.~$D$) the set of all randomized (resp.~determined)
   polynomials in $\PS$.
 
   The simulator $\simulator$ for instance $\inp$ picks a random witness $\wit'$,
@@ -1873,9 +1883,9 @@ zeroes; and $b_{i, j, k} (\vec{x_{i, j, k}}) = r_{i, j, k}$ and
 \end{theorem}
 \begin{proof}
   We note that since \cref{lem:matching_R_polys} holds, for every instance $\inp$,
-  random witness $\wit'$ and evaluations $r_{i, j, k}$ there exists a real prover
-  that for instance $\inp$, witness $\wit$ and randomness $\vec{b}$ sets oracles for
-  polynomials $\p{p}_{i, j}$ such that
+  random witness $\wit'$ and evaluations $r_{i, j, k}$ computed by the simulator,
+  there exists a real prover that for instance $\inp$, witness $\wit$ and randomness
+  $\vec{b}$ sets oracles for polynomials $\p{p}_{i, j}$ such that
   $\p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b}) = r_{i, j, k}$. Since the simulated
   evaluations were picked according to distributions of the real evaluations
   (i.e.~evaluations of polynomials computed by an honest prover), a simulated proof
@@ -2238,6 +2248,33 @@ be done in the reduction part, not here.}
   $\bdv_3$ uses all its randomness to internally run $\bdv_4$.
 \end{proof}
 \fi
+
+\subsection{From SE polynomial commitment to SE NIZK}
+\michals{20.12}{The main reduction goes here}
+
+Reduction $\bdv^{\oracles^{\PCOM}}$:
+\begin{itemize}
+\item On input $\inp$ from the adversary $\adv$ compute the simulated proof as
+  follows, for each Round $i$:
+  \begin{itemize}
+  \item Ask the simulator for $\tilde{k}_i$ simulated commitments
+    $c_{i, r_1}, \ldots, c_{i, r_{\tilde{k}}}$ that correspond to commitments to $\tilde{k}_i$
+    randomized polynomials $\p{p}_{i, j}$ sent by the prover in the round. Pick $r_{i, j, k}$ according to
+    $\dist{P}_{i', j}$ and save it as an evaluation of $\p{p}_{i, j}$ at $\vec{X_{i,
+        j, k}}$ (note, the evaluation point may not be known yet).
+  \item Compute the rest $k_i - \tilde{k}_i$ polynomial 
+  \item Parse the protocol building and evaluation challenges $\vec{\beta_i}$,
+    $\vec{x_{i', j, k}}$. 
+  \item If the verifier asks to reveal evaluation of a randomized polynomial
+    $\p{p_{i', j}} (\vec{x_{i', j, k}}, \cdot)$ pick $r_{i', j, k}$ according to
+    $\dist{P}_{i', j}$ and output it.
+  \item If the verifier asks to reveal evaluation of a determined polynomial
+    $\p{p_{i', j}} (\vec{x_{i', j, k}}, \cdot)$ compute $r_{i', j, k}$ according to
+    the previously computed values (cf.~\cref{lem:rand_imp_det}) and output it.
+  \item If the verifier asks for a proof of evaluation correctness, ask the simulator
+    to trapdoor open $c_{i', j}$ to $r_{i', j, k}$.
+  \end{itemize}
+\end{itemize}
 
 \subsection{Polynomial commitment SE definitions equivalence w.r.t.~polynomials}
 \michals{23.11}{This section is to show that SE defs are equivalent even when the
