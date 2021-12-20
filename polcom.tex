@@ -2249,32 +2249,76 @@ be done in the reduction part, not here.}
 \end{proof}
 \fi
 
+\subsection{From idealized proof system to SNARK}
+Below we show how to compile an idealized proof system $\PS$ into a NIZK $\PSc$ using
+a polynomial commitment. Proof system
+$\PSc = (\kgen, \prover, \verifier, \simulator)$ is defined as follows:
+\begin{description}
+\item[$\kgenc (\secparam)$:] Run indexer $\indexer (\secparam)$ \hl{...}
+\item[$\proverc (\srs, \inp, \wit)$:] Run $\prover (\ind, \inp, \wit)$ internally, when it
+  \begin{itemize}
+  \item  sets an oracle for polynomial $\p{p}$, output a commitment $c$ to
+    that polynomial;
+  \item  outputs a constant polynomial $\p{p}$, output the same polynomial;
+  \item  is asked to provide an evaluation of $\p{p}$ at $x$, provide the
+    evaluation and open the commitment.
+  \end{itemize}
+\item[$\verifierc (\srs, \inp, \zkproof)$:] Run verifier
+  $\verifier (\ind, \inp, \zkproof)$ and when it 
+  \begin{itemize}
+  \item sends a challenge, send the same challenge to $\proverc$,
+  \item accepts or rejects the proof, accept or reject $\proverc$'s proof.
+  \end{itemize}
+  When $\proverc$ outputs a constant polynomial $\p{p}$, send it to $\verifier$, also
+  when $\proverc$ sends a commitment $c$, let $\verifier$ know that an oracle for a
+  polynomial has been set.
+\item[$\simulatorc (\srs, \inp)$:] Run internally simulator $\simulator (\ind, \inp)$
+  and whenever it
+  \begin{itemize}
+  \item outputs constant polynomials $\p{p}$, output $\p{p}$ as well;
+  \item computes rational functions $\p{p}$ pick a random commitment $c$ and output
+    it;
+  \item reveals evaluation $r$ of some polynomial $\p{p}$, open the corresponding
+    commitment $c$ to $r$.
+  \end{itemize}
+\end{description}
+
+\begin{theorem}
+  Let $\PSc$ be a proof system as defined above, then it is knowledge sound and
+  zero-knowledge if $\PS$ is knowledge sound and zero-knowledge.
+\end{theorem}
+  
 \subsection{From SE polynomial commitment to SE NIZK}
 \michals{20.12}{The main reduction goes here}
 
-Reduction $\bdv^{\oracles^{\PCOM}}$:
+Reduction $\bdv^{\oracles^{\PCOM}}$: On input $\inp$ from the adversary $\adv$
+compute the simulated proof as follows, for each Round $i$:
 \begin{itemize}
-\item On input $\inp$ from the adversary $\adv$ compute the simulated proof as
-  follows, for each Round $i$:
-  \begin{itemize}
-  \item Ask the simulator for $\tilde{k}_i$ simulated commitments
-    $c_{i, r_1}, \ldots, c_{i, r_{\tilde{k}}}$ that correspond to commitments to $\tilde{k}_i$
-    randomized polynomials $\p{p}_{i, j}$ sent by the prover in the round. Pick $r_{i, j, k}$ according to
-    $\dist{P}_{i', j}$ and save it as an evaluation of $\p{p}_{i, j}$ at $\vec{X_{i,
-        j, k}}$ (note, the evaluation point may not be known yet).
-  \item Compute the rest $k_i - \tilde{k}_i$ polynomial 
-  \item Parse the protocol building and evaluation challenges $\vec{\beta_i}$,
-    $\vec{x_{i', j, k}}$. 
-  \item If the verifier asks to reveal evaluation of a randomized polynomial
-    $\p{p_{i', j}} (\vec{x_{i', j, k}}, \cdot)$ pick $r_{i', j, k}$ according to
-    $\dist{P}_{i', j}$ and output it.
-  \item If the verifier asks to reveal evaluation of a determined polynomial
-    $\p{p_{i', j}} (\vec{x_{i', j, k}}, \cdot)$ compute $r_{i', j, k}$ according to
-    the previously computed values (cf.~\cref{lem:rand_imp_det}) and output it.
-  \item If the verifier asks for a proof of evaluation correctness, ask the simulator
-    to trapdoor open $c_{i', j}$ to $r_{i', j, k}$.
-  \end{itemize}
+\item Parse the protocol building challenges $\vec{\beta_{i - 1}}$.
+\item Ask the simulator for $k_i$ simulated commitments
+  $c_{i, 1}, \ldots, c_{i, k}$ that correspond to commitments to
+  $k_i$  polynomials $\p{p}_{i, j}$ sent by the prover in the
+  round. 
+\item For randomized polynomial $\p{p}_{i, j}$, pick $r_{i, j, k}$ according to
+  $\dist{P}_{i, j}$ and save it as an evaluation of $\p{p}_{i, j}$ at
+  $\vec{X_{i, j, k}}$ (note, the evaluation point may not be known yet).
+\item If the verifier asks to reveal evaluation of a randomized polynomial
+  $\p{p_{i', j}} (\vec{x_{i', j, k}}, \cdot)$ use stored $r_{i', j, k}$.
+\item If the verifier asks to reveal evaluation of a determined polynomial
+  $\p{p_{i', j}} (\vec{x_{i', j, k}}, \cdot)$ compute $r_{i', j, k}$ according to the
+  previously computed values (cf.~\cref{lem:rand_imp_det}) and the partial
+  transcript; then the output it.
+\item If the verifier asks for a proof of evaluation correctness, ask the simulator
+  to trapdoor open $c_{i', j}$ to $r_{i', j, k}$.
+\item Compute the protocol building and evaluation challenges $\vec{\beta_{i}}$,
+  $\vec{x_{i', j, k}}$ for the next round by querying the random oracle on the
+  partial transcript.
 \end{itemize}
+
+On random oracle query $x$ from the adversary, pass the query to the oracle and
+return the answer.
+
+
 
 \subsection{Polynomial commitment SE definitions equivalence w.r.t.~polynomials}
 \michals{23.11}{This section is to show that SE defs are equivalent even when the
@@ -2307,7 +2351,9 @@ variables $T=(X, \{A_{i}\})$. \changedm{Here $\p{h} (X)$ is a fixed, public,
   not-constant, then $\p{h} (x_0)$ is random as well. In the following we set
   $x = \p{h} (x_0)$.}
 
-The symbolic transcript consists of the SRS $\gone{X^{i}}, \gtwo{X}$, simulated commitments $\gone{A_{i}}$, and simulated opening proofs $ \gone{\frac{A_{ij}-y_{{ij}}}{X-x_{ij}}}$.
+The symbolic transcript consists of the SRS $\gone{X^{i}}, \gtwo{X}$, simulated
+commitments $\gone{A_{i}}$, and simulated opening proofs
+$ \gone{\frac{A_{ij}-y_{{ij}}}{X-x_{ij}}}$.
 %
 The honest verification equation is
 $\gone{f(X) - y} \bullet \gtwo{h} - \gone{q(X)} \bullet \gtwo{X - x} = 0$ while an

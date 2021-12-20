@@ -16,6 +16,12 @@
 \newcommand{\conclude}{\medskip\noindent{}}
 \newcommand{\myskip}{-0.16\baselineskip}
 
+
+\newcommand{\proverc}{\prover_{\nizk}}
+\newcommand{\verifierc}{\verifier_{\nizk}}
+\newcommand{\simulatorc}{\simulator_{\nizk}}
+\newcommand{\kgenc}{\kgen_{\nizk}}
+
 %\renewcommand{\pcpolynomialstyle} [1] {{#1}}
 
 % General mathematics
@@ -104,6 +110,8 @@
 \newcommand{\zkproof}{\pi}
 \newcommand{\proofsystem}{\pcschemestyle{\Psi}}
 \newcommand{\PS}{\proofsystem}
+\newcommand{\PSc}{\proofsystem_{\nizk}}
+
 \newcommand{\psfs}{\proofsystem_\fs}
 % \newcommand{\ps}{\proofsystem}
 \newcommand{\nuppt}{\pcmachinemodelstyle{NUPPT}}
@@ -230,7 +238,7 @@
 \newcommand{\noofp}{\pcvarstyle{k}}
 \newcommand{\noofev}{\pcvarstyle{k'}}
 \newcommand{\encset}{E}
-\newcommand{\PSc}{\PS_{com}}
+%\newcommand{\PSc}{\PS_{\nizk}}
 \newcommand{\PHP}{\ensuremath{\pcschemestyle{\Gamma}}}
 \newcommand{\indexer}{\pcalgostyle{I}}
 
