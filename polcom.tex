@@ -1614,8 +1614,6 @@ easily $\vec y = \vec M' \vec x$ where $\vec M' = \vec M_0 + \vec M_1\vec N$.
 
 \section{Results from the Edinburgh visit}
 \newcommand{\Qop}{Q_{op}}
-\newcommand{\Qsim}{Q_{sim}}
-\newcommand{\Qchal}{{Q_{chal}}}
 \newcommand{\Qh}{Q_{ro}}
 
 %\newcommand{oraclechal}{\oracleo_{chal}}
@@ -2290,35 +2288,98 @@ $\PSc = (\kgen, \prover, \verifier, \simulator)$ is defined as follows:
   
 \subsection{From SE polynomial commitment to SE NIZK}
 \michals{20.12}{The main reduction goes here}
+\begin{theorem}
+  Let $\PS$ be a proof system output by the compiler $C^{\PCOM}$ \michals{23.12}{Define the
+    compiler} such that
+  \begin{itemize}
+  \item $\PCOM$ is simulation-extractable,
+  \item $\PS$ has $\tilde{i'}$ unique response property,
+  \item there is no evaluation challenges before Round $\tilde{i}$,
+  \item $\tilde{i'} \leq \tilde{i}$.
+  \end{itemize}
+  Then $\PS$ is simulation extractable.
+\end{theorem}
+\begin{proof}
+  We show the theorem by building a reduction $\bdv$ that given oracle access to
+  $\PCOM$ simulator and challenge oracle, internally runs NIZK SE adversary
+  $\adv$. Then we show that existence of an extractor for $\bdv$ implies existence of
+  an extractor for $\adv$.
+  
+  Reduction $\bdv^{\oracles^{\PCOM}}$ proceeds as follows:
+\begin{enumerate}
+\item On input $\inp$ from the adversary $\adv$ compute the simulated proof as
+  follows, for each Round $i$:
+  \begin{itemize}
+  \item Parse the protocol building challenges $\vec{\beta_{i - 1}}$.
+  \item Ask the simulator for $k_i$ simulated commitments
+    $c_{i, 1}, \ldots, c_{i, k}$ that correspond to commitments to $k_i$ polynomials
+    $\p{p}_{i, j}$ sent by the prover in the round.
+  \item For randomized polynomial $\p{p}_{i, j}$, pick $r_{i, j, k}$ according to
+    $\dist{P}_{i, j}$ and save it as an evaluation of $\p{p}_{i, j}$ at
+    $\vec{X_{i, j, k}}$ (note, the evaluation point may not be known yet).
+  \item If the verifier asks to reveal evaluation of a randomized polynomial
+    $\p{p_{i', j}} (\vec{x_{i', j, k}}, \cdot)$ use stored $r_{i', j, k}$.
+  \item If the verifier asks to reveal evaluation of a determined polynomial
+    $\p{p_{i', j}} (\vec{x_{i', j, k}}, \cdot)$ compute $r_{i', j, k}$ according to
+    the previously computed values (cf.~\cref{lem:rand_imp_det}) and the partial
+    transcript; then output it.
+  \item If the verifier asks for a proof of evaluation correctness, ask the simulator
+    to trapdoor open $c_{i', j}$ to $r_{i', j, k}$.
+  \item Compute the protocol building and evaluation challenges $\vec{\beta_{i}}$,
+    $\vec{x_{i', j, k}}$ for the next round by querying the random oracle on
+    $((\p{p}_{i, j})_{j \in \range{1}{k_{i}}} \| \aux)$ where $\aux$ is the partial
+    transcript at this point. 
+  \end{itemize}
+\item On random oracle query $x$ from the adversary, pass the query to the oracle and
+  return the answer.
+\item On proof $\zkproof$ from $\adv$, abort if it is unacceptable.  Else, for all
+  openings $o_{i, j, k}$ the proof contains, find corresponding commitments
+  $c_{i, j}$ and random oracle queries which answer contain evaluation challenges
+  $\vec{x_{i, j, k}}$ for that commitment. Denote by
+  $(\vec{c}, \vec{x}, \vec{y}, \vec{o})$ be such that commitments $\vec{c}$ are
+  commitments contained in $\zkproof$, $\vec{x}$ their evaluation challenges,
+  $\vec{y}$ the evaluations themselves, and $\vec{o}$ commitments' openings which has
+  not been output by the $\oracles^{\PCOM}$. $\bdv$ outputs
+  $(\vec{c}, \vec{x}, \vec{y}, \vec{o})$.  
+\end{enumerate}
 
-Reduction $\bdv^{\oracles^{\PCOM}}$: On input $\inp$ from the adversary $\adv$
-compute the simulated proof as follows, for each Round $i$:
+\michals{23.09}{need the following property -- the unique response property needs to
+  kick in before any of the evaluation challenges is sent}
+
+We note that since in $\PS$ the verifier sends evaluation challenges no sooner than
+in Round $\tilde{i}$ and the proof system has $\tilde{i'}$ unique response property,
+$\tilde{i'} \leq \tilde{i}$, then with overwhelming probability evaluation challenges
+in $\zkproof$ are not included in any simulated proof $\bdv$ produced.
+
+Since the verifier accepts $(\vec{c}, \vec{x}, \vec{y}, \vec{o})$ there exists an
+extractor $\extb (\srs_{\PCOM}, \Qsimpc, \Qchal, \Qop, \rb)$ that outputs
+$\vec{\p{f}}$ such that $\vec{c} = \com (\vec{f})$.
+
+Given $\extb (\srs_{\PCOM}, \Qsimpc, \Qchal, \Qop, \rb)$ we show that there is an
+extractor $\exta (\srs, \Qsim, \Qro, \ra)$ for $\adv$. We construct
+$\exta (\srs, \Qsim, \Qro, \ra)$ explicitly. The extractor internally runs $\extb$,
+hence it is important to show how $\exta$ inputs are mapped to $\extb$ inputs:
 \begin{itemize}
-\item Parse the protocol building challenges $\vec{\beta_{i - 1}}$.
-\item Ask the simulator for $k_i$ simulated commitments
-  $c_{i, 1}, \ldots, c_{i, k}$ that correspond to commitments to
-  $k_i$  polynomials $\p{p}_{i, j}$ sent by the prover in the
-  round. 
-\item For randomized polynomial $\p{p}_{i, j}$, pick $r_{i, j, k}$ according to
-  $\dist{P}_{i, j}$ and save it as an evaluation of $\p{p}_{i, j}$ at
-  $\vec{X_{i, j, k}}$ (note, the evaluation point may not be known yet).
-\item If the verifier asks to reveal evaluation of a randomized polynomial
-  $\p{p_{i', j}} (\vec{x_{i', j, k}}, \cdot)$ use stored $r_{i', j, k}$.
-\item If the verifier asks to reveal evaluation of a determined polynomial
-  $\p{p_{i', j}} (\vec{x_{i', j, k}}, \cdot)$ compute $r_{i', j, k}$ according to the
-  previously computed values (cf.~\cref{lem:rand_imp_det}) and the partial
-  transcript; then the output it.
-\item If the verifier asks for a proof of evaluation correctness, ask the simulator
-  to trapdoor open $c_{i', j}$ to $r_{i', j, k}$.
-\item Compute the protocol building and evaluation challenges $\vec{\beta_{i}}$,
-  $\vec{x_{i', j, k}}$ for the next round by querying the random oracle on the
-  partial transcript.
+\item $\srs$ is computed using $\srs_{\PCOM}$.
+\item $\Qsim$ contains instances and their proofs, that is
+  $\Qsim = (\inp_w, \zkproof_w = (c_{i, j}, \vec{\beta_i}, \vec{x_{i, j, k}},
+  \vec{r_{i, j, k}}, \vec{o_{i, j, k}})_{i \in \range{1}{\mu}, j \in \range{1}{k_i +
+      k'_i}, k \in \range{1}{K_{ij}}})_{w \in \range{1}{W}}$, where $W$ is the number
+  of proofs $\adv$ asked $\simulator$ to generate. Instance $\inp_w$ comes from
+  $\adv$, the proof is computed as follows:
+  \begin{itemize}
+  \item commitments $c_{i, j}$ come from the simulator, i.e they are part of list $\Qsimpc$;
+  \item challenges $\vec{\beta_i}$ and $\vec{x_{i, j, k}}$ come from the random
+    oracle, i.e.~they are part of $\Qchal$;
+  \item evaluations $r_{i, j, k}$ are part of $\bdv$ randomness $\rb$;
+  \item openings $\vec{o_{i, j, k}}$ come from the simulator, i.e.~they are part of $\Qop$; 
+  \end{itemize}
+\item $\Qro$ contains list of random oracle queries, this is part of $\Qchal$;
+\item $\ra$ contains remaining, i.e.~not used to compute $r_{i, j, k}$, random bits
+  from $\rb$.
 \end{itemize}
-
-On random oracle query $x$ from the adversary, pass the query to the oracle and
-return the answer.
-
-
+\qed 
+\end{proof}
 
 \subsection{Polynomial commitment SE definitions equivalence w.r.t.~polynomials}
 \michals{23.11}{This section is to show that SE defs are equivalent even when the
@@ -2559,7 +2620,7 @@ times. This is something we want to exclude.
 \end{lemma}
 \begin{proof}
   Here we build extractor $\ext_{\bdv_1}$ from $\ext_{\bdv_0}$. We denote by
-  $\bdv_0^{j}$, $j \in \range{1}{\abs{\Qchal_2}}$ an adversary who internally runs
+  $\bdv_0^{j}$, $j \in \range{1}{\abs{{\Qchal}_2}}$ an adversary who internally runs
   $\bdv_1$ and provides it with access to oracles $\oracles$ and $\oraclec_1$ by
   passing its queries to $\oracles$ and $\oraclec_0$. Since $\oraclec_0$ takes a
   single input a commitment $c$, while $\oraclec_1$ allows the adversary to query the
@@ -2570,7 +2631,7 @@ times. This is something we want to exclude.
   $(c_j, x, y, o)$, $\bdv_0^{j}$ returns $(c_j, x, y, o)$ and $\bot$ if $\bdv_1$
   returns opening for another commitments or challenge.
 
-  Extractor $\ext_{\bdv_1} (\srs, \Qsim, \Qchal_1, r_{\bdv_1})$ runs internally
+  Extractor $\ext_{\bdv_1} (\srs, \Qsim, {\Qchal}_1, r_{\bdv_1})$ runs internally
   $\ext_{\bdv_0^j} (\srs, \Qsim, \Qchal_0, r_{\bdv_0^j})$ where
   \begin{itemize}
   \item $\Qchal_0$ consists of a pair $(c, x)$ where $c$ is the $j$-th commitment in
@@ -2780,9 +2841,6 @@ times. This is something we want to exclude.
   $r_{\bdv_3} \gets r_{\bdv_4}$. The latter point corresponds to the fact that
   $\bdv_3$ uses all its randomness to internally run $\bdv_4$.
 \end{proof}
-
-
-\subsection{From SE PCOM to SE NIZK -- the reduction}
 
 
 
