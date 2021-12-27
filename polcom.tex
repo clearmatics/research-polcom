@@ -2252,7 +2252,8 @@ Below we show how to compile an idealized proof system $\PS$ into a NIZK $\PSc$ 
 a polynomial commitment. Proof system
 $\PSc = (\kgen, \prover, \verifier, \simulator)$ is defined as follows:
 \begin{description}
-\item[$\kgenc (\secparam)$:] Run indexer $\indexer (\secparam)$ \hl{...}
+\item[$\kgenc (\secparam)$:] Run indexer $\indexer (\secparam)$ \michals{27.12}{What
+    exactly the indexer does?}
 \item[$\proverc (\srs, \inp, \wit)$:] Run $\prover (\ind, \inp, \wit)$ internally, when it
   \begin{itemize}
   \item  sets an oracle for polynomial $\p{p}$, output a commitment $c$ to
@@ -2282,22 +2283,30 @@ $\PSc = (\kgen, \prover, \verifier, \simulator)$ is defined as follows:
 \end{description}
 
 \begin{theorem}
-  Let $\PSc$ be a proof system as defined above, then it is knowledge sound and
+  Let $\PS$ be a proof system and $\PSc$ a zkSNARK obtained from $\PS$ using the
+  technique from \cref{sec:compiler}. $\PSc$ is knowledge sound and
   zero-knowledge if $\PS$ is knowledge sound and zero-knowledge.
 \end{theorem}
-  
+
+\begin{lemma}
+  If $\PS$ has weak unique response property after $i$, then $\PSc$ has unique response
+  property after $i$.
+\end{lemma}
+
 \subsection{From SE polynomial commitment to SE NIZK}
 \michals{20.12}{The main reduction goes here}
 \begin{theorem}
-  Let $\PS$ be a proof system output by the compiler $C^{\PCOM}$ \michals{23.12}{Define the
-    compiler} such that
+  Let $\PS$ be a proof system and $\PSc$ a zkSNARK obtained from $\PS$ using the
+  technique from \cref{sec:compiler}. Assume that 
   \begin{itemize}
   \item $\PCOM$ is simulation-extractable,
-  \item $\PS$ has $\tilde{i'}$ unique response property,
+  \item $\PS$ has $\tilde{i'}$ weak unique response property,
   \item there is no evaluation challenges before Round $\tilde{i}$,
   \item $\tilde{i'} \leq \tilde{i}$.
   \end{itemize}
-  Then $\PS$ is simulation extractable.
+  Then $\PSc$ is simulation extractable.
+  \michals{27.12}{Now unique response property is a property of the idealized proof
+    system as well. Need to define that.}
 \end{theorem}
 \begin{proof}
   We show the theorem by building a reduction $\bdv$ that given oracle access to
@@ -2341,7 +2350,7 @@ $\PSc = (\kgen, \prover, \verifier, \simulator)$ is defined as follows:
   corresponding to challenges $\vec{x}$.
 \end{enumerate}
 
-We note that since in $\PS$ the verifier sends evaluation challenges no sooner than
+We note that since in $\PSc$ the verifier sends evaluation challenges no sooner than
 in Round $\tilde{i}$, the proof system has $\tilde{i'}$ unique response property,
 and $\tilde{i'} \leq \tilde{i}$, then with overwhelming probability evaluation challenges
 in $\zkproof$ are not included in any simulated proof $\bdv$ produced. More
