@@ -2333,28 +2333,27 @@ $\PSc = (\kgen, \prover, \verifier, \simulator)$ is defined as follows:
 \item On random oracle query $x$ from the adversary, pass the query to the oracle and
   return the answer.
 \item On proof $\zkproof$ from $\adv$, abort if it is unacceptable.  Else, for all
-  openings $o_{i, j, k}$ the proof contains, find corresponding commitments
-  $c_{i, j}$ and random oracle queries which answer contain evaluation challenges
-  $\vec{x_{i, j, k}}$ for that commitment. Denote by
-  $(\vec{c}, \vec{x}, \vec{y}, \vec{o})$ be such that commitments $\vec{c}$ are
-  commitments contained in $\zkproof$, $\vec{x}$ their evaluation challenges,
-  $\vec{y}$ the evaluations themselves, and $\vec{o}$ commitments' openings which has
-  not been output by the $\oracles^{\PCOM}$. $\bdv$ outputs
-  $(\vec{c}, \vec{x}, \vec{y}, \vec{o})$.  
+  openings $\vec{o} = (o_{i, j, k})$ the proof contains and which has not been
+  provided by the simulator, find corresponding commitments $\vec{c} = (c_{i, j})$
+  and random oracle queries which answer contain evaluation challenges
+  $\vec{x} = (\vec{x_{i, j, k}})$ for that commitment. $\bdv$ outputs
+  $(\vec{c}, \vec{x}, \vec{y}, \vec{o})$, where $\vec{y}$ is a vector of evaluations
+  corresponding to challenges $\vec{x}$.
 \end{enumerate}
 
-\michals{23.09}{need the following property -- the unique response property needs to
-  kick in before any of the evaluation challenges is sent}
-
 We note that since in $\PS$ the verifier sends evaluation challenges no sooner than
-in Round $\tilde{i}$ and the proof system has $\tilde{i'}$ unique response property,
-$\tilde{i'} \leq \tilde{i}$, then with overwhelming probability evaluation challenges
-in $\zkproof$ are not included in any simulated proof $\bdv$ produced.
+in Round $\tilde{i}$, the proof system has $\tilde{i'}$ unique response property,
+and $\tilde{i'} \leq \tilde{i}$, then with overwhelming probability evaluation challenges
+in $\zkproof$ are not included in any simulated proof $\bdv$ produced. More
+precisely, if some evaluation challenge in the final proof $\zkproof$ equals an
+evaluation challenge from a simulated proof, then either the adversary broke the
+unique response property or a collision in a random oracle has been found, each of
+which happens with negligible probability only.
 
-Since the verifier accepts $(\vec{c}, \vec{x}, \vec{y}, \vec{o})$ there exists an
+Since the $\PCOM$ verifier accepts $(\vec{c}, \vec{x}, \vec{y}, \vec{o})$ there exists an
 extractor $\extb (\srs_{\PCOM}, \Qsimpc, \Qchal, \Qop, \rb)$ that outputs
-$\vec{\p{f}}$ such that $\vec{c} = \com (\vec{f})$.
-
+$\vec{\p{f}}$ such that $\vec{c} = \com (\vec{\p{f}})$.
+%
 Given $\extb (\srs_{\PCOM}, \Qsimpc, \Qchal, \Qop, \rb)$ we show that there is an
 extractor $\exta (\srs, \Qsim, \Qro, \ra)$ for $\adv$. We construct
 $\exta (\srs, \Qsim, \Qro, \ra)$ explicitly. The extractor internally runs $\extb$,
