@@ -1702,11 +1702,11 @@ $\zkproof[i - 1]$.
     $B_{i_k}$ is zero. We denote the set of randomized polynomials by $R$. In that
     case we also say that $\p{p}_{i', j'}$ \emph{introduces} $B_{i_k}$. Hence, a
     randomised polynomial evaluated at $K$ points is a polynomial that introduces at
-    least $K$ randomizers $B_i$
+    least $K$ randomizers $B_{i}$.
 
     Importantly, we assume that there is no polynomials $\p{p}_{i', j'}$ which are
-    evaluated at $k$ points but that introduces only $k'$, for $k' \in \range{1}{k - 1}$,
-    randomisers $B_{i'_1}, \ldots, B_{i_k'} \in \smallset{B_1, \ldots, B_l}$.
+    evaluated at $K$ points but that introduces only $K'$, for $K' \in \range{1}{K - 1}$,
+    randomisers $B_{i'_1}, \ldots, B_{i_K'} \in \smallset{B_1, \ldots, B_l}$.
 
   \item Polynomials $\p{p}_{i, j} (\vec{X}, \vec{B})$ that are not \emph{randomised
       polynomials} are called \emph{determined}. We denote the set of determined
@@ -1731,10 +1731,9 @@ challenges picked by the verifier.
 
     \begin{lemma}
       \label{lem:matching_R_polys}
-      Let $r_{i, j, k} \in \FF$ be an evaluation of a randomised polynomial
-      $\p{p}_{i, j} (\vec{X}, \vec{B})$ at some evaluation point $\vec{x_{i, j,
-          k}}$. Then there is a a PPT algorithm $\adv$ that for any
-      $\vec{x'_{i, j, k}}$ outputs a rational function
+      Let $\p{p}_{i, j} (\vec{X}, \vec{B})$ be a polynomial, $\vec{x_{i, j, k}}$ be
+      an evaluation point and let $\vec{b}$ be a vector.  Then there is a a PPT
+      algorithm $\adv$ that for any $\vec{x'_{i, j, k}}$ outputs a rational function
       $\p{p}'_{i, j} (\vec{X}, \vec{B})$ and vector $\vec{b'}$ such that
       $\p{p}_{i, j}(\vec{x_{i, j, k}}, \vec{b}) = \p{p}'(\vec{x'_{i, j, k}},
       \vec{b'})$.
@@ -1752,8 +1751,9 @@ challenges picked by the verifier.
       \p{r} (\vec{X}, \vec{B}) & = \p{p}''_{i, j} (\vec{X}, \vec{B}) \cdot \prod_{k = 1}^{K_{i, j}} (X_1 \cdot \ldots \cdot X_{l'} - x'_{i, j, k, 1} \cdot \ldots \cdot x'_{i, j, k, l'}) \\
       b_{i, j, k} (\vec{X}) & =  r_{i, j, k} \prod_{k' = 1, k' \neq k}^{K_{i, j}} \frac{(X_1 \cdot \ldots \cdot
                               X_{l'} - x'_{i, j, k', 1} \cdot \ldots \cdot x'_{i, j, k', l'})}{(x'_{i, j, k' 1} \cdot \ldots \cdot
-                              x'_{i, j, k', l'} - x'_{i, j, k', 1} \cdot \ldots \cdot x'_{i, j, k', l'})}
+                              x'_{i, j, k', l'} - x'_{i, j, k', 1} \cdot \ldots \cdot x'_{i, j, k', l'})},
     \end{align*}
+    where $r_{i, j, k} = \p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b})$.
       
     That is, for all $\vec{x'_{i, j, k}}$ polynomial $\p{r} (\vec{X}, \vec{B})$
 zeroes; and $b_{i, j, k} (\vec{x'_{i, j, k}}) = r_{i, j, k}$ and
