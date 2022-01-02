@@ -1727,7 +1727,12 @@ verifier's challenges. We note that in popular proof systems like, e.g.~Plonk,
 Marlin, Sonic, etc.~this distribution is a uniform distribution -- regardless of the
 challenges picked by the verifier.
 
-   The following lemma holds.
+The following shows that for a polynomial $\p{p} (\vec{X}, \vec{B})$ that evaluates at
+points $(\vec{x_i}, \vec{b})_{i \in I}$ to $(r_i)_{i \in I}$ one, given $(\vec{x'_i})_i$
+could compute $\vec{b'}$ and polynomial $\p{p'}$ that evaluates to $(r_i)_{i \in I}$ at
+$(\vec{x'_i}, \vec{b'})$. This lemma will be particularly useful later, when we show how
+the simulator can compute polynomials which evaluations match evaluations of polynomials
+provided by some honest prover.
 
     \begin{lemma}
       \label{lem:matching_R_polys}
@@ -1761,6 +1766,18 @@ zeroes; and $b_{i, j, k} (\vec{x'_{i, j, k}}) = r_{i, j, k}$ and
     $\p{p}'_{i, j, k} (\vec{x'_{i, j, k}}, \vec{b'}) = r_{i, j, k}$. \qed
   \end{proof}
 
+  The following lemma shows that evaluations of randomized polynomials determines
+  evaluations of the determined polynomials. More precisely, we show that if a polynomial
+  $\p{p}_{i, j}$ is not randomized then its evaluation is determined by
+  \begin{inparaenum}[(1)]
+  \item evaluation point,
+\item protocol building challenges,
+\item evaluations of previous polynomials.
+\end{inparaenum}
+Hence, we conclude, to make sure that all polynomials in a simulated proof evaluates to
+the same values as polynomials in some real proof it is enough to assure that randomized
+polynomials in these two cases match.
+  
   \begin{lemma}
     \label{lem:rand_imp_det}
     Let $r_{i, j, k} = \p{p}_{i', j'} (\vec{x_{i, j, k}}, \vec{b})$ and let
