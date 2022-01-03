@@ -1723,13 +1723,6 @@ prover $\prover (\ind, \inp, \wit)$ sets an oracle for. Denote by $(\dist{P}_{i,
         k}}} \approx (\dist{P}_{i, j, k})_{(i, j)}.\label{eq:distribution_P}
 \end{equation}
 
-% \begin{equation}
-%   \left\{ (\p{p}_{i, j} (\vec{x_{i, j, 1}}, \vec{b}))_{(i, j)} \times \ldots \times \right\}_{\vec{x_{i, j,
-%         k}}} \approx \dist{P}_{i, j, k}.\label{eq:distribution_P}
-% \end{equation}
-%
-%\michals{3.1}{I think we needed more than just $\dist{P}_{i, j, k}$.}
-%
 That is, $\dist{P}_{i, j, k}$ is a distribution of evaluation values of the
 polynomials sent by the prover w.r.t.~the randomisers the prover picked and
 verifier's challenges. We note that in popular proof systems like, e.g.~Plonk,
@@ -1838,17 +1831,17 @@ Although the lemmata above work for any efficiently sampleable $\dist{P}_{i, j, 
 $(\dist{P}_{i, j, k})_{(i, j)} \approx \bigtimes_{(i, j)} \dist{U}_q$, where $\dist{U}_q$
 is a uniform distribution over $\FF_q$.
 \begin{lemma}
-  Let $\p{p} (\vec{X}, \vec{B})$ be a randomized polynomial evaluated at $K$ points $\vec{X_1},
-  \ldots, \vec{X_k}$. Write $\p{p} (\vec{X}, \vec{B}) = \p{p'} (\vec{X}) + \p{b}
-  (\vec{X})$ such that $\p{p'}$ is a polynomial compound of all monomials in $\p{p}$ that
-  are independent of $\vec{B}$. \michals{3.1}{I am not sure how to write well that
-    sometimes we take $\vec{B}$ as a variable and sometimes as a
-    coefficient. (Mathematical formalism here would be quite ugly)}
-  Then $(\dist{P}_{i, j, k})_{(i, j)} \approx \bigtimes_{(i, j)} \dist{U}_q$ if
-  \begin{itemize}
-  \item $\vec{B}$ has been picked uniformly at random,
-  \item $\deg \p{b} (\vec{X}) \geq K$.
-  \end{itemize}
+  Let $\p{p} (\vec{X}, \vec{B})$ be a randomized polynomial evaluated at $K$ points
+  $\vec{X_1}, \ldots, \vec{X_K}$. Write
+  $\p{p} (\vec{X}, \vec{B}) = \p{p'} (\vec{X}) + \p{b} (\vec{X})$ such that $\p{p'}$
+  is a polynomial compound of all monomials in $\p{p}$ that are independent of
+  $\vec{B}$. Furthermore, let $\deg \p{p'} (\vec{X}, \vec{B}) = l'$ and
+  $\p{b} (\vec{X}) = (\sum_{i = 1}^{k'} B_{l' + i} X^{l' + i}) \cdot \p{q}
+  (\vec{X})$, for some polynomial $\p{q} (\vec{X})$.  \michals{3.1}{I am not sure how
+    to write well that sometimes we take $\vec{B}$ as a variable and sometimes as a
+    coefficient. (Mathematical formalism here would be quite ugly)} Then, if
+  $\vec{B}$ has been picked uniformly at random, holds
+  $(\dist{P}_{i, j, k})_{(i, j)} \approx \bigtimes_{(i, j)} \dist{U}_q$.
 \end{lemma}
 
 \begin{proof}
