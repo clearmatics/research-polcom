@@ -1828,24 +1828,39 @@ polynomials in these two cases match.
 
 Although the lemmata above work for any efficiently sampleable $\dist{P}_{i, j, k}$
 (cf.~\cref{eq:distribution_P}) in our applications we are interested in
-$(\dist{P}_{i, j, k})_{(i, j)} \approx \bigtimes_{(i, j)} \dist{U}_q$, where $\dist{U}_q$
-is a uniform distribution over $\FF_q$.
+$(\dist{P}_{i, j, k} \| \p{p'} (\vec{x}))_{(i, j)} \approx \bigtimes_{(i, j)}
+\dist{U}_q$, where $\p{p'} (\vec{X})$ (as defined below) is a polynomial which
+coefficients are identical to $\p{p} (\vec(X), \vec{B})$ except these which stand
+next to monomials containing some $B_i$-s which are zero in case of $\p{p'}$. Also, $\dist{U}_q$
+is a uniform distribution over $\FF_q$. That is, we claim that the evaluations of
+polynomials $\p{p} (\vec{X}, \vec{b})$ are uniformly random even when some of the
+coefficients of $\p{p}$ are known.
+
 \begin{lemma}
-  Let $\p{p} (\vec{X}, \vec{B})$ be a randomized polynomial evaluated at $K$ points
-  $\vec{X_1}, \ldots, \vec{X_K}$. Write
-  $\p{p} (\vec{X}, \vec{B}) = \p{p'} (\vec{X}) + \p{b} (\vec{X})$ such that $\p{p'}$
-  is a polynomial compound of all monomials in $\p{p}$ that are independent of
-  $\vec{B}$. Furthermore, let $\deg \p{p'} (\vec{X}, \vec{B}) = l'$ and
-  $\p{b} (\vec{X}) = (\sum_{i = 1}^{k'} B_{l' + i} X^{l' + i}) \cdot \p{q}
-  (\vec{X})$, for some polynomial $\p{q} (\vec{X})$.  \michals{3.1}{I am not sure how
-    to write well that sometimes we take $\vec{B}$ as a variable and sometimes as a
-    coefficient. (Mathematical formalism here would be quite ugly)} Then, if
-  $\vec{B}$ has been picked uniformly at random, holds
-  $(\dist{P}_{i, j, k})_{(i, j)} \approx \bigtimes_{(i, j)} \dist{U}_q$.
+  Let $\p{p} (\vec{X}, \vec{B})$ be a randomized polynomial that is evaluated at $K$
+  points $\vec{X_1}, \ldots, \vec{X_K}$ after $\vec{B}$ is set to some
+  $\vec{b}$. Write $\p{p} (\vec{X}, \vec{b}) = \p{p'} (\vec{X}) + \p{b} (\vec{X})$
+  such that $\p{p'}$ is a polynomial compound of all monomials in $\p{p}$ that are
+  independent of $\vec{B}$. Furthermore, let $\deg \p{p'} (\vec{X}, \vec{b}) = l'$
+  and
+  $\p{b} (\vec{X}) = (\sum_{i = 1}^{k'} b_{l' + i} X^{l' + i}) \cdot \p{q} (\vec{X})$
+  for some polynomial $\p{q} (\vec{X})$, such that $\deg \p{b} (\vec{X}) \geq K$.%
+  \michals{3.1}{I am not sure how to write well that sometimes we take $\vec{B}$ as a
+    variable and sometimes as a coefficient. (Mathematical formalism here would be
+    quite ugly)} %
+  Then, if $\vec{B}$ has been picked uniformly at random, holds
+  $(\dist{P}_{i, j, k} \| \p{p'} (\vec{X}))_{(i, j)} \approx \bigtimes_{(i, j)}
+  \dist{U}_q$.  \michals{3.1}{Note the change -- added $\p{p'}$ part of the
+    distribution. The distribution should be uniform even when coefficients of $\p{p'}$ are
+    known. Really, if we consider composable zk definition, where the adversary picks
+    witness, then it knows all-but-$\vec{B}$-related $\p{p'}$'s coefficients }
 \end{lemma}
 
 \begin{proof}
-\qed
+  Note that for an adversary who learns only $K$ evaluations
+  $(y_i)_{i \in \range{1}{K}} = (\p{p} (\vec{x_i}, \vec{b}))_{i \in \range{1}{K}}$
+  any other evaluations of that polynomial remains random as $\deg \p{p} (\vec{X},
+  \vec{b}) \geq K$ \qed
 \end{proof}
 We note that polynomial $\p{q} (\vec{X}) = 1$ for e.g.~Basilisk \cite{C:RafZap21} and
 Claymore \cite{EPRINT:Szepieniec20} and $\p{q} (\vec{X})$ is a so-called vanishing
@@ -2288,6 +2303,35 @@ be done in the reduction part, not here.}
   $\bdv_3$ uses all its randomness to internally run $\bdv_4$.
 \end{proof}
 \fi
+
+In our reduction we also need a weak version of a unique response property. In
+general unique response property assures that no adversary can produce two valid
+proofs that matches at some $i$ first prover's messages. Ganesh et al.~\cite{}
+recently proposed a weaker version of this property which states that no adversary,
+who can see simulated proofs for chosen instances, can produce a proof that matches a
+\emph{simulated} proof at the first $i$ entries. Here we modify the definition
+proposed by Ganesh et al.~a bit and adjust it to idealised proof systems (the
+original definition was w.r.t.~an interactive proof system). 
+
+\michals{3.1}{Cite Ganesh et al (Bulletproof non-malleability)}
+\begin{definition}{Weak unique response property}
+  Let $\PS = (\indexer, \prover, \verifier, \simulator)$ be a proof system. We say
+  that $\PS$ has \emph{weak unique response property from $i$ on} if there is no PPT
+  \michals{3.1}{has it be ppt? or maybe we just need to limit the number of the
+    simulator queries to be polynomial?} adversary probability
+  \[
+    \Pr \left[ %
+      \begin{aligned}
+        & (\inp, \zkproof) \gets \adv^{\simulator} (\ind), \zkproof[:i] =
+        \zkproof'[:i], \\
+        & \verifier (\ind, \inp, \zkproof) = \verifier (\ind, \inp', \zkproof') = 1 %
+      \end{aligned}
+      \,\left| \, %
+        \ind \gets \indexer (\secparam) \right. %
+    \right] \leq \negl,
+  \]
+  where $\zkproof'$ is a proof produced by the simulator $\simulator$
+\end{definition}
 
 \subsection{From idealized proof system to SNARK}
 Below we show how to compile an idealized proof system $\PS$ into a NIZK $\PSc$ using
