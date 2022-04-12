@@ -1717,10 +1717,10 @@ $\zkproof[i - 1]$.
 Let $(\ind, \inp, \wit) \in \REL$, $\vec{b} \sample \FF^{l}$ and
 $(\p{p}_{i, j} (\vec{X}, \vec{b}))_{(i, j)}$ be randomised polynomials which an honest
 prover $\prover (\ind, \inp, \wit)$ sets an oracle for. Denote by $(\dist{P}_{i, j,
-  k})_{(i, j)}$ a composed distribution such that
+  k})_{(i, j, k)}$ a composed distribution such that
 \begin{equation}
   \left\{ (\p{p}_{i, j} (\vec{x_{i, j, k}}, \vec{b}))_{(i, j)}\right\}_{\vec{x_{i, j,
-        k}}} \approx (\dist{P}_{i, j, k})_{(i, j)}.\label{eq:distribution_P}
+        k}}} \approx (\dist{P}_{i, j, k})_{(i, j, k)}.\label{eq:distribution_P}
 \end{equation}
 
 That is, $\dist{P}_{i, j, k}$ is a distribution of evaluation values of the
@@ -1828,13 +1828,15 @@ polynomials in these two cases match.
 
 Although the lemmata above work for any efficiently sampleable $\dist{P}_{i, j, k}$
 (cf.~\cref{eq:distribution_P}) in our applications we are interested in
-$(\dist{P}_{i, j, k} \| \p{p'} (\vec{x}))_{(i, j)} \approx \bigtimes_{(i, j)}
+$(\dist{P}_{i, j, k} \| \p{p}' (\vec{x_{i, j, k}}))_{(i, j, k)} \approx \bigtimes_{(i, j, k)}
 \dist{U}_q$, where $\p{p'} (\vec{X})$ (as defined below) is a polynomial which
 coefficients are identical to $\p{p} (\vec(X), \vec{B})$ except these which stand
 next to monomials containing some $B_i$-s which are zero in case of $\p{p'}$. Also, $\dist{U}_q$
 is a uniform distribution over $\FF_q$. That is, we claim that the evaluations of
 polynomials $\p{p} (\vec{X}, \vec{b})$ are uniformly random even when some of the
-coefficients of $\p{p}$ are known.
+coefficients of $\p{p}$ are known. We note that adding $\p{p'} (\vec{X})$ is important
+when zero knowledge is shown. In that case, polynomial $\p{p'} (\vec{X})$ may be provided
+by an adversarial algorithm.  
 
 \begin{lemma}
   Let $\p{p} (\vec{X}, \vec{B})$ be a randomized polynomial that is evaluated at $K$
